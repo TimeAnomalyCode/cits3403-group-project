@@ -1,7 +1,13 @@
-# Setup
+# Name of Project
+> Description and Explanation of the Project
+# Group Members
+| UWA ID | Name | Github Username |
+| --- | --- | --- |
+| 24599992 | Aiman Hakimin Bin Ahmad Khairi | TimeAnomalyCode |
+# Setup and Run Code
 1. Clone the repository
 ```
-https://github.com/TimeAnomalyCode/cits3403-group-project.git
+git clone https://github.com/TimeAnomalyCode/cits3403-group-project.git
 ```
 2. Create a virtual environment in the project directory
 ```
@@ -18,4 +24,8 @@ pip install -r requirements.txt
 5. Run the web app
 ```
 python app.py
+```
+# Run Tests
+```
+some python command
 ```
