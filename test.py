@@ -6,3 +6,4 @@ print("new2")
 
 print("test3")
 
+print("hello")
