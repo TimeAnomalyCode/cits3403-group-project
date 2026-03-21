@@ -1,0 +1,12 @@
+1. As a user, I want to be able to sign up and create an account to store my game details
+2. As a user, I want to be able to log in to my own account to access saved game details
+3. As a user, I want to be able to create a game for my friend to join
+4. As a user, I want to be able to join my friends' games, so we can have fun
+5. As a user, I want to be able to play the game by myself as well
+6. As a user, I want to be able to play the game with more tactics, so the game has more variety and makes it more interesting
+7. As a user, I want to be able to see my friends' game result if they are playing solo mode, making the game a bit competitive  leader board 
+8. As a user, I want to be able to have a place where I can find all the information and it is easy to access
+9. As a system admin, I want users be able to change their passwords if in case they forgot their password
+10. As a system admin, I want the default username to be an email address, because it guarantees its uniqueness, and the username should always be unique
+11. As a system admin, I want the default username to be an email address, because it guarantees its uniqueness, and the username should always be unique 
+12. As a user, I want to be able to change my username, so I can show my personality
