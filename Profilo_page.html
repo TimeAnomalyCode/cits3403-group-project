@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> 
+        <!--to make the text display correctly -->
+        <meta charset="UTF-8">
+        <!--to make the website scale correctly on phone -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--the external bootstrap library-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        
+        <title>Home</title> 
+    </head>
+    <body>
+        <!-- navigation bar-->
+        <div>
+            <!--navbar-dark means light text colour-->
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#"># 2048 Battle</a>
+
+            <!-- allows the navagition bar to be hidden when the screen size is small-->
+            <!-- aria-* is for accessibiity function-->
+            <!-- data-bs-target notes the id it is controlling-->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            
+            <!-- this is giving the hidden bar a icon for showing-->
+            <span class="navbar-toggler-icon "></span>
+            </button>
+
+            <!-- the class: data-bs-target and this list id need to be the same, so html know you want this list to be hidden when screen size reduce-->
+            <!-- the class collapse navbar-collapse, make the navgation bar collapse auto will screen is small-->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"> <a class="nav-link" href="">Home</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="">Create/Join Game</a></li>
+                    <li class="nav-item"> <a class="nav-link" href="">Login</a></li>  
+                    <li class="nav-item"> <a class="nav-link" href="">Sign Up</a></li>
+                        
+                </ul>
+            </div>
+
+            </nav>
+        </div>
+
+        <div class="container mt-4"> 
+        <h1 class="text-center fw-bold">Join the battle now</h1>
+            <!--to design how to put thing there is 3 layer-->
+            <!--layer 1 div: where should it go-->
+            <!--layer 2 div: what size it should be-->
+            <!--layer 3 div: how should it look like-->
+            <div class="row">
+
+            <!-- histroy table-->
+            <!-- ms-auto move the list elemet right-->
+            <div class="col-3 ms-auto">
+                <div class="card p-2">
+
+                    <table class="table table-bordered table-hover text-center">
+                    <caption class="caption-top text-center fw-bold">Game Histroy</legend>
+                    <tr><th>Date</th> <th>Result</th></tr>
+                    <tr><th>date</th> <th>win</th></tr>
+                    <tr><th>date</th> <th>lose</th></tr>
+                    <tr><th>date</th> <th>win</th></tr>
+                    <tr><th>date</th> <th>lose</th></tr>
+                
+                    </table>
+
+                </div>
+            </div> 
+            
+        </div>
+        
+        </div><br>
+
+
+    </body>
