@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Battle - Profile Management</title>
+    <!--  Tailwind CSS  -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* 自定义滚动条样式 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 导航栏 (Header) -->
+    <header class="bg-gray-200 border-b border-gray-300 py-3 px-6 flex items-center justify-between shadow-sm sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="bg-black text-white p-2 rounded cursor-pointer hover:bg-gray-800 transition-colors">
+                <i class="fa-solid fa-expand text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">2048 Battle</h1>
+        </div>
+        
+        <nav class="flex items-center gap-2 bg-gray-300 p-1 rounded-lg">
+            <button class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-black">Home</button>
+            <button class="px-4 py-1.5 text-sm font-bold bg-white text-blue-600 shadow-sm rounded-md transition-all">Profile</button>
+            <button class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-black">Log In</button>
+        </nav>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="max-w-7xl mx-auto w-full p-8 md:p-16">
+        
+        <div class="flex flex-col md:flex-row gap-16 items-start">
+            
+            <!-- 左侧：用户基本信息 -->
+            <div class="w-full md:w-1/3 flex flex-col items-center md:items-start">
+                <!-- 大头像 -->
+                <div class="w-48 h-48 rounded-full border-2 border-black flex items-center justify-center mb-8 bg-gray-50">
+                    <!-- 使用内联 SVG 模拟图片中的头像样式 -->
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                
+                <!-- 统计文本 -->
+                <div class="space-y-2 text-center md:text-left">
+                    <p class="text-3xl font-normal">Username: Jack2026</p>
+                    <p class="text-3xl font-normal">Email: jack2026@gmail.com</p>
+                    <p class="text-3xl font-normal">Total wins: 4</p>
+                    <p class="text-3xl font-normal">Total losses: 2</p>
+                    <p class="text-3xl font-normal"># of friends: 3</p>
+                </div>
+            </div>
+
+            <!-- 右侧：资料管理与历史记录 -->
+            <div class="w-full md:w-2/3">
+                <!-- 标题与操作按钮 -->
+                <div class="mb-12">
+                    <h2 class="text-5xl font-bold mb-8">Profile Management</h2>
+                    <div class="flex flex-wrap gap-4">
+                        <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Username</button>
+                        <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Email</button>
+                        <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Password</button>
+                    </div>
+                </div>
+
+                <!-- 历史战绩表格 -->
+                <div class="mt-20">
+                    <h2 class="text-5xl font-bold mb-8">History</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-[#4a4a4a] text-white text-left">
+                                    <th class="p-3 border border-gray-400 font-normal text-sm"># of Matches</th>
+                                    <th class="p-3 border border-gray-400 font-normal text-sm">Battler Name</th>
+                                    <th class="p-3 border border-gray-400 font-normal text-sm">Player Points</th>
+                                    <th class="p-3 border border-gray-400 font-normal text-sm">Battler Points</th>
+                                    <th class="p-3 border border-gray-400 font-normal text-sm">Trash Sent</th>
+                                    <th class="p-3 border border-gray-400 font-normal text-sm">Trash Received</th>
+                                    <th class="p-3 border border-gray-400 font-normal text-sm">Condition</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-[#5a5a5a] text-white">
+                                    <td class="p-3 border border-gray-400 text-sm">2</td>
+                                    <td class="p-3 border border-gray-400 text-sm">John227</td>
+                                    <td class="p-3 border border-gray-400 text-sm">2987</td>
+                                    <td class="p-3 border border-gray-400 text-sm">1245</td>
+                                    <td class="p-3 border border-gray-400 text-sm">10</td>
+                                    <td class="p-3 border border-gray-400 text-sm">5</td>
+                                    <td class="p-3 border border-gray-400 text-sm">WIN</td>
+                                </tr>
+                                <tr class="bg-[#3d3d3d] text-white">
+                                    <td class="p-3 border border-gray-400 text-sm">1</td>
+                                    <td class="p-3 border border-gray-400 text-sm">Joe345</td>
+                                    <td class="p-3 border border-gray-400 text-sm">1345</td>
+                                    <td class="p-3 border border-gray-400 text-sm">4567</td>
+                                    <td class="p-3 border border-gray-400 text-sm">3</td>
+                                    <td class="p-3 border border-gray-400 text-sm">20</td>
+                                    <td class="p-3 border border-gray-400 text-sm">LOSE</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
