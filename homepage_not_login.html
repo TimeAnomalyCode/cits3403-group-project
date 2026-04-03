@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> 
+        <!--to make the text display correctly -->
+        <meta charset="UTF-8">
+        <!--to make the website scale correctly on phone -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--the external bootstrap library-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+        
+        <title>Home</title> 
+    </head>
+
+    
+
+    <body class="bg-dark text-light">
+
+        <!--navigation bar-->
+        <div>
+            <!--navbar-dark means light text colour-->
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="#"># 2048 Battle</a>
+            </nav>
+        </div>
+
+        <!--put thing into row-->
+        <div class="container mt-4 "> 
+            <h1 class="text-center fw-bold">Join the battle now</h1>
+            <!--to design how to put thing there is 3 layer-->
+            <!--layer 1 div: where should it go-->
+            <!--layer 2 div: what size it should be-->
+            <!--layer 3 div: how should it look like-->
+            <div class="row justify-content-center mt-4">
+                <!--Leading borad-->
+                <div class="col-12 col-md-6 col-lg-3 mb-4 ">
+                    <div class="card p-2 "> 
+
+                        <table class="table table-bordered table-hover text-center mb-4">
+                            <caption class="caption-top text-center fw-bold">Leader Borad</caption>
+                            <tr><th>username</th> <th>Points</th></tr>
+                            <tr><td>name</td> <td>point</td></tr>
+                            <tr><td>name</td> <td>point</td></tr>
+                            <tr><td>name</td> <td>point</td></tr>
+                            <tr><td>name</td> <td>point</td></tr>
+                
+                        </table>  
+
+                    </div>
+                </div>
+
+                <!--login detail-->
+                <!--ms-auto move the list elemet right-->
+                <div class="col-12 col-md-6 col-lg-4 ">
+                        <div class="card p-5 text-center ">
+                            <h2> Login Detail </h2>
+
+                            <form action="" method="get">
+                                <div class="mb-3 text-start">
+                                Username/ Email:<br>
+                                <input type="text" name="username" class="form-control"> 
+                                </div>
+
+                                <div class="mb-3 text-start">
+                                Password:<br>
+                                <input type="password" class="form-control"> <br>
+                                </div>
+
+                                <div class="mb-3 text-start">
+                                    <button class="btn btn-success">Login</button>
+                                </div>
+
+                            </form>
+                            
+                            <div class="mt-3 text-start">
+                                <a href="">Create account</a><br>
+                                <a href="">Forget password</a>
+                            </div>
+                            
+
+                        </div>
+                    </div> 
+                </div>
+            </div><br>
+        </body>
