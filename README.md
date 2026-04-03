@@ -4,6 +4,7 @@
 | UWA ID | Name | Github Username |
 | --- | --- | --- |
 | 24599992 | Aiman Hakimin Bin Ahmad Khairi | TimeAnomalyCode |
+| 24377984 | Wentao Luo | LarkVenter |
 # Setup and Run Code
 1. Clone the repository
 ```
