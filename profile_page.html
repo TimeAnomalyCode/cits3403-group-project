@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2048 Battle - Profile Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!--  Tailwind CSS  -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -23,15 +24,26 @@
     <!-- Navigation bar -->
     <header class="bg-gray-200 border-b border-gray-300 py-3 px-6 flex items-center justify-between shadow-sm sticky top-0 z-10">
         <div class="flex items-center gap-3">
-            <div class="bg-black text-white p-2 rounded cursor-pointer hover:bg-gray-800 transition-colors">
-                <i class="fa-solid fa-expand text-xl"></i>
+            <!-- Go Back Button -->
+            <div class="">
+                <button 
+                    onclick="window.history.back()" 
+                    title="Go Back"
+                    class="flex items-center justify-center w-10 h-10 bg-gray-300 border border-gray-300 rounded-full text-gray-600 hover:bg-black hover:text-white hover:border-black transition-all shadow-sm active:scale-90 group"
+                >
+                    <i class="fa-solid fa-chevron-left text-lg group-hover:-translate-x-0.5 transition-transform"></i>
+                </button>   
             </div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">2048 Battle</h1>
         </div>
         
         <nav class="flex items-center gap-2 bg-gray-300 p-1 rounded-lg">
-            <button class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-black">Home</button>
-            <button class="px-4 py-1.5 text-sm font-bold bg-white text-blue-600 shadow-sm rounded-md transition-all">Profile</button>
+            <a href="./battle_page.html">
+                <button class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-black">Home</button>
+            </a>
+            <a href="./profile_page.html">
+                <button class="px-4 py-1.5 text-sm font-bold bg-white text-blue-600 shadow-sm rounded-md transition-all">Profile</button>
+            </a>
         </nav>
     </header>
 
@@ -46,9 +58,9 @@
                 <!-- User Information -->
                 <div class="space-y-2 text-center md:text-left">
                     <p class="text-3xl font-normal">Username:</p>
-                    <p class="text-2xl font-bold">Jack</p>
+                    <p class="text-2xl font-bold">Lark</p>
                     <p class="text-3xl font-normal">Email: </p>
-                    <p class="text-2xl font-bold">jack2026@gmail.com</p>
+                    <p class="text-2xl font-bold">lark2026@gmail.com</p>
                     <br>
                     <p class="text-3xl font-normal">Total wins:<span id="wins"> 8</span></p>
                     <p class="text-3xl font-normal">Total losses:<span id="losses"> 8</span></p>
@@ -63,8 +75,12 @@
                     <h2 class="text-5xl font-bold mb-8">Profile Management</h2>
                     <div class="flex flex-wrap gap-4">
                         <!-- <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Username</button> -->
-                        <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Email</button>
-                        <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Password</button>
+                        <a href="./Change_email.html">
+                            <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Email</button>
+                        </a>
+                        <a href="./Change_password.html">
+                            <button class="bg-[#2d2d2d] text-white px-6 py-2.5 rounded-md hover:bg-black transition-colors text-lg">Change Password</button>
+                        </a>
                     </div>
                 </div>
 
@@ -108,7 +124,7 @@
                     </div>
                 </div>
                 
-                <!-- Friends list -->
+                <!-- Friends list
                 <div class="mt-20">
                     <h2 class="text-5xl font-bold mb-8">Friends</h2>
                     <div class="flex flex-wrap gap-4">  
@@ -122,33 +138,33 @@
                             <tr class="bg-[#4a4a4a] text-white text-left">
                                 <th class="p-3 border border-gray-400 font-normal text-sm">Name</th>
                                 <th class="p-3 border border-gray-400 font-normal text-sm">Highest Points</th>
-                                <!-- <th class="p-3 border border-gray-400 font-normal text-sm"></th> -->
-                                <!-- <th class="p-3 border border-gray-400 font-normal text-sm">Battler Points</th> -->
-                                <!-- <th class="p-3 border border-gray-400 font-normal text-sm">Trash Sent</th> -->
-                                <!-- <th class="p-3 border border-gray-400 font-normal text-sm">Trash Received</th> -->
-                                <!-- <th class="p-3 border border-gray-400 font-normal text-sm">Condition</th> -->
+                                <th class="p-3 border border-gray-400 font-normal text-sm"></th>
+                                <th class="p-3 border border-gray-400 font-normal text-sm">Battler Points</th>
+                                <th class="p-3 border border-gray-400 font-normal text-sm">Trash Sent</th>
+                                <th class="p-3 border border-gray-400 font-normal text-sm">Trash Received</th>
+                                <th class="p-3 border border-gray-400 font-normal text-sm">Condition</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="bg-[#5a5a5a] text-white">
                                 <td class="p-3 border border-gray-400 text-sm">John227</td>
                                 <td class="p-3 border border-gray-400 text-sm">2987</td>
-                                <!-- <td class="p-3 border border-gray-400 text-sm">1245</td> -->
-                                <!-- <td class="p-3 border border-gray-400 text-sm">10</td> -->
-                                <!-- <td class="p-3 border border-gray-400 text-sm">5</td> -->
-                                <!-- <td class="p-3 border border-gray-400 text-sm">WIN</td> -->
+                                <td class="p-3 border border-gray-400 text-sm">1245</td>
+                                <td class="p-3 border border-gray-400 text-sm">10</td>
+                                <td class="p-3 border border-gray-400 text-sm">5</td>
+                                <td class="p-3 border border-gray-400 text-sm">WIN</td>
                             </tr>
                             <tr class="bg-[#3d3d3d] text-white">
                                 <td class="p-3 border border-gray-400 text-sm">Joe345</td>
                                 <td class="p-3 border border-gray-400 text-sm">1345</td>
-                                <!-- <td class="p-3 border border-gray-400 text-sm">4567</td> -->
-                                <!-- <td class="p-3 border border-gray-400 text-sm">3</td> -->
-                                <!-- <td class="p-3 border border-gray-400 text-sm">20</td> -->
-                                <!-- <td class="p-3 border border-gray-400 text-sm">LOSE</td> -->
+                                <td class="p-3 border border-gray-400 text-sm">4567</td>
+                                <td class="p-3 border border-gray-400 text-sm">3</td>
+                                <td class="p-3 border border-gray-400 text-sm">20</td>
+                                <td class="p-3 border border-gray-400 text-sm">LOSE</td>
                             </tr>
                         </tbody>
                     </table>
-                </div>
+                </div> -->
                         
             </div>
         </div>
