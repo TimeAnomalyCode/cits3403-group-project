@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Battle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-dark text-light">
+    <nav class="navbar bg-dark bg-gradient navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                # 2048 Battle
+            </a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">Profile</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <h1>Create an account</h1>
+                <!-- the vaildation function is getDetail-->
+                <form id="login_detail">
+                    <div class="mb-3">
+                        <label for="inputUsername" class="form-label">Display Username</label>
+                        <input type="text" class="form-control" id="inputUsername" aria-describedby="inputUsername"
+                            placeholder="John123">
+                        <span id="display_username_error" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp"
+                            placeholder="example@email.com">
+                        <div id="emailHelp" class="form-text" style="color: white;">We'll never share your email with anyone else.</div>
+                        <span id="email_error" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="inputPassword">
+                        <div id="passwordHelp" class="form-text" style="color: white;">Contains at least 8 characters</div>
+                        <span id="password_error" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword">
+                        <span id="confirm_password_error" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-danger" onclick="window.location.href='/homepage_not_login.html'">Cancel</button>
+                        
+                    </div>
+                    <span id="error_code"></span>
+                    
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/create_accout.js"></script>
+
+</body>
+
+</html>
