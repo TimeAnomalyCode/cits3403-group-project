@@ -1,37 +1,37 @@
-function login(event){
-    document.getElementById("login_detail").addEventListener("submit",getDetail(event));
-}
+document.getElementById("login_detail").addEventListener("submit",getDetail);
 
-function getDetail(e){
+function getDetail(event){
 
     // stop the page from refresh, so we can get the login detail
-    e.preventDefault();
+    event.preventDefault();
 
     //reset the error message
     document.getElementById("email_error").textContent = "";
     document.getElementById("password_error").textContent = "";
-    
+     
     // get the user input
     let email = document.getElementById("email").value.trim();
     let password = document.getElementById("password").value.trim();
+    
+
     //console.log(username,password);
     //window.location.replace("/create_account.html")
     if(email === ""){
-        document.getElementById("email_error").innerHTML = "Please enter a Email address"
+        document.getElementById("email_error").textContent = "Please enter a Email address"
         return;
     }
     if(password === "" ){
-        document.getElementById("password_error").innerHTML = "Please enter a Password"
+        document.getElementById("password_error").textContent = "Please enter a Password"
         return;
     }
+    
     //set to submit first, testing
     document.getElementById("login_detail").submit();
-    verifyUserLogin(username,password);
+    servervVerifyUserLogin(username,password);
     
 }
 
-
-async function verifyUserLogin(username,password){
+async function servervVerifyUserLogin(username,password){
     
     try{
 
@@ -41,23 +41,25 @@ async function verifyUserLogin(username,password){
             body: JSON.stringify({username, password})
         }); // API needed
 
-        if (response.status === 404) {
-            document.getElementById("username_error").innerHTML = "Incorrect Username";
-            return;
-        }
-
-        if (response.status === 401) {
-            document.getElementById("password_error").innerHTML = "Incorrect Password";
-            return;
-        }
-
+        //status code 200, successful in login
         if (response.ok) {
             const data = await response.json();
             console.log("Login success:", data);
 
             //redirct
             //window.location.replace("/create_account.html");
+        }else if (response.status === 400 || response.status === 422){
+            document.getElementById("error_code").textContent = "Invalid input";
+            return;
+        }else if (response.status === 401) {
+             document.getElementById("error_code").textContent = "Incorrect Email or Password";
+            return;
+        }else{
+            console.error("Error status code:", response.status)
         }
+
+
+        
     }catch(error){
         console.error("Network error:", error);
         

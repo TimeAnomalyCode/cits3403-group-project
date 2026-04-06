@@ -55,21 +55,23 @@
                 <div class="col-12 col-md-6 col-lg-4 ">
                         <div class="card p-5 text-center ">
                             <h2> Login Detail </h2>
-
-                            <form id="login_detail" onsubmit="login(event)">
+                            <!-- the vaildation function is getDetail-->
+                            <form id="login_detail">
                                 <div class="mb-3 text-start">
-                                Regsited Email Address:<br>
-                                <input type="email" id="email" class="form-control" aria-describedby="emailHelp">
+                                    <label for="email" class="form-label">Regsited Email Address:</label>
+                                    <input type="email" id="email" class="form-control" aria-describedby="emailHelp">
+                                    <!--error message-->
+                                    <span id="email_error" class="text-danger"></span>
                                 </div>
-                                <!--error message-->
-                                <span id="email_error" class="text-danger"></span>
+                                
 
                                 <div class="mb-3 text-start">
-                                Password:<br>
-                                <input type="password" id="password" class="form-control">
+                                    <label for="password" class="form-label">Password:</label>
+                                    <input type="password" id="password" class="form-control">
+                                    <!--error message-->
+                                    <span id="password_error" class="text-danger"></span>
                                 </div>
-                                <!--error message-->
-                                <span id="password_error" class="text-danger"></span>
+                                
 
                                 <div class="mb-3 text-start">
                                     <button type="submit" class="btn btn-success">Login</button>
@@ -81,7 +83,7 @@
                                 <a href="/create_account.html">Create account</a><br>
                                 <a href="/forget_password.html">Forget password</a>
                             </div>
-                            
+                            <span id="error_code"></span>
 
                         </div>
                     </div> 
