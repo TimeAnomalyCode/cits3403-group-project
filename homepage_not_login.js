@@ -26,19 +26,19 @@ function getDetail(event){
     }
     
     //set to submit first, testing
-    document.getElementById("login_detail").submit();
-    servervVerifyUserLogin(username,password);
+    document.getElementById("login_detail").submit();// this line is just testing for now, mimicing submit(fetch) function
+    servervVerifyUserLogin(email,password);
     
 }
 
-async function servervVerifyUserLogin(username,password){
+async function servervVerifyUserLogin(email,password){
     
     try{
 
         const response = await fetch( /api/,{
             method: "POST",
             headers:{"Content-Type": "application/json"},
-            body: JSON.stringify({username, password})
+            body: JSON.stringify({email, password})
         }); // API needed
 
         //status code 200, successful in login
