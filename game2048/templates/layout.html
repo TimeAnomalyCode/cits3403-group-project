@@ -25,7 +25,7 @@ Should only be touched if there is global changes to all pages, otherwise use:
     <div>
         <!--navbar-dark means light text color-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="{{url_for('home')}}">
                 <div class="container">
                     <img src="{{ url_for('static', filename='logo.svg')}}" alt="Cool Blue Logo that has 2048"
                         class="h-auto" width="50px">
