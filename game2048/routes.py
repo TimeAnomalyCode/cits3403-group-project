@@ -31,7 +31,7 @@ def index():
     mail.send(msg)
     return f"<p>Message sent!</p> {msg}"
 
-# Cache static files on client for 1 month
+# Cache static files on client
 # Source: https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
 # Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control
 @app.route('/static/<path:filename>')
