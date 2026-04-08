@@ -1,11 +1,11 @@
-from game2048 import app, mail
-from flask import request
+from game2048 import app, db, mail, socketio
+from flask import render_template, request
 from flask_mail import Message
 
 @app.route("/")
 @app.route("/home")
 def home():
-    return "Home Page"
+    return render_template('home.html', title='Home')
 
 @app.route("/about")
 def about():
