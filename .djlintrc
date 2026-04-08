@@ -1,0 +1,6 @@
+{
+    "profile": "jinja",
+    "extension": "html",
+    "line_break_after_multiline_tag": "true",
+    "ignore": "H030,H031"
+}
