@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+# Required for caching
+app = Flask(__name__, static_folder=None)
 
 # Because .env does not support booleans, only strings
 def str_to_bool(text):
