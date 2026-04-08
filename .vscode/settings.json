@@ -1,5 +1,9 @@
 {
     "cSpell.words": [
         "djlint"
-    ]
+    ],
+    "editor.formatOnSave": true,
+    "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
+        "editor.defaultFormatter": "monosans.djlint"
+    }
 }

@@ -27,6 +27,10 @@ pip install -r requirements.txt
 ```
 python app.py
 ```
+# Formatting and Linting
+> We are using djLint to help tidy the code
+1. Download the djLint Plugin on VS Code
+2. That's it. You should be able to save HTML and format it automatically
 # Run Tests
 ```
 some python command
