@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ```
 5. Run the web app
 ```
-python app.py
+python run.py
 ```
 # Formatting and Linting
 > We are using djLint to help tidy the code
