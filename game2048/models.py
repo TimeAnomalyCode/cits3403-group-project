@@ -47,12 +47,12 @@ class User(db.Model):
         return f"User ('{self.id} {self.username} {self.email} {self.image_file}')"
 
 class OTP(db.Model):
-    __tablename__ = "OTP"
+    __tablename__ = "otp"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     otp_code: Mapped[int] = mapped_column(Integer(6), nullable=False)
-    created_at: Mapped[DateTime] = mapped_column(DateTime, default=datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
 class Match(db.Model):
     __tablename__ = "matches"
@@ -68,9 +68,9 @@ class Match(db.Model):
     winner_id: Mapped[Optional[int]] = mapped_column(ForeignKey('users.id'), nullable=True)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default='pending')
 
-    created_at: Mapped[DateTime] = mapped_column(DateTime, default=datetime.now(UTC), nullable=False)
-    started_at: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
-    ended_at: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     players = Relationship(
         "MatchPlayer",
@@ -101,9 +101,9 @@ class Tournament(db.Model):
     status: Mapped[str] = mapped_column(String(30), nullable=False, default='pending')
     host_user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
 
-    created_at: Mapped[DateTime] = mapped_column(DateTime, default=datetime.now(UTC), nullable=False)
-    started_at: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
-    ended_at: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     matches = Relationship(
         "Match",
