@@ -1,7 +1,8 @@
 {
     "cSpell.words": [
         "backref",
-        "djlint"
+        "djlint",
+        "uselist"
     ],
     "editor.formatOnSave": true,
     "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
