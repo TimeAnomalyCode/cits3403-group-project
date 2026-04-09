@@ -36,7 +36,7 @@ class User(db.Model):
     )
 
     matches_won = Relationship(
-        "Match",
+        "Tournament",
         foreign_keys="Tournament.host_user_id",
         backref="host",
         lazy=True
