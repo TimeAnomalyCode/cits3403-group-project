@@ -2,7 +2,6 @@ from datetime import datetime, UTC
 from game2048 import db
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
-from typing import Optional
 
 # Relationships have backref
 # Example
@@ -51,26 +50,26 @@ class OTP(db.Model):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    otp_code: Mapped[int] = mapped_column(Integer(6), nullable=False)
+    otp_code: Mapped[str] = mapped_column(String(6), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
 class Match(db.Model):
     __tablename__ = "matches"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    match_code: Mapped[Optional[String]] = mapped_column(String(4), unique=True, nullable=True)
+    match_code: Mapped[String | None] = mapped_column(String(4), unique=True, nullable=True)
 
     # Tournament only
-    tournament_id: Mapped[Optional[int]] = mapped_column(ForeignKey('tournaments.id'), nullable=True)
-    round_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    match_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    tournament_id: Mapped[int | None] = mapped_column(ForeignKey('tournaments.id'), nullable=True)
+    round_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    match_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    winner_id: Mapped[Optional[int]] = mapped_column(ForeignKey('users.id'), nullable=True)
+    winner_id: Mapped[int | None] = mapped_column(ForeignKey('users.id'), nullable=True)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default='pending')
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
-    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     players = Relationship(
         "MatchPlayer",
@@ -89,7 +88,7 @@ class MatchPlayer(db.Model):
     placement: Mapped[int] = mapped_column(Integer, nullable=True)
 
     __table_args__ = (
-        UniqueConstraint('match.id', 'user_id', name='unique_match_player')
+        UniqueConstraint('match_id', 'user_id', name='unique_match_player'),
     )
 
 class Tournament(db.Model):
@@ -102,8 +101,8 @@ class Tournament(db.Model):
     host_user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
-    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     matches = Relationship(
         "Match",
