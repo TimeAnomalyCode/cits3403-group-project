@@ -9,6 +9,12 @@ from game2048.forms import RegistrationForm, LoginForm
 def home():
     # we need to check if user has logged in already to render a logged in homepage
     form = LoginForm()
+    if form.validate_on_submit():
+        if form.email.data == 'admin@game.com' and form.password.data =='123456789':
+            flash('You have logged in', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash('Login Unsuccessful', 'danger')
     return render_template('home.html', title='Home', form=form)
 
 @app.route("/about")
