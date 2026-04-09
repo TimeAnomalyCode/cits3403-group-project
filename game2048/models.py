@@ -4,6 +4,15 @@ from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
 from typing import Optional
 
+# Relationships have backref
+# Example
+# 1. tableA has id, name
+# 2. tableB has title, content
+# 3. tableA has a relationship with tableB, which creates a link to tableA -> tableB
+# 4. Backref(author) lets get tableA information from table B (tableA <- tableB)
+# 5. tableA has id, name, posts(Relationship) | tableB has title, content, author(Backref)
+# 6. The 2 new columns don't exist in the table but you can use it because the ORM is smart
+
 class User(db.Model):
     __tablename__ = "users"
 
@@ -17,7 +26,8 @@ class User(db.Model):
         "OTP",
         backref="user",
         lazy=True,
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        uselist=False
     )
 
     match_entries = Relationship(
@@ -40,7 +50,7 @@ class OTP(db.Model):
     __tablename__ = "OTP"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('User'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     otp_code: Mapped[int] = mapped_column(Integer(6), nullable=False)
     created_at: Mapped[DateTime] = mapped_column(DateTime, default=datetime.now(UTC))
 
@@ -99,4 +109,19 @@ class Tournament(db.Model):
         "Match",
         backref="tournament",
         lazy=True
+    )
+
+class Leaderboard(db.Model):
+    __tablename__ = "leaderboard"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
+    points: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    matches_won: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    user = Relationship(
+        "User",
+        backref="leaderboard_rank",
+        uselist=False
     )
