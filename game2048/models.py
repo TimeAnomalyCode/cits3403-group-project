@@ -3,7 +3,7 @@ from game2048 import db
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
 
-# Relationships have backref
+# Relationships have backref (Same concept with back_populates but you have to write for both table)
 # Example
 # 1. tableA has id, name
 # 2. tableB has title, content
@@ -23,23 +23,33 @@ class User(db.Model):
 
     otp_code = Relationship(
         "OTP",
-        backref="user",
-        lazy=True,
-        cascade="all, delete-orphan",
+        back_populates="user",
         uselist=False
     )
 
     match_entries = Relationship(
         "MatchPlayer",
-        backref="user",
-        lazy=True
+        back_populates="user"
     )
 
-    matches_won = Relationship(
+    # tournaments this user is hosting
+    hosted_tournaments = Relationship(
         "Tournament",
         foreign_keys="Tournament.host_user_id",
-        backref="host",
-        lazy=True
+        back_populates="host"
+    )
+
+    # matches this user has won
+    wins = Relationship(
+        "Match",
+        foreign_keys="Match.winner_id",
+        back_populates="winner"
+    )
+
+    leaderboard_rank = Relationship(
+        "Leaderboard",
+        back_populates="user",
+        uselist=False
     )
 
     def __repr__(self):
@@ -52,6 +62,12 @@ class OTP(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     otp_code: Mapped[str] = mapped_column(String(6), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+
+    user = Relationship(
+        "User",
+        back_populates="otp_code",
+        uselist=False
+    )
 
 class Match(db.Model):
     __tablename__ = "matches"
@@ -73,8 +89,19 @@ class Match(db.Model):
 
     players = Relationship(
         "MatchPlayer",
-        backref="match",
-        lazy=True
+        back_populates="match",
+        cascade="all, delete-orphan"
+    )
+
+    tournament = Relationship(
+        "Tournament",
+        back_populates="matches"
+    )
+
+    winner = Relationship(
+        "User",
+        foreign_keys=[winner_id],
+        back_populates="wins"
     )
 
 class MatchPlayer(db.Model):
@@ -86,6 +113,16 @@ class MatchPlayer(db.Model):
 
     points: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     placement: Mapped[int] = mapped_column(Integer, nullable=True)
+
+    match = Relationship(
+        "Match",
+        back_populates="players"
+    )
+
+    user = Relationship(
+        "User",
+        back_populates="match_entries"
+    )
 
     __table_args__ = (
         UniqueConstraint('match_id', 'user_id', name='unique_match_player'),
@@ -106,8 +143,14 @@ class Tournament(db.Model):
 
     matches = Relationship(
         "Match",
-        backref="tournament",
-        lazy=True
+        back_populates="tournament",
+        cascade="all, delete-orphan"
+    )
+
+    host = Relationship(
+        "User",
+        back_populates="hosted_tournaments",
+        foreign_keys=[host_user_id]
     )
 
 class Leaderboard(db.Model):
@@ -121,6 +164,6 @@ class Leaderboard(db.Model):
 
     user = Relationship(
         "User",
-        backref="leaderboard_rank",
+        back_populates="leaderboard_rank",
         uselist=False
     )
