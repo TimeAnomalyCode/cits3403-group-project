@@ -2,6 +2,7 @@ from datetime import datetime, UTC
 from game2048 import db
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Relationships have backref (Same concept with back_populates but you have to write for both table)
 # Example
@@ -52,8 +53,11 @@ class User(db.Model):
         uselist=False
     )
 
+    # Prints out all column names and variables for debugging
     def __repr__(self):
-        return f"User ('{self.id} {self.username} {self.email} {self.image_file}')"
+        return f'{self.__tablename__} = ' + ' | '.join(
+            f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
+        )
 
 class OTP(db.Model):
     __tablename__ = "otp"
@@ -68,6 +72,12 @@ class OTP(db.Model):
         back_populates="otp_code",
         uselist=False
     )
+
+    # Prints out all column names and variables
+    def __repr__(self):
+        return f'{self.__tablename__} = ' + ' | '.join(
+            f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
+        )
 
 class Match(db.Model):
     __tablename__ = "matches"
@@ -104,6 +114,12 @@ class Match(db.Model):
         back_populates="wins"
     )
 
+    # Prints out all column names and variables
+    def __repr__(self):
+        return f'{self.__tablename__} = ' + ' | '.join(
+            f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
+        )
+
 class MatchPlayer(db.Model):
     __tablename__ = "match_players"
 
@@ -127,6 +143,12 @@ class MatchPlayer(db.Model):
     __table_args__ = (
         UniqueConstraint('match_id', 'user_id', name='unique_match_player'),
     )
+
+    # Prints out all column names and variables
+    def __repr__(self):
+        return f'{self.__tablename__} = ' + ' | '.join(
+            f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
+        )
 
 class Tournament(db.Model):
     __tablename__ = "tournaments"
@@ -153,6 +175,12 @@ class Tournament(db.Model):
         foreign_keys=[host_user_id]
     )
 
+    # Prints out all column names and variables
+    def __repr__(self):
+        return f'{self.__tablename__} = ' + ' | '.join(
+            f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
+        )
+
 class Leaderboard(db.Model):
     __tablename__ = "leaderboard"
 
@@ -167,3 +195,9 @@ class Leaderboard(db.Model):
         back_populates="leaderboard_rank",
         uselist=False
     )
+
+    # Prints out all column names and variables
+    def __repr__(self):
+        return f'{self.__tablename__} = ' + ' | '.join(
+            f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
+        )
