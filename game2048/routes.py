@@ -1,6 +1,5 @@
 from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory
 from flask_mail import Message
-from werkzeug.security import generate_password_hash, check_password_hash
 from game2048 import app, db, mail, socketio
 from game2048.forms import RegistrationForm, LoginForm
 from game2048.models import User
@@ -23,14 +22,14 @@ def home():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        hashed_password = generate_password_hash(form.password.data)
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password=hashed_password,
-        )
-        db.session.add(user)
-        db.session.commit()
+        # hashed_password = generate_password_hash(form.password.data)
+        # user = User(
+        #     username=form.username.data,
+        #     email=form.email.data,
+        #     password=hashed_password,
+        # )
+        # db.session.add(user)
+        # db.session.commit()
 
         # One time display of status
         flash(f'You have created an account! Please Log In', 'success')
