@@ -18,4 +18,6 @@ login = LoginManager(app)
 mail = Mail(app)
 socketio = SocketIO(app)
 
+login.login_view = 'home'
+
 from game2048 import routes, models
