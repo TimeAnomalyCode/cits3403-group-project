@@ -19,7 +19,7 @@ class User(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
-    password: Mapped[str] = mapped_column(String(60), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(60), nullable=False)
     image_file: Mapped[str] = mapped_column(String(20), nullable=False, default='default.jpg')
 
     otp_code = Relationship(
@@ -52,6 +52,12 @@ class User(db.Model):
         back_populates="user",
         uselist=False
     )
+
+    def set_password(self, password: str):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password: str):
+        return check_password_hash(self.password_hash, password)
 
     # Prints out all column names and variables for debugging
     def __repr__(self):
