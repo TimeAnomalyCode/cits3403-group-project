@@ -9,8 +9,6 @@ from config import Config
 app = Flask(__name__, static_folder=None)
 app.config.from_object(Config)
 
-print(Config.MAIL_USE_SSL)
-
 csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 mail = Mail(app)
