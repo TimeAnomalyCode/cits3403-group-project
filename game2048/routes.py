@@ -1,35 +1,52 @@
-from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory
-from flask_mail import Message
+import sqlalchemy as sa
 from game2048 import app, db, mail, socketio
 from game2048.forms import RegistrationForm, LoginForm
 from game2048.models import User
+from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory
+from flask_mail import Message
+from flask_login import current_user, login_user, logout_user, login_required
 
 # Our home is also the login page
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 @app.route("/home", methods=['GET', 'POST'])
 def home():
+
     # we need to check if user has logged in already to render a logged in homepage
+    if current_user.is_authenticated:
+        return render_template('home_loggedIn.html')
+    
     form = LoginForm()
     if form.validate_on_submit():
-        if form.email.data == 'admin@game.com' and form.password.data =='123456789':
-            flash('You have logged in', 'success')
+        user = db.session.scalar(
+            sa.select(User).where(User.email == form.email.data)
+        )
+
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password', 'danger')
             return redirect(url_for('home'))
-        else:
-            flash('Login Unsuccessful', 'danger')
+        
+        login_user(user, remember=form.remember_me.data)
+        return render_template('home_loggedIn.html')
+
     return render_template('home.html', title='Home', form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        # hashed_password = generate_password_hash(form.password.data)
-        # user = User(
-        #     username=form.username.data,
-        #     email=form.email.data,
-        #     password=hashed_password,
-        # )
-        # db.session.add(user)
-        # db.session.commit()
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+        )
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
 
         # One time display of status
         flash(f'You have created an account! Please Log In', 'success')
@@ -37,7 +54,9 @@ def register():
     
     return render_template('register.html', title='Register', form=form)
 
+# Just to test login required
 @app.route("/send")
+@login_required
 def index():
     msg = Message(subject='2048 Battle!', sender='test@gmail.com', recipients=['nerd@gmail.com'])
     msg.body = request.args.get('message')
