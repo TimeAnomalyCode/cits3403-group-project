@@ -19,6 +19,6 @@ mail = Mail(app)
 socketio = SocketIO(app)
 
 login_manager.login_view = 'home'
-login_manager.login_message_category = 'danger'
+login_manager.login_message_category = 'info'
 
 from game2048 import routes, models
