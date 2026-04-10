@@ -55,6 +55,7 @@ def static(filename):
     return resp
 
 # Helper to refresh/create and display db
+# The reason One to One is not present: https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#one-to-one
 @app.route("/create")
 def about():
     db.drop_all()
