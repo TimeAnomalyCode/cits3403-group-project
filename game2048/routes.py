@@ -19,10 +19,6 @@ def home():
             flash('Login Unsuccessful', 'danger')
     return render_template('home.html', title='Home', form=form)
 
-@app.route("/about")
-def about():
-    return "About Page"
-
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
@@ -57,3 +53,44 @@ def static(filename):
     resp = make_response(send_from_directory('static/', filename))
     resp.headers['Cache-Control'] = 'max-age=604800'
     return resp
+
+# Helper to refresh/create and display db
+@app.route("/create")
+def about():
+    db.drop_all()
+    db.create_all()
+
+    data = []
+
+    # V1
+    # for key, obj in db.metadata.tables.items():
+    #     data.append(f'<h1>{key}</h1>')
+    #     for col in obj.columns:
+    #         data.append(f'<p>{col.name} {col.type}</p>')
+    #     data.append('<hr>')
+
+    for mapper in db.Model.registry.mappers:
+        cls = mapper.class_
+        table = mapper.local_table
+
+        data.append(f"<h1>{table.name}</h1>")
+
+        # Columns
+        for col in table.columns:
+            data.append(f"<p><b>{col.name}</b> ({col.type})</p>")
+
+        # Relationships
+        data.append("<h3>Relationships</h3>")
+        for rel in mapper.relationships:
+            target = rel.mapper.class_.__name__
+            direction = rel.direction.name  # MANYTOONE, ONETOMANY, MANYTOMANY
+
+            data.append(
+                f"<p>{rel.key} → {target} "
+                f"({direction}) "
+                f"back_populates={rel.back_populates}</p>"
+            )
+
+        data.append("<hr>")
+
+    return ''.join(data)
