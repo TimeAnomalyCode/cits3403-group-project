@@ -1,5 +1,5 @@
 from datetime import datetime, UTC
-from game2048 import db, login
+from game2048 import db, login_manager
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -210,6 +210,6 @@ class Leaderboard(db.Model):
         )
 
 # User Loader Function
-@login.user_loader
+@login_manager.user_loader
 def load_user(id):
     return db.session.get(User, int(id))

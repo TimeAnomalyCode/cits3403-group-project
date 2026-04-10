@@ -14,10 +14,11 @@ app.config.from_object(Config)
 csrf = CSRFProtect(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-login = LoginManager(app)
+login_manager = LoginManager(app)
 mail = Mail(app)
 socketio = SocketIO(app)
 
-login.login_view = 'home'
+login_manager.login_view = 'home'
+login_manager.login_message_category = 'danger'
 
 from game2048 import routes, models
