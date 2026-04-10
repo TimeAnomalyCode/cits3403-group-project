@@ -4,6 +4,7 @@
         "djlint",
         "MANYTOONE",
         "ONETOMANY",
+        "Tetris",
         "uselist"
     ],
     "editor.formatOnSave": true,
