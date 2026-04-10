@@ -2,6 +2,8 @@
     "cSpell.words": [
         "backref",
         "djlint",
+        "MANYTOONE",
+        "ONETOMANY",
         "uselist"
     ],
     "editor.formatOnSave": true,
