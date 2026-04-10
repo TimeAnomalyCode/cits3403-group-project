@@ -13,7 +13,7 @@ def home():
 
     # we need to check if user has logged in already to render a logged in homepage
     if current_user.is_authenticated:
-        return render_template('home_loggedIn.html')
+        return render_template('home_loggedIn.html', title='Home')
     
     form = LoginForm()
     if form.validate_on_submit():
@@ -26,7 +26,7 @@ def home():
             return redirect(url_for('home'))
         
         login_user(user, remember=form.remember_me.data)
-        return render_template('home_loggedIn.html')
+        return render_template('home_loggedIn.html', title='Home')
 
     return render_template('home.html', title='Home', form=form)
 
@@ -53,6 +53,10 @@ def register():
         return redirect(url_for('home'))
     
     return render_template('register.html', title='Register', form=form)
+
+@app.route('/profile')
+def profile():
+    return render_template('example.html')
 
 # Just to test login required
 @app.route("/send")
