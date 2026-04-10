@@ -1,5 +1,5 @@
-# Name of Project
-> Description and Explanation of the Project
+# 2048 Multiplayer
+> 2048 is a game about moving tiles and combining them in powers of 2. We were inspired by Tetris 99 to battle opponents letting you attack opponents as you race to build points.
 # Group Members
 | UWA ID | Name | Github Username |
 | --- | --- | --- |
@@ -25,8 +25,12 @@ pip install -r requirements.txt
 ```
 5. Run the web app
 ```
-python app.py
+flask run
 ```
+# Formatting and Linting
+> We are using djLint to help tidy the code
+1. Download the djLint Plugin on VS Code
+2. That's it. You should be able to save HTML and format it automatically
 # Run Tests
 ```
 some python command

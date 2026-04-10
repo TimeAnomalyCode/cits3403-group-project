@@ -1,0 +1,14 @@
+{
+    "cSpell.words": [
+        "backref",
+        "djlint",
+        "MANYTOONE",
+        "ONETOMANY",
+        "Tetris",
+        "uselist"
+    ],
+    "editor.formatOnSave": true,
+    "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
+        "editor.defaultFormatter": "monosans.djlint"
+    }
+}

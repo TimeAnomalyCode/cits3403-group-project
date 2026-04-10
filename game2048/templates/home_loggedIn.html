@@ -1,0 +1,10 @@
+{# Just copy this code, delete all comments and write HTML/Jinja in between the content block #}
+{% extends "layout.html" %}
+{% block content %}
+    <h1>
+        Hello User {{ current_user.username }}
+    </h1>
+    <p>
+        Here's your email lol: {{ current_user.email }}
+    </p>
+{% endblock content %}

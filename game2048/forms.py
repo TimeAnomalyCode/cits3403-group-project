@@ -1,0 +1,67 @@
+from game2048 import db
+from game2048.models import User
+import sqlalchemy as sa
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired, Length, Regexp, Email, EqualTo, ValidationError
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', 
+                           validators=[
+                               DataRequired(), 
+                               Length(min=2, max=20),
+                               Regexp(r'[a-zA-Z]+$', message='Only letters are acceptable')
+                            ])
+    
+    email = StringField('Email', 
+                        validators=[
+                            DataRequired(),
+                            Email()
+                        ])
+    
+    # For now, we don't check if the password has special characters, can be added later
+    password = PasswordField('Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+    
+    confirm_password = PasswordField('Confirm Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                                 EqualTo('password')
+                             ])
+    
+    submit = SubmitField('Sign Up')
+
+    # Custom username validator to make sure no 2 usernames are same
+    def validate_username(self, username):
+        user = db.session.scalar(sa.select(User).where(
+            User.username == username.data))
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
+    # Custom email validator to make sure no 2 emails are the same
+    def validate_email(self, email):
+        user = db.session.scalar(sa.select(User).where(
+            User.email == email.data))
+        if user is not None:
+            raise ValidationError('Please use a different email address.')
+
+class LoginForm(FlaskForm):    
+    email = StringField('Email', 
+                        validators=[
+                            DataRequired(),
+                            Email()
+                        ])
+    
+    password = PasswordField('Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+    
+    remember_me = BooleanField('Remember Me')
+
+    submit = SubmitField('Login')
