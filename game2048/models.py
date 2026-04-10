@@ -1,8 +1,9 @@
 from datetime import datetime, UTC
-from game2048 import db
+from game2048 import db, login
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 # Relationships have backref (Same concept with back_populates but you have to write for both table)
 # Example
@@ -13,7 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # 5. tableA has id, name, posts(Relationship) | tableB has title, content, author(Backref)
 # 6. The 2 new columns don't exist in the table but you can use it because the ORM is smart
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -207,3 +208,8 @@ class Leaderboard(db.Model):
         return f'{self.__tablename__} = ' + ' | '.join(
             f'{col.name}: {getattr(self, col.name)}' for col in self.__table__.columns
         )
+
+# User Loader Function
+@login.user_loader
+def load_user(id):
+    return db.session.get(User, int(id))
