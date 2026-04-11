@@ -54,6 +54,20 @@ def register():
     
     return render_template('register.html', title='Register', form=form)
 
+@app.route('/profile')
+def profile():
+    return render_template('example.html')
+
+@app.route('/board')
+def board():
+    board = [
+        [2, 0, 4, 2],
+        [0, 8, 0, 4],
+        [2, 0, 16, 0],
+        [0, 2, 0, 8]
+    ]
+    return render_template("test2.html", board=board)
+
 # Just to test login required
 @app.route("/send")
 @login_required
@@ -69,7 +83,7 @@ def index():
 @app.route('/static/<path:filename>')
 def static(filename):
     resp = make_response(send_from_directory('static/', filename))
-    resp.headers['Cache-Control'] = 'max-age=604800'
+    resp.headers['Cache-Control'] = 'max-age=604800, public'
     return resp
 
 # Helper to refresh/create and display db

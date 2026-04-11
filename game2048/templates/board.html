@@ -1,0 +1,182 @@
+{#<link rel="stylesheet" href="{{ url_for('static', filename='css/board.css') }}">
+<script src="{{url_for('static', filename='js/board.js')}}" type="module"></script>
+<div id="game-board" class="game-container">
+</div>#}
+
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/board.css') }}">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 text-center">
+
+            <div class="card-body game-container d-flex justify-content-center align-items-center">
+                <div id="game-board">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/board.js') }}" type="module"></script>
+
+
+{#
+<style>
+       .board {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 50px auto;
+    background-color: #bbada0;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* Background grid */
+.cell {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background: #cdc1b4;
+    border-radius: 5px;
+}
+
+/* Tiles */
+.tile {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+
+    transition: transform 150ms ease, background-color 150ms ease;
+}
+
+/* Colors */
+.tile-2    { background: #eee4da; }
+.tile-4    { background: #ede0c8; }
+.tile-8    { background: #f2b179; color: white; }
+.tile-16   { background: #f59563; color: white; }
+.tile-32   { background: #f67c5f; color: white; }
+.tile-64   { background: #f65e3b; color: white; }
+.tile-128  { background: #edcf72; color: white; }
+.tile-256  { background: #edcc61; color: white; }
+.tile-512  { background: #edc850; color: white; }
+.tile-1024 { background: #edc53f; color: white; }
+.tile-2048 { background: #edc22e; color: white; }
+</style>
+
+<div class="board" id="board">
+    <div id="tile-container"></div>
+</div>
+
+<script>
+let board = {{ board | tojson }};
+let tiles = []; // track tile objects
+const size = 4;
+const cellSize = 80; // includes margin
+
+const container = document.getElementById("tile-container");
+
+// Create tile
+function createTile(value, x, y) {
+    const el = document.createElement("div");
+    el.className = `tile tile-${value}`;
+    el.textContent = value;
+
+    container.appendChild(el);
+
+    return { el, value, x, y };
+}
+
+// Set position
+function setPosition(tile) {
+    tile.el.style.transform =
+        `translate(${tile.y * cellSize}px, ${tile.x * cellSize}px)`;
+}
+
+// Initialize tiles
+function initTiles() {
+    container.innerHTML = "";
+    tiles = [];
+
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (board[i][j] !== 0) {
+                let tile = createTile(board[i][j], i, j);
+                tiles.push(tile);
+                setPosition(tile);
+            }
+        }
+    }
+}
+
+// Slide logic (same as before)
+function slide(row) {
+    row = row.filter(v => v);
+
+    for (let i = 0; i < row.length - 1; i++) {
+        if (row[i] === row[i+1]) {
+            row[i] *= 2;
+            row[i+1] = 0;
+        }
+    }
+
+    row = row.filter(v => v);
+
+    while (row.length < 4) row.push(0);
+    return row;
+}
+
+// Move + animate
+function moveLeft() {
+    let newBoard = board.map(row => slide(row));
+
+    updateTiles(newBoard);
+    board = newBoard;
+}
+
+// Update tiles with animation
+function updateTiles(newBoard) {
+    let newTiles = [];
+
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (newBoard[i][j] !== 0) {
+                let tile = tiles.find(t => t.x === i && t.y === j);
+
+                if (!tile) {
+                    tile = createTile(newBoard[i][j], i, j);
+                }
+
+                tile.value = newBoard[i][j];
+                tile.el.textContent = tile.value;
+                tile.el.className = `tile tile-${tile.value}`;
+
+                tile.x = i;
+                tile.y = j;
+
+                setPosition(tile);
+                newTiles.push(tile);
+            }
+        }
+    }
+
+    tiles = newTiles;
+}
+
+// Controls
+document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") moveLeft();
+});
+
+// Init
+initTiles();
+</script>
+#}
