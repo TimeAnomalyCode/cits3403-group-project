@@ -2,6 +2,8 @@ import Grid from "./Grid.js"
 import Tile from "./Tile.js"
 
 const gameBoard = document.getElementById("board-enemy")
+const scoreElement = document.getElementById("score-enemy")
+let score = 0
 
 const grid = new Grid(gameBoard)
 grid.randomEmptyCell().tile = new Tile(gameBoard)
@@ -10,6 +12,11 @@ setupInput()
 
 function setupInput() {
     window.addEventListener("keydown", handleInput, { once: true })
+}
+
+function updateScore(points) {
+    score += points
+    scoreElement.textContent = score
 }
 
 async function handleInput(e) {
@@ -47,14 +54,19 @@ async function handleInput(e) {
             return
     }
 
-    grid.cells.forEach(cell => cell.mergeTiles())
+    grid.cells.forEach(cell => {
+        if (cell.mergeTile != null) {
+            updateScore(cell.mergeTile.value * 2)
+        }
+        cell.mergeTiles()
+    })
 
     const newTile = new Tile(gameBoard)
     grid.randomEmptyCell().tile = newTile
 
     if (!canMoveUp() && !canMoveDown() && !canMoveLeft() && !canMoveRight()) {
         newTile.waitForTransition(true).then(() => {
-            alert("You lose")
+            alert("Enemy lose")
         })
         return
     }
