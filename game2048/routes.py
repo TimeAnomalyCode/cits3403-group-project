@@ -60,13 +60,7 @@ def profile():
 
 @app.route('/board')
 def board():
-    board = [
-        [2, 0, 4, 2],
-        [0, 8, 0, 4],
-        [2, 0, 16, 0],
-        [0, 2, 0, 8]
-    ]
-    return render_template("test2.html", board=board)
+    return render_template("game.html")
 
 # Just to test login required
 @app.route("/send")

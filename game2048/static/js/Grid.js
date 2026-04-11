@@ -1,5 +1,5 @@
 const GRID_SIZE = 4
-const CELL_SIZE = 15
+const CELL_SIZE = 9
 const CELL_GAP = 1.5
 
 export default class Grid {

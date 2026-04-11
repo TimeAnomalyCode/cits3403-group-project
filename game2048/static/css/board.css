@@ -9,7 +9,8 @@
     font-size: 7.5vmin;
 }
 
-#game-board {
+#board-player,
+#board-enemy {
     display: grid;
     grid-template-columns: repeat(var(--grid-size), var(--cell-size));
     grid-template-rows: repeat(var(--grid-size), var(--cell-size));
