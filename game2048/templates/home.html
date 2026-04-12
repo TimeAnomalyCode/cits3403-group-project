@@ -30,48 +30,22 @@
                                 </tr>
                             </thead>
                             <tbody class="table-group-divider">
-                                <tr>
-                                    <th scope="row">
-                                        1
-                                    </th>
-                                    <td>
-                                        Jack
-                                    </td>
-                                    <td>
-                                        1200
-                                    </td>
-                                    <td>
-                                        10
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">
-                                        2
-                                    </th>
-                                    <td>
-                                        Sarah
-                                    </td>
-                                    <td>
-                                        900
-                                    </td>
-                                    <td>
-                                        6
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">
-                                        3
-                                    </th>
-                                    <td>
-                                        John
-                                    </td>
-                                    <td>
-                                        300
-                                    </td>
-                                    <td>
-                                        2
-                                    </td>
-                                </tr>
+                                {% for entry in leaderboard %}
+                                    <tr>
+                                        <th scope="row">
+                                            {{ entry.rank }}
+                                        </th>
+                                        <td>
+                                            {{ entry.username }}
+                                        </td>
+                                        <td>
+                                            {{ entry.high_score }}
+                                        </td>
+                                        <td>
+                                            {{ entry.num_of_wins }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>

@@ -15,6 +15,11 @@ def home():
     if current_user.is_authenticated:
         return render_template('home_loggedIn.html', title='Home')
     
+    leaderboard = [
+        {'rank': 1, 'username': 'Jack', 'high_score': 1200, 'num_of_wins': 10},
+        {'rank': 2, 'username': 'Sarah', 'high_score': 900, 'num_of_wins': 6},
+        {'rank': 3, 'username': 'John', 'high_score': 300, 'num_of_wins': 2},
+    ]
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.scalar(
@@ -28,7 +33,7 @@ def home():
         login_user(user, remember=form.remember_me.data)
         return render_template('home_loggedIn.html', title='Home')
 
-    return render_template('home.html', title='Home', form=form)
+    return render_template('home.html', title='Home', leaderboard=leaderboard, form=form)
 
 @app.route('/logout')
 @login_required
