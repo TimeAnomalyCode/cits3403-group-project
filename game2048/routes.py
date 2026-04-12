@@ -79,6 +79,16 @@ def profile(username):
     ]
     return render_template('profile.html', title='Profile', user=user, match_history=match_history)
 
+@app.route('/change_username')
+@login_required
+def change_username():
+    return render_template('change_username.html', title='Change Username')
+
+@app.route('/change_password')
+@login_required
+def change_password():
+    return render_template('change_password.html', title='Change password')
+
 # ----------------------------------------------------------------
 # Anything Below is just helper functions or testing 
 # (Should be removed or made official)

@@ -65,3 +65,31 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField('Remember Me')
 
     submit = SubmitField('Login')
+
+class ChangeUsername(FlaskForm):
+    new_username = StringField('new_username', DataRequired())
+
+    password = PasswordField('Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+    
+    submit = SubmitField('Update Username')
+    cancel = SubmitField('Cancel')
+
+class ChangePassword(FlaskForm):
+    current_password = PasswordField('Current Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+
+    new_password = PasswordField('New Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+    
+    submit = SubmitField('Update Password')
+    cancel = SubmitField('Cancel')

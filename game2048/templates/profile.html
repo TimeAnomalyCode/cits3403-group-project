@@ -56,13 +56,15 @@
                                 </div>
                                 <div class="card-body text-center">
 
-                                    <button class="btn btn-outline-primary me-2">
+                                    <a href="{{ url_for('change_username') }}"
+                                       class="btn btn-outline-primary me-2">
                                         Change Username
-                                    </button>
+                                    </a>
 
-                                    <button class="btn btn-outline-danger">
+                                    <a href="{{ url_for('change_password') }}"
+                                       class="btn btn-outline-danger me-2">
                                         Change Password
-                                    </button>
+                                    </a>
 
                                 </div>
                             </div>
