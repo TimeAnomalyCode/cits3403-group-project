@@ -6,7 +6,11 @@ from flask import render_template, flash, redirect, url_for, request, make_respo
 from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
 
+# ----------------------------------------------------------------
 # Our home is also the login page
+# No @login_required
+# ----------------------------------------------------------------
+
 @app.route("/", methods=['GET', 'POST'])
 @app.route("/home", methods=['GET', 'POST'])
 def home():
@@ -35,12 +39,6 @@ def home():
 
     return render_template('home.html', title='Home', leaderboard=leaderboard, form=form)
 
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('home'))
-
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
@@ -60,6 +58,16 @@ def register():
     
     return render_template('register.html', title='Register', form=form)
 
+# ----------------------------------------------------------------
+# Anything below should have @login_required
+# ----------------------------------------------------------------
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
 @app.route('/profile/<username>')
 @login_required
 def profile(username):
@@ -71,14 +79,10 @@ def profile(username):
     ]
     return render_template('profile.html', title='Profile', user=user, match_history=match_history)
 
-# Just to test login required
-@app.route("/send")
-@login_required
-def index():
-    msg = Message(subject='2048 Battle!', sender='test@gmail.com', recipients=['nerd@gmail.com'])
-    msg.body = request.args.get('message')
-    mail.send(msg)
-    return f"<p>Message sent!</p> {msg}"
+# ----------------------------------------------------------------
+# Anything Below is just helper functions or testing 
+# (Should be removed or made official)
+# ----------------------------------------------------------------
 
 # Cache static files on client
 # Source: https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
@@ -88,6 +92,14 @@ def static(filename):
     resp = make_response(send_from_directory('static/', filename))
     resp.headers['Cache-Control'] = 'max-age=604800'
     return resp
+
+# Just to test login required
+@app.route("/send")
+def index():
+    msg = Message(subject='2048 Battle!', sender='test@gmail.com', recipients=['nerd@gmail.com'])
+    msg.body = request.args.get('message')
+    mail.send(msg)
+    return f"<p>Message sent!</p> {msg}"
 
 # Helper to refresh/create and display db
 # The reason One to One is not present: https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#one-to-one
