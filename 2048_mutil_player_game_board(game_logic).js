@@ -370,7 +370,7 @@
   }
   
   // replace a random Tile
-  function replaceRandomTile(s, value = null) {
+  function createRandomTile(s, value = null) {
     let full_arry = []
   
     let [r, c] = randomPos();
@@ -481,7 +481,7 @@
   document.getElementById('btnCreate').addEventListener('click', () => {
     // testing uisng trash point 
     if(State.trashPoint >= 0){
-      if(replaceRandomTile(State)){
+      if(createRandomTile(State)){
         //State.trashPoint = State.trashPoint - 1;
         
       }
