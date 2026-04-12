@@ -43,10 +43,10 @@ Should only be touched if there is global changes to all pages, otherwise use:
                         </a>
                     </div>
                     <a href="{{ url_for('profile') }}">
-                        <img src="https://api.dicebear.com/9.x/croodles/svg?seed={{ current_user.username }}&flip=true&backgroundColor=FFFFFF"
+                        <img src="{{ current_user.image_file }}"
                              alt="Profile Pic"
                              width="60px"
-                             class="img-fluid rounded-circle ms-2">
+                             class="img-fluid rounded-circle ms-4">
                     </a>
                 {% endif %}
             </div>
