@@ -4,15 +4,17 @@
   // 4 x 4
   const N = 4;
 
-  function makeState(boardEl, layerEl, overlayEl, ovIconEl, ovSubEl, scoreEl) {
+  function makeState(boardEl, layerEl, overlayEl, ovIconEl, ovSubEl, scoreEl, trashPointEl) {
     return {
-      boardEl, layerEl, overlayEl, ovIconEl, ovSubEl, scoreEl,
+      boardEl, layerEl, overlayEl, ovIconEl, ovSubEl, scoreEl, trashPointEl,
       cells: null,
       score: 0,
       won: false,
       dead: false,
       newR: -1,
       newC: -1,
+      hiddenScore: 0,
+      trashPoint: 0,
     };
   }
 
@@ -22,7 +24,8 @@
     document.getElementById('overlay1'),
     document.getElementById('ovIcon1'),
     document.getElementById('ovSub1'),
-    document.getElementById('player_1_score')
+    document.getElementById('player_1_score'),
+    document.getElementById('player_1_trash_point')
   );
 
   document.getElementById('New_game').addEventListener('click', startGame);
@@ -71,6 +74,7 @@
     }
 
     s.scoreEl.textContent = s.score;
+    s.trashPointEl.textContent = s.trashPoint
   }
 
   function spawnTile(s) {
@@ -100,13 +104,26 @@
     const arr = line.filter(v => v !== 0);
     let score = 0;
 
+    // = the merging logic =
     // merging the neighbour element together 
     for (let i = 0; i < arr.length - 1; i++) {
       // if the value of these element is the same
       if (arr[i] === arr[i + 1]) {
+        // always left in moving, representation can be adjust uisng reverse
         arr[i] *= 2;
         score += arr[i];
-        arr.splice(i + 1, 1);
+        arr.splice(i + 1, 1); // array.splice(index of remove, number of remove)
+      } else if(arr[i] < 0 || arr[i+1] < 0){ //stating the negative tile logic
+          let sum = arr[i] + arr[i+1];
+
+          if(sum === 0){
+            arr.splice(i, 2);
+            i = i - 1; // index shift, becasue the array length change
+          }else{
+            arr[i] = sum;
+            //score = score + arr[i]
+            arr.splice(i + 1, 1);
+          }
       }
     }
     // if the array have space, append with 0 as placeholder
@@ -223,6 +240,14 @@
     if (!moved) return;
 
     s.score += gained;
+    s.hiddenScore = s.hiddenScore + gained;
+    // console.log(s.score);
+    // console.log(s.hiddenScore);
+    
+    if(s.hiddenScore > 128){
+      s.trashPoint = s.trashPoint + 1;
+      s.hiddenScore = s.hiddenScore - 128;
+    }
 
     // spawn blocks after each round
     spawnTile(s);
@@ -255,6 +280,16 @@
         if (r < N - 1 && s.cells[r][c] === s.cells[r + 1][c]){
           return true;
         }
+
+        // negative tiles
+        if(c < N - 1 && s.cells[r][c] + s.cells[r][c + 1] <= 0){
+          return true
+        }
+        
+        if (r < N - 1 && s.cells[r][c] + s.cells[r + 1][c] <= 0){
+          return true;
+        }
+
       }
     }
     return false;
@@ -286,6 +321,8 @@
     s.score = 0;
     s.won = false;
     s.dead = false;
+    s.trashPoint = 0;
+    s.hiddenScore = 0;
 
     s.overlayEl.classList.add('d-none');
 
@@ -316,7 +353,7 @@
 
   startGame();
 
-  /* game machine and features*/
+  /* == game machine and features == */
   // the following is new game machine that effect on the opponent
 
   function getRandomInt(min, max) {
@@ -324,29 +361,36 @@
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  //random position from board
+  function randomPos() {
+    const r = Math.floor(Math.random() * N);
+    const c = Math.floor(Math.random() * N);
+    return [r, c];
+  }
   
-  // replace a specific Tile
-  function replaceRandomTile(s, r, c, value = null) {
+  // replace a random Tile
+  function replaceRandomTile(s, value = null) {
+    let full_arry = []
+  
+    let [r, c] = randomPos();
+    full_arry.push([r,c]);
+    
+     // check for empty board cell
+    while(s.cells[r][c] !== 0){
+      [r, c] = randomPos(); 
+      full_arry.push([r,c]);
+      console.log('work');
+      if(full_arry.length > 16){
+          console.log('full')
+          return false
+      }
+    }
     // check if position is valid
     if (r < 0 || r >= N || c < 0 || c >= N) {
-      console.log("Invalid position");
-      return false;
-    }
-
-    // assign value (random 2 or 4 if not provided)
-    // if (value == null){
-      
-    //   if(Math.random()<0.9){
-    //     s.cells[r][c] = 2
-
-    //   }
-    //   else{
-    //     s.cells[r][c] = 4
-    //   }
-    
-    // }else{
-    //   s.cells[r][c] = value;
-    // }
+        console.log("Invalid position");
+        return false;
+      }
 
     s.cells[r][c] = 2 ** getRandomInt(1, 6)
 
@@ -404,23 +448,49 @@
     
 
   }
+  
+  // produce negative tiles 
+  function makeRandomNegativeTile(s){
+    let full_arry = []
+  
+    let [r, c] = randomPos();
+    full_arry.push([r,c]);
+    
+     // check for empty board cell
+    while(s.cells[r][c] !== 0){
+      [r, c] = randomPos(); 
+      full_arry.push([r,c]);
+      console.log('work');
+      if(full_arry.length > 16){
+          console.log('full')
+          return false
+      }
+    }
+    // check if position is valid
+    if (r < 0 || r >= N || c < 0 || c >= N) {
+        console.log("Invalid position");
+        return false;
+      }
+    s.cells[r][c] = (-1)*(2) ** getRandomInt(1, 3)
+  }
+  
 
   // ===== TEST BUTTONS =====
 
-  // helper: random position
-  function randomPos() {
-    const r = Math.floor(Math.random() * N);
-    const c = Math.floor(Math.random() * N);
-    return [r, c];
-  }
-
   // Replace random tile
-  document.getElementById('btnReplace').addEventListener('click', () => {
-   const [r, c] = randomPos();
-    replaceRandomTile(State, r, c);
-    render(State);
-  });
+  document.getElementById('btnCreate').addEventListener('click', () => {
+    // testing uisng trash point 
+    if(State.trashPoint >= 0){
+      if(replaceRandomTile(State)){
+        //State.trashPoint = State.trashPoint - 1;
+        
+      }
+      render(State);
 
+
+    }
+  });
+ 
   // Destroy random tile
   document.getElementById('btnDestroy').addEventListener('click', () => {
     const filled = [];
@@ -447,6 +517,12 @@
   // Rearrange board
   document.getElementById('btnShuffle').addEventListener('click', () => {
     rearrangeBoard(State);
+    render(State);
+  });
+
+  // Make negative tile
+  document.getElementById('btnCreateNegative').addEventListener('click', () => {
+    makeRandomNegativeTile(State);
     render(State);
   });
 
