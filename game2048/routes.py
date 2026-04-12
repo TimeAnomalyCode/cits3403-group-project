@@ -72,12 +72,14 @@ def logout():
 @login_required
 def profile(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
+    num_of_wins = 2
+    rank = 100
     match_history = [
         {'date': '2026-04-10', 'opponent': 'Sarah', 'result': 'Win', 'score': 2048},
         {'date': '2026-04-09', 'opponent': 'Jason', 'result': 'Loss', 'score': 1024},
         {'date': '2026-04-08', 'opponent': 'Alex', 'result': 'Win', 'score': 2048},
     ]
-    return render_template('profile.html', title='Profile', user=user, match_history=match_history)
+    return render_template('profile.html', title='Profile', user=user, num_of_wins=num_of_wins, rank=rank, match_history=match_history)
 
 @app.route('/change_username')
 @login_required
