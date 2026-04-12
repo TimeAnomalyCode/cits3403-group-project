@@ -103,3 +103,7 @@ class ChangePassword(FlaskForm):
                              ])
     
     submit = SubmitField('Update Password')
+
+    def validate_new_password(self, new_password):
+        if self.current_password.data == new_password.data:
+            raise ValidationError('Old password cannot be the same as new password')
