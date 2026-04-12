@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from game2048 import app, db, mail, socketio
-from game2048.forms import RegistrationForm, LoginForm
+from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword
 from game2048.models import User
 from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory
 from flask_mail import Message
@@ -81,10 +81,24 @@ def profile(username):
     ]
     return render_template('profile.html', title='Profile', user=user, num_of_wins=num_of_wins, rank=rank, match_history=match_history)
 
-@app.route('/change_username')
+@app.route('/change_username', methods=['GET', 'POST'])
 @login_required
 def change_username():
-    return render_template('change_username.html', title='Change Username')
+    form = ChangeUsername()
+
+    if form.validate_on_submit():
+
+        if not current_user.check_password(form.password.data):
+            flash('Incorrect Password', 'danger')
+            return redirect(url_for('change_username'))
+
+        current_user.username = form.new_username.data
+        db.session.commit()
+        flash('Your username has been updated!', 'success')
+
+        return redirect(url_for('profile', username=current_user.username))
+        
+    return render_template('change_username.html', title='Change Username', form=form)
 
 @app.route('/change_password')
 @login_required
