@@ -55,9 +55,16 @@ def register():
     
     return render_template('register.html', title='Register', form=form)
 
-@app.route('/profile')
-def profile():
-    return render_template('profile.html')
+@app.route('/profile/<username>')
+@login_required
+def profile(username):
+    user = db.first_or_404(sa.select(User).where(User.username == username))
+    match_history = [
+        {'date': '2026-04-10', 'opponent': 'Sarah', 'result': 'Win', 'score': 2048},
+        {'date': '2026-04-09', 'opponent': 'Jason', 'result': 'Loss', 'score': 1024},
+        {'date': '2026-04-08', 'opponent': 'Alex', 'result': 'Win', 'score': 2048},
+    ]
+    return render_template('profile.html', title='Profile', user=user, match_history=match_history)
 
 # Just to test login required
 @app.route("/send")
