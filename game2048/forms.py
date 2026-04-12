@@ -82,6 +82,24 @@ class ChangeUsername(FlaskForm):
     
     submit = SubmitField('Update Username')
 
+    # Overloaded Constructor
+    def __init__(self, original_username, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    # We get the original username and the new_username
+    # If they're not the same, we check db if the username already exists
+    # If username already exists, raise Validation Error
+    def validate_new_username(self, new_username):
+        if new_username.data != self.original_username:
+            user = db.session.scalar(sa.Select(User).where(User.username == new_username.data))
+
+            if user is not None:
+                raise ValidationError('Please use a different username')
+            
+        else:
+            raise ValidationError('Old username cannot be the same as new username')
+
 class ChangePassword(FlaskForm):
     current_password = PasswordField('Current Password', 
                              validators=[

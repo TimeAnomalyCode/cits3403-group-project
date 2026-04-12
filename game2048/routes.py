@@ -93,7 +93,7 @@ def profile(username):
 @app.route('/change_username', methods=['GET', 'POST'])
 @login_required
 def change_username():
-    form = ChangeUsername()
+    form = ChangeUsername(current_user.username)
 
     if form.validate_on_submit():
 
