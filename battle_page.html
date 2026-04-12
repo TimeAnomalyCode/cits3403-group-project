@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Battle - Professional Layout</title>
+    <!-- 使用 Tailwind CSS 框架 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* 2048 棋盘样式 */
+        .grid-container {
+            background-color: #bebebe;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            width: 320px;
+            height: 320px;
+        }
+
+        .grid-cell {
+            background-color: rgba(255, 255, 255, 0.35);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            width: 60px;
+            height: 60px;
+            font-weight: bold;
+            color: #db944e;
+        }
+
+        .tile-2 {
+            background-color: #eee4da;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+
+        /* 进度条平滑动画 */
+        .progress-fill {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 自定义滚动条样式 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- 导航栏 (Header) -->
+    <header class="bg-gray-200 border-b border-gray-300 py-3 px-6 flex items-center justify-between shadow-sm sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="bg-black text-white p-2 rounded cursor-pointer hover:bg-gray-800 transition-colors">
+                <i class="fa-solid fa-expand text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">2048 Battle</h1>
+        </div>
+        
+
+        <nav class="flex items-center gap-2 bg-gray-300 p-1 rounded-lg">
+            <a href="./battle_page.html">
+                <button class="px-4 py-1.5 text-sm font-bold bg-white text-blue-600 shadow-sm rounded-md transition-all">Home</button>
+            </a>
+            <a href="./profile_page.html">
+                <button class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-black">Profile</button>
+            </a>
+        </nav>
+    </header>
+
+    <!-- main body (three-column layout) -->
+    <main class="flex-grow flex flex-col xl:flex-row p-6 gap-6 justify-center">
+        
+        <!-- 1. left column: Leaderboard  -->
+        <aside class="w-full xl:w-72 flex-shrink-0">
+            <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm h-full">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-3">
+                    <i class="fa-solid fa-trophy text-yellow-500"></i>
+                    Leaderboard
+                </h3>
+                <div class="overflow-y-auto max-h-[600px] custom-scrollbar pr-2">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="text-gray-400 uppercase text-[10px] tracking-widest">
+                                <th class="pb-3">Rank</th>
+                                <th class="pb-3">Player</th>
+                                <th class="pb-3 text-right">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr class="group"><td class="py-3 font-bold text-yellow-600">#1</td><td class="py-3">Master88</td><td class="py-3 text-right font-mono">4,096</td></tr>
+                            <tr class="bg-blue-50/50"><td class="py-3 font-bold text-blue-600">#2</td><td class="py-3 font-semibold">Bob (You)</td><td class="py-3 text-right font-mono">2,048</td></tr>
+                            <tr><td class="py-3 font-bold text-orange-600">#3</td><td class="py-3">SpeedyTile</td><td class="py-3 text-right font-mono">1,024</td></tr>
+                            <tr><td class="py-3 text-gray-500">#4</td><td class="py-3">AlphaZero</td><td class="py-3 text-right font-mono">512</td></tr>
+                            <tr><td class="py-3 text-gray-500">#5</td><td class="py-3">CasualGamer</td><td class="py-3 text-right font-mono">512</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 2. mid column: Battle Area -->
+        <section class="flex-grow max-w-2xl flex flex-col items-center bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+            <!-- 玩家对决信息 -->
+            <h2 class="text-3xl font-black text-center mb-8 tracking-tighter">
+                Bob <span class="text-gray-300 italic font-light mx-4">vs</span> <span class="text-gray-400">Waiting...</span>
+            </h2>
+
+            <!-- Battle Bar -->
+            <div class="w-full max-w-md mb-10">
+                <div class="flex justify-between items-end mb-3">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-tighter">My Power</span>
+                        <span id="playerScore" class="text-2xl font-black tabular-nums">0</span>
+                    </div>
+                    <div class="text-center pb-1">
+                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase border border-blue-200">
+                            Battle Live
+                        </span>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Opponent</span>
+                        <span class="text-2xl font-black text-gray-200 tabular-nums">0</span>
+                    </div>
+                </div>
+                <!-- Progress Bars -->
+                <div class="h-5 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-200 flex p-1">
+                    <div id="playerProgress" class="progress-fill h-full bg-blue-500 rounded-full shadow-lg" style="width: 50%"></div>
+                    <div id="opponentProgress" class="progress-fill h-full bg-gray-300 rounded-full ml-1" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Room code -->
+            <div class="relative flex items-center mb-10 w-full max-w-sm group">
+                <input 
+                    id="roomCode" 
+                    type="text" 
+                    value="523abdc" 
+                    readonly 
+                    class="w-full px-5 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-lg font-bold text-gray-700 focus:outline-none focus:border-blue-200 transition-all text-center tracking-widest uppercase"
+                >
+                <button 
+                    onclick="copyRoomCode()" 
+                    class="ml-3 p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
+                    title="Copy Link"
+                >
+                    <i class="fa-regular fa-copy text-2xl"></i>
+                </button>
+                <div id="copyToast" class="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 bg-gray-900 text-white text-[10px] py-1.5 px-3 rounded-full transition-all duration-300 font-bold uppercase tracking-widest">
+                    Link Copied
+                </div>
+            </div>
+
+            <!-- 2048 game board -->
+            <div class="grid-container shadow-2xl mb-10 relative">
+                <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+                <div class="grid-cell"></div><div class="grid-cell tile-2">2</div><div class="grid-cell"></div><div class="grid-cell"></div>
+                <div class="grid-cell"></div><div class="grid-cell tile-2">2</div><div class="grid-cell"></div><div class="grid-cell"></div>
+                <div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div><div class="grid-cell"></div>
+            </div>
+
+            <!-- Status -->
+            <div class="flex flex-col items-center gap-6">
+                <p class="text-lg font-bold text-gray-800 flex items-center gap-3">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+                    Searching for opponents...
+                </p>
+
+                <button 
+                    id="startBtn"
+                    class="px-16 py-4 bg-gray-900 text-white font-black rounded-2xl hover:bg-black hover:-translate-y-1 transition-all shadow-xl active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed uppercase tracking-widest text-sm"
+                >
+                    Start Battle
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. Right column: History -->
+        <aside class="w-full xl:w-72 flex-shrink-0">
+            <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm h-full">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-3">
+                    <i class="fa-solid fa-clock-rotate-left text-blue-500"></i>
+                    Recent History
+                </h3>
+                <div class="space-y-3 overflow-y-auto max-h-[600px] custom-scrollbar pr-2">
+                    <!-- history 1 -->
+                    <div class="p-3 rounded-xl border border-gray-100 bg-green-50/50 hover:bg-green-50 transition-colors">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-black text-green-600 uppercase">Victory</span>
+                            <span class="text-[10px] text-gray-400 font-medium">1h ago</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold">vs ProPlayer</span>
+                            <span class="text-xs font-mono font-bold text-green-700">+420</span>
+                        </div>
+                    </div>
+                    <!-- history 2 -->
+                    <div class="p-3 rounded-xl border border-gray-100 bg-red-50/50 hover:bg-red-50 transition-colors">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-black text-red-600 uppercase">Defeat</span>
+                            <span class="text-[10px] text-gray-400 font-medium">3h ago</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold">vs Alpha2048</span>
+                            <span class="text-xs font-mono font-bold text-red-700">-150</span>
+                        </div>
+                    </div>
+                    <!-- history 3 -->
+                    <div class="p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[10px] font-black text-gray-500 uppercase">Victory</span>
+                            <span class="text-[10px] text-gray-400 font-medium">Yesterday</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold">vs NoobMaster</span>
+                            <span class="text-xs font-mono font-bold text-green-700">+280</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="w-full mt-4 py-2 text-[10px] font-bold text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-50 transition-colors uppercase tracking-widest">
+                    View All History
+                </button>
+            </div>
+        </aside>
+
+    </main>
+
+
+    <script>
+        // copy room code logic
+        function copyRoomCode() {
+            const input = document.getElementById('roomCode');
+            input.select();
+            document.execCommand('copy');
+            const toast = document.getElementById('copyToast');
+            toast.style.opacity = '1';
+            toast.style.top = '-12px';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.top = '-10px';
+            }, 2000);
+        }
+
+        // Update score and progress bar logic
+        let score = 1240;
+        let progress = 60;
+
+        function updateScore(amount) {
+            score += amount;
+            progress = Math.min(progress + 5, 98); // max-progress
+            
+            const scoreEl = document.getElementById('playerScore');
+            const progressEl = document.getElementById('playerProgress');
+            
+            scoreEl.textContent = score.toLocaleString();
+            progressEl.style.width = progress + '%';
+            
+            // simple score pop animation
+            scoreEl.classList.add('scale-110', 'text-blue-600');
+            setTimeout(() => scoreEl.classList.remove('scale-110', 'text-blue-600'), 200);
+        }
+
+        function resetUI() {
+            score = 1240;
+            progress = 60;
+            document.getElementById('playerScore').textContent = "1,240";
+            document.getElementById('playerProgress').style.width = "60%";
+        }
+
+        // 模拟点击 Start 按钮 
+        document.getElementById('startBtn').addEventListener('click', function() {
+            this.textContent = "Connecting...";
+            this.disabled = true;
+            setTimeout(() => {
+                alert("Searching for live matches... (Backend connection required)");
+                this.textContent = "Start Battle";
+                this.disabled = false;
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

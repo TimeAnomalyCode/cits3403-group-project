@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Battle - Change Your Name</title>
+    <!--  Tailwind CSS  -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+
+
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation bar -->
+    <header class="bg-gray-200 border-b border-gray-300 py-3 px-6 flex items-center justify-between shadow-sm sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+            <!-- Go Back Button -->
+            <div class="">
+                <button 
+                    onclick="window.history.back()" 
+                    title="Go Back"
+                    class="flex items-center justify-center w-10 h-10 bg-gray-300 border border-gray-300 rounded-full text-gray-600 hover:bg-black hover:text-white hover:border-black transition-all shadow-sm active:scale-90 group"
+                >
+                    <i class="fa-solid fa-chevron-left text-lg group-hover:-translate-x-0.5 transition-transform"></i>
+                </button>   
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">2048 Battle</h1>
+        </div>
+        
+        <nav class="flex items-center gap-2 bg-gray-300 p-1 rounded-lg">
+            <a href="./battle_page.html">
+                <button class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:text-black">Home</button>
+            </a>
+            <a href="./profile_page.html">
+                <button class="px-4 py-1.5 text-sm font-bold bg-white text-blue-600 shadow-sm rounded-md transition-all">Profile</button>
+            </a>
+        </nav>
+
+    </header>
+
+    <!-- main body -->
+    <main class="flex-grow flex items-center justify-center p-6">
+    <!-- main body -->
+    <main class="max-w-7xl mx-auto w-full p-8 md:p-16">
+        
+        <div class="flex flex-col md:flex-row gap-16 items-start">
+            
+            <!-- left column: user info -->
+            <div class="w-full md:w-1/3 flex flex-col items-center md:items-start">
+
+                <!-- User Information -->
+                <div class="space-y-2 text-center md:text-left">
+                    <p class="text-3xl font-normal">Username:</p>
+                    <p class="text-2xl font-bold">Lark</p>
+                    <p class="text-3xl font-normal">Email: </p>
+                    <p class="text-2xl font-bold">lark2026@gmail.com</p>
+                    <br>
+                    <p class="text-3xl font-normal">Total wins:<span id="wins"> 8</span></p>
+                    <p class="text-3xl font-normal">Total losses:<span id="losses"> 8</span></p>
+                    <p class="text-3xl font-normal"># of friends:<span id="friends"> 8</span></p>
+                </div>
+            </div>
+
+            <!-- right column:  -->
+            <div class="w-full md:w-2/3">
+                <!-- Title and Buttons -->
+                <div class="mb-12">
+                    <h2 class="text-4xl font-bold mb-8">Change Your Name</h2>
+                    
+                    <!-- form container -->
+                    <div class="flex flex-wrap gap-4"> 
+                        <form id="resetPasswordForm" class="space-y-3 w-2/3">
+
+                            <!-- new name -->
+                            <div class="space-y-3 ">
+                                <label for="newName" class="text-2xl font-normal text-gray-800 block">
+                                    New Name
+                                </label>
+                                <input 
+                                    type="name" 
+                                    id="newName" 
+                                    placeholder="Input your new name" 
+                                    class="w-full px-4 py-4 border border-gray-300 rounded-2xl text-lg custom-input transition-all shadow-sm"
+                                    required
+                                >
+                            </div>
+
+                            <!-- confirm password -->
+                            <div class="space-y-3">
+                                <label for="Password" class="text-2xl font-normal text-gray-800 block">
+                                    Password
+                                </label>
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    placeholder="Input your password" 
+                                    class="w-full px-4 py-4 border border-gray-300 rounded-2xl text-lg custom-input transition-all shadow-sm"
+                                    required
+                                >
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="pt-4 text-center">
+                                <button 
+                                    type="submit" 
+                                    class="w-full bg-[#2d2d2d] text-white py-4 rounded-xl text-xl font-medium hover:bg-black transition-all active:scale-[0.98] shadow-md"
+                                >
+                                    Change Your Name
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+   
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>
