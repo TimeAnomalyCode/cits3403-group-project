@@ -109,10 +109,24 @@ def change_username():
         
     return render_template('change_username.html', title='Change Username', form=form)
 
-@app.route('/change_password')
+@app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
-    return render_template('change_password.html', title='Change password')
+    form = ChangePassword()
+
+    if form.validate_on_submit():
+        if not current_user.check_password(form.current_password.data):
+            flash('Incorrect Password', 'danger')
+            return redirect(url_for('change_password'))
+    
+        current_user.set_password(form.new_password.data)
+        db.session.commit()
+
+        logout_user()
+        flash('Your Password has been updated! Please login', 'success')
+        return redirect(url_for('home'))
+
+    return render_template('change_password.html', title='Change Password', form=form)
 
 # ----------------------------------------------------------------
 # Anything Below is just helper functions or testing 
