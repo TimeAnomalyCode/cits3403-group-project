@@ -43,6 +43,7 @@ def register():
         user = User(
             username=form.username.data,
             email=form.email.data,
+            image_file=f'https://api.dicebear.com/9.x/croodles/svg?seed={form.username.data}&flip=true&backgroundColor=FFFFFF'
         )
         user.set_password(form.password.data)
         db.session.add(user)
@@ -56,7 +57,7 @@ def register():
 
 @app.route('/profile')
 def profile():
-    return render_template('example.html')
+    return render_template('profile.html')
 
 # Just to test login required
 @app.route("/send")
