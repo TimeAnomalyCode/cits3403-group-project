@@ -1,133 +1,131 @@
 {# Just copy this code, delete all comments and write HTML/Jinja in between the content block #}
 {% extends "layout.html" %}
 {% block content %}
-    <div class="container py-5">
-        <div class="row g-4 align-items-stretch">
+    <div class="row g-4 align-items-stretch">
 
-            <!-- LEFT: Profile Card -->
-            <div class="col-md-4 d-flex">
-                <div class="card w-100 h-100 shadow-sm">
-                    <div class="card-header text-center fw-bold">
-                        Profile
-                    </div>
-                    <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+        <!-- LEFT: Profile Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card w-100 h-100 shadow-sm">
+                <div class="card-header text-center fw-bold">
+                    Profile
+                </div>
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
 
-                        <img src="{{ user.image_file }}"
-                             alt="Profile Pic"
-                             width="100px"
-                             class="img-fluid rounded-circle mb-3">
+                    <img src="{{ user.image_file }}"
+                         alt="Profile Pic"
+                         width="100px"
+                         class="img-fluid rounded-circle mb-3">
 
-                        <h5 class="fw-bold">
-                            {{ user.username }}
-                        </h5>
-                        <p class="text-muted mb-0">
-                            {{ user.email }}
-                        </p>
+                    <h5 class="fw-bold">
+                        {{ user.username }}
+                    </h5>
+                    <p class="text-muted mb-0">
+                        {{ user.email }}
+                    </p>
 
-                        <div class="row w-100 mt-3 text-center">
-                            <div class="col-6">
-                                <h6 class="mb-0 fw-bold">
-                                    2
-                                </h6>
-                                <small class="text-muted">Wins</small>
-                            </div>
-                            <div class="col-6">
-                                <h6 class="mb-0 fw-bold">
-                                    # 100
-                                </h6>
-                                <small class="text-muted">Rank</small>
-                            </div>
+                    <div class="row w-100 mt-3 text-center">
+                        <div class="col-6">
+                            <h6 class="mb-0 fw-bold">
+                                2
+                            </h6>
+                            <small class="text-muted">Wins</small>
                         </div>
-
+                        <div class="col-6">
+                            <h6 class="mb-0 fw-bold">
+                                # 100
+                            </h6>
+                            <small class="text-muted">Rank</small>
+                        </div>
                     </div>
+
                 </div>
             </div>
+        </div>
 
-            <!-- RIGHT SIDE -->
-            <div class="col-md-8">
-                <div class="row g-4">
+        <!-- RIGHT SIDE -->
+        <div class="col-md-8">
+            <div class="row g-4">
 
-                    <!-- Profile Management -->
-                    {% if user == current_user %}
-                        <div class="col-12 d-flex">
-                            <div class="card w-100 shadow-sm">
-                                <div class="card-header text-center fw-bold">
-                                    Profile Management
-                                </div>
-                                <div class="card-body text-center">
-
-                                    <a href="{{ url_for('change_username') }}"
-                                       class="btn btn-outline-primary me-2">
-                                        Change Username
-                                    </a>
-
-                                    <a href="{{ url_for('change_password') }}"
-                                       class="btn btn-outline-danger me-2">
-                                        Change Password
-                                    </a>
-
-                                </div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Match History -->
+                <!-- Profile Management -->
+                {% if user == current_user %}
                     <div class="col-12 d-flex">
                         <div class="card w-100 shadow-sm">
                             <div class="card-header text-center fw-bold">
-                                Match History
+                                Profile Management
                             </div>
-                            <div class="card-body">
+                            <div class="card-body text-center">
 
-                                <div class="table-responsive">
-                                    <table class="table table-striped table-hover mb-0">
+                                <a href="{{ url_for('change_username') }}"
+                                   class="btn btn-outline-primary me-2">
+                                    Change Username
+                                </a>
 
-                                        <thead>
-                                            <tr>
-                                                <th>
-                                                    Date
-                                                </th>
-                                                <th>
-                                                    Opponent
-                                                </th>
-                                                <th>
-                                                    Result
-                                                </th>
-                                                <th>
-                                                    Score
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="table-group-divider">
-                                            <!-- Jinja for loop -->
-                                            {% for match in match_history %}
-                                                <tr>
-                                                    <td>
-                                                        {{ match.date }}
-                                                    </td>
-                                                    <td>
-                                                        {{ match.opponent }}
-                                                    </td>
-                                                    <td class="text-{{ 'success' if match.result=='Win' else 'danger' }}">
-                                                        {{ match.result }}
-                                                    </td>
-                                                    <td>
-                                                        {{ match.score }}
-                                                    </td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <a href="{{ url_for('change_password') }}"
+                                   class="btn btn-outline-danger me-2">
+                                    Change Password
+                                </a>
 
                             </div>
                         </div>
                     </div>
+                {% endif %}
 
+                <!-- Match History -->
+                <div class="col-12 d-flex">
+                    <div class="card w-100 shadow-sm">
+                        <div class="card-header text-center fw-bold">
+                            Match History
+                        </div>
+                        <div class="card-body">
+
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Date
+                                            </th>
+                                            <th>
+                                                Opponent
+                                            </th>
+                                            <th>
+                                                Result
+                                            </th>
+                                            <th>
+                                                Score
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="table-group-divider">
+                                        <!-- Jinja for loop -->
+                                        {% for match in match_history %}
+                                            <tr>
+                                                <td>
+                                                    {{ match.date }}
+                                                </td>
+                                                <td>
+                                                    {{ match.opponent }}
+                                                </td>
+                                                <td class="text-{{ 'success' if match.result=='Win' else 'danger' }}">
+                                                    {{ match.result }}
+                                                </td>
+                                                <td>
+                                                    {{ match.score }}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
-            </div>
 
+            </div>
         </div>
+
     </div>
 
 {% endblock content %}
