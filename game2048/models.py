@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):
     username: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(60), nullable=False)
-    image_file: Mapped[str] = mapped_column(String(20), nullable=False, default='default.jpg')
+    image_file: Mapped[str] = mapped_column(String(20), nullable=False)
 
     otp_code = Relationship(
         "OTP",

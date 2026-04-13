@@ -65,3 +65,63 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField('Remember Me')
 
     submit = SubmitField('Login')
+
+class ChangeUsername(FlaskForm):
+    new_username = StringField('New Username', 
+                               validators=[
+                                   DataRequired(),
+                                   Length(min=2, max=20),
+                                   Regexp(r'[a-zA-Z]+$', message='Only letters are acceptable')
+                                ])
+
+    password = PasswordField('Confirm Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+    
+    submit = SubmitField('Update Username')
+
+    # Overloaded Constructor
+    def __init__(self, original_username, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    # We get the original username and the new_username
+    # If they're not the same, we check db if the username already exists
+    # If username already exists, raise Validation Error
+    def validate_new_username(self, new_username):
+        if new_username.data != self.original_username:
+            user = db.session.scalar(sa.Select(User).where(User.username == new_username.data))
+
+            if user is not None:
+                raise ValidationError('Please use a different username')
+            
+        else:
+            raise ValidationError('Old username cannot be the same as new username')
+
+class ChangePassword(FlaskForm):
+    current_password = PasswordField('Current Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+
+    new_password = PasswordField('New Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                             ])
+    
+    confirm_password = PasswordField('Confirm Password', 
+                             validators=[
+                                 DataRequired(),
+                                 Length(min=8, max=20),
+                                 EqualTo('new_password')
+                             ])
+    
+    submit = SubmitField('Update Password')
+
+    def validate_new_password(self, new_password):
+        if self.current_password.data == new_password.data:
+            raise ValidationError('Old password cannot be the same as new password')

@@ -1,10 +1,40 @@
 {# Just copy this code, delete all comments and write HTML/Jinja in between the content block #}
 {% extends "layout.html" %}
 {% block content %}
-    <h1>
-        Hello User {{ current_user.username }}
-    </h1>
-    <p>
-        Here's your email lol: {{ current_user.email }}
-    </p>
+    <!-- Centered width control using grid -->
+    <div class="row justify-content-center py-5">
+        <div class="col-lg-8 col-md-10">
+
+            <!-- Top Row -->
+            <div class="row align-items-center text-center mb-3">
+                <div class="col-5">
+                    <button class="btn btn-primary w-100">
+                        Create a Match
+                    </button>
+                </div>
+
+                <div class="col-2 fw-bold">
+                    OR
+                </div>
+
+                <div class="col-5">
+                    <button class="btn btn-success w-100">
+                        Join a Random Match
+                    </button>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <hr class="my-3">
+
+            <!-- Bottom Input -->
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Enter match code">
+                <button class="btn btn-outline-primary px-5">
+                    Join
+                </button>
+            </div>
+
+        </div>
+    </div>
 {% endblock content %}

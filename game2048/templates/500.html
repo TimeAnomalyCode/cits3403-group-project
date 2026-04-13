@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex justify-content-center align-items-center">
+
+        <div class="card border-danger border-3 shadow-lg">
+
+            <!-- Header -->
+            <div class="card-header text-center bg-danger fw-bold fs-5">
+                500 ERROR
+            </div>
+
+            <!-- Body -->
+            <div class="card-body text-center bg-light">
+
+                <!-- GIF -->
+                <img src="https://media1.tenor.com/m/uDgrVufjT78AAAAC/sparks-electrical-electricity-equipment-radio-amateur-fire.gif"
+                     class="img-fluid border rounded mb-3"
+                     alt="error gif">
+
+                <!-- Text -->
+                <h5 class="fw-bold">
+                    Oops something went really wrong!
+                </h5>
+                <p class="mb-0 text-secondary">
+                    An admin has been notified to fix this error
+                </p>
+
+                <a href="{{ url_for('home') }}" class="btn btn-primary mt-3">Let's get you back home</a>
+
+            </div>
+        </div>
+
+    </div>
+{% endblock content %}
