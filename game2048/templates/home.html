@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
 {% block content %}
 
     <div class="row g-4 align-items-stretch">
@@ -62,33 +63,8 @@
                         {# This adds a CSRF token to the form, to check, view inspector for elements #}
                         {{ form.hidden_tag() }}
 
-                        <div class="mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {% if form.email.errors %}
-                                {{ form.email(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.email.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.email(class="form-control") }}
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.password.label(class="form-label") }}
-                            {% if form.password.errors %}
-                                {{ form.password(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for error in form.password.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form.password(class="form-control") }}
-                            {% endif %}
-                        </div>
+                        {{ wtf.form_field(form.email) }}
+                        {{ wtf.form_field(form.password) }}
 
                         <div class="mb-3 text-end">
                             <a href="{{ url_for('reset_password_request') }}"
@@ -97,14 +73,8 @@
                             </a>
                         </div>
 
-                        <div class="mb-3 form-check">
-                            {{ form.remember_me(class="form-check-input") }}
-                            {{ form.remember_me.label(class="form-check-label") }}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.submit(class="btn btn-primary w-100") }}
-                        </div>
+                        {{ wtf.form_field(form.remember_me) }}
+                        {{ wtf.form_field(form.submit) }}
 
                         <div class="text-center">
                             <small class="text-muted">
