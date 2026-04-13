@@ -9,6 +9,7 @@
         "uselist"
     ],
     "editor.formatOnSave": true,
+    // https://stackoverflow.com/questions/79258278/how-can-i-get-vs-code-to-collapse-jinja-2-blocks
     "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
         "editor.defaultFormatter": "monosans.djlint",
         "editor.foldingStrategy": "indentation"
