@@ -90,7 +90,7 @@ def reset_password(token):
     if not user:
         return redirect(url_for('home'))
     
-    form = ResetPasswordForm(user.password_hash)
+    form = ResetPasswordForm(user)
 
     if form.validate_on_submit():
         user.set_password(form.password.data)
