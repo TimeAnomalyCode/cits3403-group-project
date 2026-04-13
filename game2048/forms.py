@@ -125,3 +125,7 @@ class ChangePassword(FlaskForm):
     def validate_new_password(self, new_password):
         if self.current_password.data == new_password.data:
             raise ValidationError('Old password cannot be the same as new password')
+
+class ResetPasswordRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Request Password Reset')
