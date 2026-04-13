@@ -1,10 +1,11 @@
 import sqlalchemy as sa
-from game2048 import app, db, mail, socketio
-from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword
-from game2048.models import User
 from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory
 from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
+from game2048 import app, db, mail, socketio
+from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword, ResetPasswordRequestForm
+from game2048.models import User
+from game2048.email import send_password_reset_email
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -57,6 +58,37 @@ def register():
         return redirect(url_for('home'))
     
     return render_template('register.html', title='Register', form=form)
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = db.session.scalar(
+            sa.select(User).where(User.email == form.email.data)
+        )
+
+        if user:
+            send_password_reset_email(user)
+
+        # We flash the message regardless if the user exists or not so that hackers can't probe if user exists or not
+        flash('Check your email for the instructions to reset your password', 'success')
+        return redirect(url_for('home'))
+    
+    return render_template('reset_password_request.html',
+                           title='Reset Password', form=form)
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    user = User.verify_reset_password_token(token)
+
+    if not user:
+        return redirect(url_for('home'))
 
 # ----------------------------------------------------------------
 # Anything below should have @login_required
