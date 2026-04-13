@@ -10,7 +10,8 @@
     ],
     "editor.formatOnSave": true,
     "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
-        "editor.defaultFormatter": "monosans.djlint"
+        "editor.defaultFormatter": "monosans.djlint",
+        "editor.foldingStrategy": "indentation"
     },
     "css.styleSheets": [
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css",
