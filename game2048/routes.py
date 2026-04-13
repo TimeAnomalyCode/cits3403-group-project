@@ -71,7 +71,7 @@ def register():
         db.session.commit()
 
         # One time display of status
-        flash(f"You have created an account! Please Log In", "success")
+        flash("You have created an account! Please Log In", "success")
         return redirect(url_for("home"))
 
     return render_template("register.html", title="Register", form=form)
