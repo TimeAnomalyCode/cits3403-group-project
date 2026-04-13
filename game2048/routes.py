@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, request, make_respo
 from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
 from game2048 import app, db, mail, socketio
-from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword, ResetPasswordRequestForm
+from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword, ResetPasswordRequestForm, ResetPasswordForm
 from game2048.models import User
 from game2048.email import send_password_reset_email
 
@@ -89,6 +89,17 @@ def reset_password(token):
 
     if not user:
         return redirect(url_for('home'))
+    
+    form = ResetPasswordForm(user.password_hash)
+
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash('Your password has been reset', 'success')
+        return redirect(url_for('home'))
+    
+    return render_template('reset_password.html', title='Reset Password Form', form=form)
+
 
 # ----------------------------------------------------------------
 # Anything below should have @login_required
