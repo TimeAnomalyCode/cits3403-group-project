@@ -1,3 +1,9 @@
+<!-- ------------------------------------------------------ -->
+<!-- Use form_field and/or submit_cancel when building form -->
+<!-- ------------------------------------------------------ -->
+
+<!-- Form Field creates the basic label and input -->
+<!-- It also creates a Checkbox or a Submit Button -->
 {% macro form_field(field) %}
 
     {% if field.type == 'BooleanField' %}
@@ -31,6 +37,7 @@
     {% endif %}
 {% endmacro %}
 
+<!-- This creates a Submit Button and a Cancel Button -->
 {% macro submit_cancel(submit_field, cancel_url) %}
     <div class="d-grid gap-2">
         {{ submit_field(class="btn btn-primary w-100") }}
@@ -41,6 +48,11 @@
     </div>
 {% endmacro %}
 
+<!-- -------------------------------------------------------------------------------------------------------------- -->
+<!-- Use quick_form_submit or quick_form_submit_cancel when you have a full form of form_field and/or submit_cancel -->
+<!-- -------------------------------------------------------------------------------------------------------------- -->
+
+<!-- This quickly creates a large form with just a submit button -->
 {% macro quick_form_submit(form) %}
     <form method="post" action="">
         {{ form.hidden_tag() }}
@@ -52,6 +64,7 @@
     </form>
 {% endmacro %}
 
+<!-- This quickly creates a large form with just a submit button and a cancel button -->
 {% macro quick_form_submit_cancel(form, cancel_url) %}
     <form method="post" action="">
         {{ form.hidden_tag() }}
