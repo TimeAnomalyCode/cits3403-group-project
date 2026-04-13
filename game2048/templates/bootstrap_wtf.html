@@ -40,3 +40,26 @@
         </a>
     </div>
 {% endmacro %}
+
+{% macro quick_form_submit(form) %}
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+        {% for field in form %}
+            {% if field.widget.input_type != 'hidden' %}
+                {{ form_field(field) }}
+            {% endif %}
+        {% endfor %}
+    </form>
+{% endmacro %}
+
+{% macro quick_form_submit_cancel(form, cancel_url) %}
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+        {% for field in form %}
+            {% if field.widget.input_type != 'hidden' and field.type != 'SubmitField' %}
+                {{ form_field(field) }}
+            {% endif %}
+        {% endfor %}
+        {{ submit_cancel(form.submit, cancel_url) }}
+    </form>
+{% endmacro %}
