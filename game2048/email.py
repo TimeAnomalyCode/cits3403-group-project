@@ -1,10 +1,24 @@
+from threading import Thread
 from flask import render_template
 from flask_mail import Message
 from game2048 import app, mail
 
-def send_email(subject: str, recipients: list[str], text_body: str, html_body: str, sender: str = app.config['MAIL_DEFAULT_SENDER']):
+# This makes sending emails a background thread
+# This allows the page to respond immediately without waiting for user
+def _send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+# Use send_email() to send emails
+def send_email(subject: str, 
+               recipients: list[str], 
+               text_body: str, 
+               html_body: str, 
+               sender: str = app.config['MAIL_DEFAULT_SENDER']):
+    
     msg = Message(subject, sender=sender, recipients=recipients, body=text_body, html=html_body)
-    mail.send(msg)
+    Thread(target=_send_async_email, args=(app, msg)).start()
+
 
 def send_password_reset_email(user):
     token = user.get_reset_password_token()
