@@ -18,7 +18,7 @@ login_manager = LoginManager(app)
 mail = Mail(app)
 socketio = SocketIO(app)
 
-login_manager.login_view = 'home'
-login_manager.login_message_category = 'info'
+login_manager.login_view = "home"
+login_manager.login_message_category = "info"
 
-from game2048 import routes, models, errors
+from game2048 import routes, models, errors  # noqa
