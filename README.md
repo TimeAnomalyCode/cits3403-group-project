@@ -28,9 +28,12 @@ pip install -r requirements.txt
 flask run
 ```
 # Formatting and Linting
-> We are using djLint to help tidy the code
+## djLint (HTML and Jinja)
 1. Download the djLint Plugin on VS Code
-2. That's it. You should be able to save HTML and format it automatically
+2. That's it.
+## Ruff (Python)
+1. Download the Ruff Plugin on VS Code
+2. That's it. 
 # Run Tests
 ```
 some python command
