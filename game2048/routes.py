@@ -210,14 +210,14 @@ def static(filename):
 
 
 # Just to test login required
-@app.route("/send")
-def index():
-    msg = Message(
-        subject="2048 Battle!", sender="test@gmail.com", recipients=["nerd@gmail.com"]
-    )
-    msg.body = request.args.get("message")
-    mail.send(msg)
-    return f"<p>Message sent!</p> {msg}"
+# @app.route("/send")
+# def index():
+#     msg = Message(
+#         subject="2048 Battle!", sender="test@gmail.com", recipients=["nerd@gmail.com"]
+#     )
+#     msg.body = request.args.get("message")
+#     mail.send(msg)
+#     return f"<p>Message sent!</p> {msg}"
 
 
 # Helper to refresh/create and display db
