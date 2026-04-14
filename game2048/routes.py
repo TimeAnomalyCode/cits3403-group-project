@@ -4,13 +4,11 @@ from flask import (
     flash,
     redirect,
     url_for,
-    request,
     make_response,
     send_from_directory,
 )
-from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
-from game2048 import app, db, mail, socketio
+from game2048 import app, db, socketio
 from game2048.forms import (
     RegistrationForm,
     LoginForm,
