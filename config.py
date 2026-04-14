@@ -8,6 +8,8 @@ load_dotenv()
 
 # Because .env does not support booleans, only strings
 def str_to_bool(text):
+    if text is None:
+        return False
     return text.lower() == "true"
 
 
@@ -25,3 +27,4 @@ class Config:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_USE_TLS = str_to_bool(os.getenv('MAIL_USE_TLS'))
     MAIL_USE_SSL = str_to_bool(os.getenv('MAIL_USE_SSL'))
+    MAIL_DEFAULT_SENDER = (os.getenv('MAIL_DEFAULT_SENDER_NAME'), os.getenv('MAIL_DEFAULT_SENDER_ADDRESS'))
