@@ -18,6 +18,11 @@
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "ruff.format.preview": true,
+    // https://github.com/astral-sh/ruff/discussions/4128
+    // https://stackoverflow.com/questions/64381297/cant-fully-disable-python-linting-pylance-vscode/75071893#75071893
+    "python.analysis.ignore": [
+        "*"
+    ],
     "css.styleSheets": [
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css",
         "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css",
