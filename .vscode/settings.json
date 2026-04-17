@@ -2,14 +2,29 @@
     "cSpell.words": [
         "backref",
         "djlint",
+        "endmacro",
         "MANYTOONE",
         "ONETOMANY",
         "Tetris",
         "uselist"
     ],
     "editor.formatOnSave": true,
+    // https://stackoverflow.com/questions/79258278/how-can-i-get-vs-code-to-collapse-jinja-2-blocks
     "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
-        "editor.defaultFormatter": "monosans.djlint"
+        "editor.defaultFormatter": "monosans.djlint",
+        "editor.foldingStrategy": "indentation"
+    },
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "ruff.format.preview": true,
+    // https://github.com/astral-sh/ruff/discussions/4128
+    // https://stackoverflow.com/questions/64381297/cant-fully-disable-python-linting-pylance-vscode/75071893#75071893
+    "python.analysis.ignore": [
+        "*"
+    ],
+    "[javascript][css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "css.styleSheets": [
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css",

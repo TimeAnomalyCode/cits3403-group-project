@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
 {% block content %}
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5 d-flex">
@@ -7,8 +8,9 @@
                     Sign Up Today for a Battle!
                 </div>
                 <div class="card-body">
+                    {#
                     <form method="post" action="">
-                        {# This adds a CSRF token to the form, to check, view inspector for elements #}
+                        <!-- This adds a CSRF token to the form, to check, view inspector for elements  -->
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
                             {{ form.username.label(class="form-label") }}
@@ -70,13 +72,15 @@
                             {{ form.submit(class="btn btn-primary w-100") }}
                         </div>
 
-                        <div class="text-center">
-                            <small class="text-muted">
-                                Already have an account?
-                                <a href="{{ url_for('home') }}" class="ms-2 text-decoration-none">Sign In</a>
-                            </small>
-                        </div>
                     </form>
+                    #}
+                    {{ wtf.quick_form_submit(form) }}
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Already have an account?
+                            <a href="{{ url_for('home') }}" class="ms-2 text-decoration-none">Sign In</a>
+                        </small>
+                    </div>
                 </div>
             </div>
         </div>
