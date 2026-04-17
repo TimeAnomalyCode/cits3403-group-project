@@ -6,6 +6,7 @@
 | 24599992 | Aiman Hakimin Bin Ahmad Khairi | TimeAnomalyCode |
 | 24377984 | Wentao Luo | LarkVenter |
 | 24991966 | Chi Hin Elvis Suen | elvis1126-student |
+| 24262394 | James Shirley | 24262394 |
 # Setup and Run Code
 1. Clone the repository
 ```

@@ -8,6 +8,8 @@ load_dotenv(os.path.join(basedir, ".env"))
 
 # Because .env does not support booleans, only strings
 def str_to_bool(text):
+    if text is None:
+        return False
     return text.lower() == "true"
 
 
