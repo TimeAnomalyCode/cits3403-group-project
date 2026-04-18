@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Tournament</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+  }
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+  }
+
+  .navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .nav-right button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+  }
+
+  .nav-right button:hover {
+    background-color: #666;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 60px);
+  }
+
+  .card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 350px;
+    text-align: center;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: #db0cc6;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #df0fa4;
+  }
+</style>
+
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <a href="/home">2048</a>
+
+  <div class="nav-right">
+    <button onclick="window.location.href='/profile'">Profile</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+  <div class="card">
+
+    <h2>Create Tournament</h2>
+
+    <input type="text" id="tournamentName" placeholder="Tournament Name">
+
+    <select id="playerCount">
+      <option value="">Select Players</option>
+      <option value="4">4 Players</option>
+      <option value="8">8 Players</option>
+      <option value="16">16 Players</option>
+    </select>
+
+    <select id="privacy">
+      <option value="">Tournament Type</option>
+      <option value="private">Private (Invite Code)</option>
+      <option value="public">Public (Auto Match)</option>
+    </select>
+
+    <button id="createBtn">Create Tournament</button>
+
+  </div>
+</div>
+
+<script src="/static/js/createTournament.js"></script>
+
+</body>
+</html>

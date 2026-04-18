@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2048 Tournament Lobby</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    text-align: center;
+  }
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+  }
+  .navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .nav-right button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+  }
+  .container {
+    padding: 40px;
+  }
+  .code-box {
+    display: inline-block;
+    background: white;
+    border: 2px dashed #db0cc6;
+    border-radius: 10px;
+    padding: 14px 32px;
+    margin: 10px auto 24px;
+  }
+  .code-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .code-value {
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 8px;
+    color: #333;
+  }
+  .copy-btn {
+    margin-top: 8px;
+    padding: 5px 14px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+    cursor: pointer;
+    color: #555;
+  }
+  .copy-btn:hover {
+    background: #eee;
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .player-list {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .player {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    min-width: 120px;
+    font-size: 14px;
+    color: #333;
+  }
+  .player.empty {
+    background: #f9f9f9;
+    border: 2px dashed #ddd;
+    box-shadow: none;
+    color: #bbb;
+    font-size: 13px;
+  }
+  .player-count {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .start-btn {
+    margin-top: 30px;
+    padding: 12px 30px;
+    font-size: 16px;
+    background-color: #db0cc6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: none;
+  }
+  .start-btn:hover {
+    background-color: #df0fa4;
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <a href="/home">2048</a>
+  <div class="nav-right">
+    <button onclick="goToProfile()">Profile</button>
+  </div>
+</div>
+
+<div class="container">
+  <h2 id="tournamentName">Tournament Lobby</h2>
+
+  <div class="code-box">
+    <div class="code-label">Private join code</div>
+    <div class="code-value" id="codeDisplay">—</div>
+    <div><button class="copy-btn" onclick="copyCode()">Copy code</button></div>
+  </div>
+
+  <div class="status-row">
+    <div class="dot"></div>
+    <span id="statusText">Waiting for players to join...</span>
+  </div>
+
+  <div class="player-count" id="playerCount"></div>
+  <div class="player-list" id="playerList"></div>
+
+  <button class="start-btn" onclick="startTournament()">Start Tournament</button>
+</div>
+
+<script src="/static/js/lobby.js"></script>
+
+</body>
+</html>
