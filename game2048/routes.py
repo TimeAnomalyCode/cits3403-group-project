@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+<<<<<<< HEAD
 from flask import (
     render_template,
     flash,
@@ -7,6 +8,14 @@ from flask import (
     make_response,
     send_from_directory,
 )
+=======
+import random
+from game2048 import app, db, mail, socketio
+from game2048.forms import RegistrationForm, LoginForm
+from game2048.models import User
+from flask import render_template, flash, redirect, jsonify, url_for, request, make_response, send_from_directory, session
+from flask_mail import Message
+>>>>>>> 2a4a27d (Implement tournament system: added create tournament page, lobby with player tracking, and initial bracket UI. Integrated Flask routes with session-based tournament state and frontend JS for dynamic updates.)
 from flask_login import current_user, login_user, logout_user, login_required
 from game2048 import app, db, socketio
 from game2048.forms import (
@@ -55,7 +64,33 @@ def home():
     )
 
 
+<<<<<<< HEAD
 @app.route("/register", methods=["GET", "POST"])
+=======
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile_page.html', user= current_user)
+
+
+@app.route("/game")
+@login_required
+def game():
+    return render_template("2048_mutil_player_game_board.html")
+
+@app.route("/tournament-bracket")
+#@login_required
+def tournament_bracket():
+    return render_template("tournament_bracket.html")
+
+
+@app.route("/tournament-lobby")
+#@login_required
+def tournament_lobby():
+    return render_template("PrivateTournamentLobby.html")
+
+@app.route("/register", methods=['GET', 'POST'])
+>>>>>>> 2a4a27d (Implement tournament system: added create tournament page, lobby with player tracking, and initial bracket UI. Integrated Flask routes with session-based tournament state and frontend JS for dynamic updates.)
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -200,11 +235,21 @@ def change_password():
 # Cache static files on client
 # Source: https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
 # Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control
+<<<<<<< HEAD
 @app.route("/static/<path:filename>")
 def static(filename):
     resp = make_response(send_from_directory("static/", filename))
     resp.headers["Cache-Control"] = "max-age=604800"
     return resp
+=======
+
+
+#@app.route('/static/<path:filename>')
+#def static(filename):
+#    resp = make_response(send_from_directory('static/', filename))
+#    resp.headers['Cache-Control'] = 'max-age=604800'
+#    return resp
+>>>>>>> 2a4a27d (Implement tournament system: added create tournament page, lobby with player tracking, and initial bracket UI. Integrated Flask routes with session-based tournament state and frontend JS for dynamic updates.)
 
 
 # Just to test login required
@@ -257,4 +302,90 @@ def about():
 
         data.append("<hr>")
 
+<<<<<<< HEAD
     return "".join(data)
+=======
+    return ''.join(data)
+
+tournaments = {}
+
+@app.route("/create-tournament")
+def create_tournament_page():
+    return render_template("CreateTournament.html")
+
+
+@app.route("/api/create-tournament", methods=["POST"])
+#@login_required
+def api_create_tournament():
+    data = request.json
+
+    name = data.get("name")
+    players = data.get("players")
+    privacy = data.get("privacy")
+
+    if not name or not players or not privacy:
+        return jsonify({"error": "Missing tournament details"}), 400
+
+    try:
+        players = int(players)
+    except ValueError:
+        return jsonify({"error": "Invalid player count"}), 400
+
+    if players not in [4, 8, 16]:
+        return jsonify({"error": "Player count must be 4, 8, or 16"}), 400
+
+    join_code = str(random.randint(10000, 99999))
+    while join_code in tournaments:
+        join_code = str(random.randint(10000, 99999))
+
+    tournaments[join_code] = {
+        "name": name,
+        "max": players,
+        "privacy": privacy,
+        "players": [current_user.username]
+    }
+
+    session["tournament_code"] = join_code
+
+    return jsonify({
+        "success": True,
+        "joinCode": join_code,
+        "name": name
+    })
+
+@app.route("/api/join-tournament", methods=["POST"])
+#@login_required
+def api_join_tournament():
+    data = request.json
+    code = data.get("joinCode")
+
+    if code not in tournaments:
+        return jsonify({"error": "Invalid code"}), 400
+
+    t = tournaments[code]
+    user = current_user.username
+
+    if user not in t["players"] and len(t["players"]) < t["max"]:
+        t["players"].append(user)
+
+    session["tournament_code"] = code
+
+    return jsonify({"success": True})
+
+@app.route("/api/lobby-state")
+@login_required
+def lobby_state():
+    code = session.get("tournament_code")
+
+    if not code or code not in tournaments:
+        return {"error": "No tournament"}
+
+    t = tournaments[code]
+
+    return {
+        "name": t["name"],
+        "players": t["players"],
+        "code": code,
+        "max": t["max"]
+    }
+>>>>>>> 2a4a27d (Implement tournament system: added create tournament page, lobby with player tracking, and initial bracket UI. Integrated Flask routes with session-based tournament state and frontend JS for dynamic updates.)
