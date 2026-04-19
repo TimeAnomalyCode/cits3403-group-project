@@ -53,6 +53,7 @@ function test_seed(){
   const seed = new RNG(4);
   // socket set up, foreced
   const socket = io("http://127.0.0.1:5000",{transports: ["websocket"]});
+
   function makeState(boardEl, layerEl, overlayEl, ovIconEl, ovSubEl, scoreEl, trashPointEl) {
     return {
       boardEl, layerEl, overlayEl, ovIconEl, ovSubEl, scoreEl, trashPointEl,
@@ -409,20 +410,53 @@ function test_seed(){
     render(s);
   }
 
+  // == multi-player connection and communication part ==
+  socket.on("connect", () => {
+    console.log("Connected:", socket.id);
+  });
+
+  socket.on("start_game", (data) => {
+    console.log("Match found:", data.room);
+    
+    //trigger
+    startGame();
+  });
   function startGame() {
     initState(State);
     socket.emit("game_init", "start_game");
 
-    socket.on("update_init", function(data) {
-      console.log("backend-start",data);
+  } 
+  socket.on("update_init", function(data) {
+
+      console.log("backend-Pid",data.Pid);
+      console.log("?",socket.id)
+      console.log("backend-MatchID",data.MatchID);
+
+      console.log("backend-start",data.cells);
       console.log("Frontend-start",State.cells);
-      if (State.cells !== data){
-        State.cells = data;
+      if (State.cells !== data.cells){
+        State.cells = data.cells;
         console.log("Frontend-start-corrected", State.cells);
         render(State);
+        
       }
-    });
-  } 
+  });
+
+  socket.on("update_second_init", function(data){
+    if (!data.cells){
+      return;
+    }
+    renderSecondBoard(data);
+  });
+
+  socket.on("update_second_direction", function(data){
+    if (!data.cells){
+      return;
+    }
+    renderSecondBoard(data);
+  });
+
+  
 
   document.addEventListener('keydown', e => {
     const map = {
@@ -439,9 +473,7 @@ function test_seed(){
     }
   });
 
-  startGame();
-
-  /* == multi-player section of client-server communciation == */
+  
 
   // sending local game state to server 
   
@@ -474,7 +506,7 @@ function test_seed(){
 
   function player2CellGeometry(r,c){
     const board2 = document.getElementById('board2');
-    const cells = s.boardEl.querySelectorAll('.col-3 > div');
+    const cells = board2.querySelectorAll('.col-3 > div');
     const el = cells[r * N + c];
     const eR = el.getBoundingClientRect();
     const bR = board2.getBoundingClientRect();
@@ -487,11 +519,11 @@ function test_seed(){
     };
   }
 
-  function renderSecondBoard(data){
+  function renderSecondBoard(s){
     const player2Board = document.getElementById('layer2');
     player2Board.innerHTML = '';
 
-    const secondCell = data.cells;
+    const secondCell = s.cells;
     if(!secondCell){
       return;
     }
@@ -520,8 +552,20 @@ function test_seed(){
         player2Board.appendChild(el);
       }
     }
+    const player2Score = document.getElementById('player_2_score');
+    const player2TrashScore = document.getElementById('player_2_trash_point');
 
+    if(s.score){
+      player2Score.textContent = s.score;
+    }else{
+      player2Score.textContent = 0;
+    }
 
+    if(s.trashPoint){
+      player2TrashScore.textContent = s.trashPoint;
+    }else{
+      player2TrashScore.textContent = 0;
+    }
   }
 
 
@@ -547,6 +591,15 @@ function test_seed(){
       }
     });
   }
+
+  socket.on("update_second_function", function(data){
+    if (!data.cells){
+      return;
+    }
+    renderSecondBoard(data);
+  });
+
+
   // the following is new game machine that effect on the opponent
 
   function getRandomInt(min, max) {

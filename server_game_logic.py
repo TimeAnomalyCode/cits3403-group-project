@@ -1,5 +1,6 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO
+from flask import Flask, request ,render_template
+from flask_socketio import SocketIO, join_room
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -7,7 +8,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Note: cors_allowed_origins="*" is for dev, should change to specific port
 
 
-class State:
+class PlayerState:
     # a user game data that should be received by the backend
     def __init__(self):
         self.cells  = [[0,0,0,0],
@@ -19,6 +20,7 @@ class State:
         self.dead = False
         self.hiddenScore = 0 
         self.trashPoint = 0
+        self.matchID = None
         pass
 
 class moveTile:
@@ -345,7 +347,7 @@ class GameFunction:
         r,c = randomness.randomPickNonEmpty(cell)
         if r == None or c == None:
             return cell, False 
-        print(player1.trashPoint)
+        
         cell[r][c] = 0
         return cell, True
         
@@ -396,133 +398,235 @@ class GameFunction:
         cell[r][c] = (-1) * 2 ** Seed.next_range(1,4)
         return cell, True
 
+# == multi-player connection and communication part ==
+players_dict = {}
+waiting_player = None
+room = {}
 
-player1 = State()
+@socketio.on('connect')
+def handle_multiplayer_connect(auth=None):
+    global waiting_player
 
-print(player1.cells)
-# == socket part ==
-@socketio.on("game_direction")
-def receive_direction_communcation(data):
-    moved = False
-    score = 0
-    print(player1.cells)
-    if data == "left":
-        player1.cells, moved, score = moveTile.left(player1.cells)
-        player1.cells = BoardState.spawnTile(player1.cells)
-        player1.score += score
-        player1.hiddenScore += score
-        if player1.hiddenScore > 128:
-            player1.trashPoint = player1.trashPoint + 1
-            player1.hiddenScore = player1.hiddenScore - 128
-        if not moveTile.hasMove(player1.cells):
-            player1.dead = True
-        pass
-    elif data == "right":
-        player1.cells, moved, score = moveTile.right(player1.cells)
-        player1.cells = BoardState.spawnTile(player1.cells)
-        player1.score += score
-        player1.hiddenScore += score
-        if player1.hiddenScore > 128:
-            player1.trashPoint = player1.trashPoint + 1
-            player1.hiddenScore = player1.hiddenScore - 128
-        if not moveTile.hasMove(player1.cells):
-            player1.dead = True
-            
-        
-        socketio.emit("update", player1.cells)
-        pass
-    elif data == "up":
-        player1.cells, moved, score = moveTile.up(player1.cells)
-        player1.cells = BoardState.spawnTile(player1.cells)
-        player1.score += score
-        player1.hiddenScore += score
-        if player1.hiddenScore > 128:
-            player1.trashPoint = player1.trashPoint + 1
-            player1.hiddenScore = player1.hiddenScore - 128
-        if not moveTile.hasMove(player1.cells):
-            player1.dead = True
-        pass
-    elif data == "down":
-        player1.cells, moved, score = moveTile.down(player1.cells)
-        player1.cells = BoardState.spawnTile(player1.cells)
-        player1.score += score
-        player1.hiddenScore += score
-        if player1.hiddenScore > 128:
-            player1.trashPoint = player1.trashPoint + 1
-            player1.hiddenScore = player1.hiddenScore - 128
-        if not moveTile.hasMove(player1.cells):
-            player1.dead = True
-        pass
-    # send back to frontend
-    print(data)
-    socketio.emit("update_direction", {
-        "cells": player1.cells,
-        "score": player1.score,
-        "won": player1.won,
-        "dead": player1.dead,
-        "hiddenScore": player1.hiddenScore,
-        "trashPoint": player1.trashPoint
-        })
+    Pid = request.sid
+    players_dict[Pid] = PlayerState()
 
-@socketio.on("game_function")
-def receive_function_communcation(data):
-    if data == "destroySpecificTile":
-        # player1.cells, state = GameFunction.destroySpecificTile(player1.cells) #place for easy testing
-        #the following has condition, harder in testing, so i seperate into two part of testing
-        print("test")
-        if player1.trashPoint > 0:
-            player1.cells, state = GameFunction.destroySpecificTile(player1.cells)
-            print("hiddenScore", player1.trashPoint, state)
-            if state:
-                player1.trashPoint -= 1
-        pass
-    elif data == "createRandomTile":
-        # player1.cells, state = GameFunction.createRandomTile(player1.cells) #place for easy testing
-        #the following has condition, harder in testing, so i seperate into two part of testing
-        if player1.trashPoint > 0:
-            player1.cells, state = GameFunction.createRandomTile(player1.cells)
-            if state:
-                player1.trashPoint -= 1
-        pass
-    elif data == "rearrangeBoard":
-        # player1.cells = GameFunction.rearrangeBoard(player1.cells) #place for easy testing
-        #the following has condition, harder in testing, so i seperate into two part of testing
-        if player1.trashPoint > 0:
-            player1.cells = GameFunction.rearrangeBoard(player1.cells)
-            player1.trashPoint -= 1
-        pass
-    elif data == "makeRandomNegativeTile":
-        # player1.cells, state = GameFunction.makeRandomNegativeTile(player1.cells) #place for easy testing
-        #the following has condition, harder in testing, so i seperate into two part of testing
-        if player1.trashPoint > 0:
-            player1.cells, state = GameFunction.makeRandomNegativeTile(player1.cells)
-            if state:
-                player1.trashPoint -= 1
-        pass
-    # send back to frontend
-    socketio.emit("update_function", {
-        "cells": player1.cells,
-        "score": player1.score,
-        "won": player1.won,
-        "dead": player1.dead,
-        "hiddenScore": player1.hiddenScore,
-        "trashPoint": player1.trashPoint
-        })
+    if waiting_player is None:
+        waiting_player = Pid
+        print(waiting_player)
+    else:
+        if waiting_player == Pid:
+            return
+        match = str(uuid.uuid4())
+        join_room(match,sid=Pid)
+        join_room(match,sid=waiting_player)
+
+        players_dict[Pid].matchID = match
+        players_dict[waiting_player].matchID = match
+
+        room[match] = {
+            "players": [waiting_player, Pid]
+        }
+        print(room[match])
+        socketio.emit("start_game", {"room": match}, room=match)
+        waiting_player = None
+
+@socketio.on('disconnect')
+def handle_multiplayer_disconnect():
+    global waiting_player
+    Pid = request.sid
+
+    # remove player state
+    players_dict.pop(Pid, None)
+
+    # clean match making queue
+    if waiting_player == Pid:
+        waiting_player = None
+
 
 @socketio.on("game_init")
 def receive_init_communcation(data):
+    player = players_dict[request.sid]
+    
     print(data)
+    print("Connected user is:",request.sid)
     if data == "start_game":
         # player1.cells = [[0,0,0,0],
         #               [0,0,0,0],
         #               [0,0,0,0],
         #               [0,0,0,0]]
-        BoardState.set_init(player1)
-        player1.cells = BoardState.spawnTile(player1.cells)
-        player1.cells = BoardState.spawnTile(player1.cells)
+        BoardState.set_init(player)
+        player.cells = BoardState.spawnTile(player.cells)
+        player.cells = BoardState.spawnTile(player.cells)
+        pass
+    # send back to own frontend
+    socketio.emit("update_init", {
+        "cells": player.cells,
+        "Pid": request.sid,
+        "MatchID":player.matchID
+        },to=request.sid)
+    
+    #boardcast own board to second player
+    match = player.matchID
+    players = room[match]["players"]
+
+    for i in players:
+        if i != request.sid:
+            socketio.emit("update_second_init", {
+                "cells": player.cells,
+                "Pid": request.sid,
+                "MatchID":player.matchID
+            }, to=i)
+
+# player = PlayerState()
+
+# print(player.cells)
+# == socket part ==
+@socketio.on("game_direction")
+def receive_direction_communcation(data):
+    player = players_dict[request.sid]
+    print("Current user is:",request.sid)
+
+    moved = False
+    score = 0
+    print("Before move:", player.cells)
+    if data == "left":
+        player.cells, moved, score = moveTile.left(player.cells)
+        player.cells = BoardState.spawnTile(player.cells)
+        player.score += score
+        player.hiddenScore += score
+        if player.hiddenScore > 128:
+            player.trashPoint = player.trashPoint + 1
+            player.hiddenScore = player.hiddenScore - 128
+        if not moveTile.hasMove(player.cells):
+            player.dead = True
+        pass
+    elif data == "right":
+        player.cells, moved, score = moveTile.right(player.cells)
+        player.cells = BoardState.spawnTile(player.cells)
+        player.score += score
+        player.hiddenScore += score
+        if player.hiddenScore > 128:
+            player.trashPoint = player.trashPoint + 1
+            player.hiddenScore = player.hiddenScore - 128
+        if not moveTile.hasMove(player.cells):
+            player.dead = True
+            
+        
+        socketio.emit("update", player.cells)
+        pass
+    elif data == "up":
+        player.cells, moved, score = moveTile.up(player.cells)
+        player.cells = BoardState.spawnTile(player.cells)
+        player.score += score
+        player.hiddenScore += score
+        if player.hiddenScore > 128:
+            player.trashPoint = player.trashPoint + 1
+            player.hiddenScore = player.hiddenScore - 128
+        if not moveTile.hasMove(player.cells):
+            player.dead = True
+        pass
+    elif data == "down":
+        player.cells, moved, score = moveTile.down(player.cells)
+        player.cells = BoardState.spawnTile(player.cells)
+        player.score += score
+        player.hiddenScore += score
+        if player.hiddenScore > 128:
+            player.trashPoint = player.trashPoint + 1
+            player.hiddenScore = player.hiddenScore - 128
+        if not moveTile.hasMove(player.cells):
+            player.dead = True
         pass
     # send back to frontend
-    socketio.emit("update_init", player1.cells)
+    print(data)
+    print("After move:", player.cells)
+
+    socketio.emit("update_direction", {
+        "cells": player.cells,
+        "score": player.score,
+        "won": player.won,
+        "dead": player.dead,
+        "hiddenScore": player.hiddenScore,
+        "trashPoint": player.trashPoint
+        }, room=request.sid)
+    
+    #boardcast own board to second player
+    match = player.matchID
+    players = room[match]["players"]
+
+    for i in players:
+        if i != request.sid:
+            socketio.emit("update_second_direction", {
+                "cells": player.cells,
+                "score": player.score,
+                "won": player.won,
+                "dead": player.dead,
+                "hiddenScore": player.hiddenScore,
+                "trashPoint": player.trashPoint
+            }, to=i)
+
+
+@socketio.on("game_function")
+def receive_function_communcation(data):
+    player = players_dict[request.sid]
+    if data == "destroySpecificTile":
+        # player1.cells, state = GameFunction.destroySpecificTile(player1.cells) #place for easy testing
+        #the following has condition, harder in testing, so i seperate into two part of testing
+        print("test")
+        if player.trashPoint > 0:
+            player.cells, state = GameFunction.destroySpecificTile(player.cells)
+            print("hiddenScore", player.trashPoint, state)
+            if state:
+                player.trashPoint -= 1
+        pass
+    elif data == "createRandomTile":
+        # player1.cells, state = GameFunction.createRandomTile(player1.cells) #place for easy testing
+        #the following has condition, harder in testing, so i seperate into two part of testing
+        if player.trashPoint > 0:
+            player.cells, state = GameFunction.createRandomTile(player.cells)
+            if state:
+                player.trashPoint -= 1
+        pass
+    elif data == "rearrangeBoard":
+        # player1.cells = GameFunction.rearrangeBoard(player1.cells) #place for easy testing
+        #the following has condition, harder in testing, so i seperate into two part of testing
+        if player.trashPoint > 0:
+            player.cells = GameFunction.rearrangeBoard(player.cells)
+            player.trashPoint -= 1
+        pass
+    elif data == "makeRandomNegativeTile":
+        # player1.cells, state = GameFunction.makeRandomNegativeTile(player1.cells) #place for easy testing
+        #the following has condition, harder in testing, so i seperate into two part of testing
+        if player.trashPoint > 0:
+            player.cells, state = GameFunction.makeRandomNegativeTile(player.cells)
+            if state:
+                player.trashPoint -= 1
+        pass
+    # send back to frontend
+    socketio.emit("update_function", {
+        "cells": player.cells,
+        "score": player.score,
+        "won": player.won,
+        "dead": player.dead,
+        "hiddenScore": player.hiddenScore,
+        "trashPoint": player.trashPoint
+        }, room=request.sid)
+    
+    #boardcast own board to second player
+    match = player.matchID
+    players = room[match]["players"]
+
+    for i in players:
+        if i != request.sid:
+            socketio.emit("update_second_function", {
+                "cells": player.cells,
+                "score": player.score,
+                "won": player.won,
+                "dead": player.dead,
+                "hiddenScore": player.hiddenScore,
+                "trashPoint": player.trashPoint
+            }, to=i)
+
+
    
 
 
@@ -575,5 +679,5 @@ def test_move():
               
 # test_move()
 
-# if __name__ == '__main__':
-#     socketio.run(app, debug=True)
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
