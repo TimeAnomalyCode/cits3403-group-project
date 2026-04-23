@@ -1,12 +1,12 @@
 from flask import Flask, request ,render_template
 from flask_socketio import SocketIO, join_room
 import uuid
-
+import time
+GAMETIME = 10
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
 # Note: cors_allowed_origins="*" is for dev, should change to specific port
-
 
 class PlayerState:
     # a user game data that should be received by the backend
@@ -298,6 +298,7 @@ class randomness:
         return array
 
 class BoardState:
+    
     @staticmethod
     def spawnTile(cell):
         # N = len(cell)
@@ -340,6 +341,8 @@ class BoardState:
         object.hiddenScore = 0 
         object.trashPoint = 0
         return
+    
+
 class GameFunction:
 
     @staticmethod
@@ -402,6 +405,94 @@ class GameFunction:
 players_dict = {}
 waiting_player = None
 room = {}
+# == timer status== 
+match_timers = {}
+match_active = {}
+match_started = {}
+#add a timer and keep player on the same page
+def countdown(players_dict, match):
+    #set timer
+    # match_timers[match] = 180
+
+    while match_timers[match] > 0 and match_active.get(match, False):
+        socketio.sleep(1)
+        match_timers[match] -= 1
+        print( match_timers[match], end="\r")  # Overwrites the same line
+        
+        
+    print("Time's up!")
+    #check
+    return check_player_win_and_dead(players_dict, match)
+
+def check_player_win_and_dead(players_dict, match):
+    if not match_active.get(match,True):
+        return
+    
+    # player = players_dict[request.sid]
+    # match = player.matchID
+    players = room[match]["players"]
+    p1 = players_dict[players[0]]
+    p2 = players_dict[players[1]]  
+    print('check win dead',players[0],players[1])
+    print("p1.score",p1.score)
+    print("p2.score:",p2.score)
+
+    #check
+    if match_timers[match] == 0 or (p1.dead and p2.dead):
+        if p1.score > p2.score:
+            p1.won = True
+            p2.dead = True
+            print(f"winner is {players[0]}")
+            # endgame
+            name = players[0]
+            socketio.emit("game_end", {"winner": name}, room=match)
+            match_active[match] = False
+            return players[0]
+        elif p1.score < p2.score:
+            p2.won = True
+            p1.dead = True
+            print(f"winner is {players[1]}")
+            # endgame
+            socketio.emit("game_end", {"winner": players[1]}, room=match)
+            match_active[match] = False
+            return players[1]
+        else:
+            print(f"winner is draw")
+            restart_game(players_dict, match)
+            return "draw"
+    if p1.dead:
+        socketio.emit("game_end", {"winner": players[1]}, room=match)
+        match_active[match] = False
+        return players[1]
+        
+    if p2.dead:
+        socketio.emit("game_end", {"winner": players[0]}, room=match)
+        match_active[match] = False
+        return players[0]
+def restart_game(players_dict, match):
+    match_active[match] = False
+    players = room[match]["players"]
+
+    # send restart to frontend
+    socketio.emit("game_restart", {"matchId": match}, room=match)
+    
+    for id in players:
+        player = players_dict[id]
+
+        BoardState.set_init(player)
+        player.cells = BoardState.spawnTile(player.cells)
+        player.cells = BoardState.spawnTile(player.cells)
+
+        socketio.emit("update_init", {
+            "cells": player.cells,
+            "Pid": id,
+            "MatchID": match
+        }, to=id)
+
+    match_timers[match] = GAMETIME
+    match_active[match] = True
+
+    socketio.start_background_task(countdown, players_dict, match)
 
 @socketio.on('connect')
 def handle_multiplayer_connect(auth=None):
@@ -422,14 +513,15 @@ def handle_multiplayer_connect(auth=None):
 
         players_dict[Pid].matchID = match
         players_dict[waiting_player].matchID = match
-
+        
+        # hello, stored player 
         room[match] = {
             "players": [waiting_player, Pid]
         }
         print(room[match])
         socketio.emit("start_game", {"room": match}, room=match)
-        waiting_player = None
-
+        waiting_player = None     
+timeing = 0
 @socketio.on('disconnect')
 def handle_multiplayer_disconnect():
     global waiting_player
@@ -476,14 +568,34 @@ def receive_init_communcation(data):
                 "Pid": request.sid,
                 "MatchID":player.matchID
             }, to=i)
+    
+
+    if match_started.get(match,False):
+        return 
+    
+    match_timers[match] = GAMETIME
+    match_active[match] = True
+    match_started[match] = True
+    # starting a thread for timing, aviod blocking
+    
+    socketio.start_background_task(countdown, players_dict, match)
+
 
 # player = PlayerState()
+# def check_win_dead(player_dict, player_list):
 
 # print(player.cells)
 # == socket part ==
 @socketio.on("game_direction")
 def receive_direction_communcation(data):
+    global timeing
     player = players_dict[request.sid]
+    
+    match = player.matchID
+    #check match is still going and exit if not
+    if not match_active.get(match, True):
+        return
+    
     print("Current user is:",request.sid)
 
     moved = False
@@ -540,6 +652,15 @@ def receive_direction_communcation(data):
     print(data)
     print("After move:", player.cells)
 
+    #death determination logic, end game
+    # check player state 
+    # match = player.matchID
+    if not match_active.get(match, True):
+        return
+    
+    if player.dead or match_timers[match] == 0:
+        check_player_win_and_dead(players_dict, match)
+
     socketio.emit("update_direction", {
         "cells": player.cells,
         "score": player.score,
@@ -550,7 +671,7 @@ def receive_direction_communcation(data):
         }, room=request.sid)
     
     #boardcast own board to second player
-    match = player.matchID
+    # match = player.matchID
     players = room[match]["players"]
 
     for i in players:
@@ -642,7 +763,7 @@ def test_seed():
     for i in range(10):
         print(Seed.next_float())
 
-# test_seed()
+test_seed()
 def test_boardstate():
     board = [
     [0, 0, 0, 0],
@@ -680,4 +801,6 @@ def test_move():
 # test_move()
 
 if __name__ == '__main__':
+    print(players_dict,"hello")
+    print(Seed)
     socketio.run(app, debug=True)

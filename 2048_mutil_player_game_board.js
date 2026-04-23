@@ -42,11 +42,11 @@ function test_seed(){
 // for (var i = 0; i < 10; i++)
 //   console.log(rng.choice(digits));
 }
-// test_seed();
+test_seed();
 
 (function () {
   'use strict';
-  
+  var GameEnd;
   /* == game state data == */
   // 4 x 4
   const N = 4;
@@ -373,16 +373,57 @@ function test_seed(){
     return false;
   }
 
-  function showOverlay(s, type) {
+  function showOverlay(s, type, winner=null) {
     s.overlayEl.classList.remove('d-none');
 
     if (type === 'win') {
       s.ovIconEl.textContent = '2048!';
-      s.ovSubEl.textContent = 'You win!';
-    } else {
+      s.ovSubEl.textContent = winner.winner + " " + 'win!';
+      s.won = true; 
+    } else if (type === 'dead') {
       s.ovIconEl.textContent = 'Game Over';
       s.ovSubEl.textContent = 'No moves left';
+      s.dead = true;
+    } else if (type === 'Timeout'){
+      s.ovIconEl.textContent = 'Game Over';
+      s.ovSubEl.textContent = 'Time Out';
+    } else if (type === "clear"){
+      s.ovIconEl.textContent = '';
+      s.ovSubEl.textContent = '';
     }
+  }
+  let timerid = null;
+  function timer(s,mactchId=null){
+
+    let time = 10;
+
+    if(s.won ||s.dead){
+      return
+    }
+
+    if(timerid !== null){
+      clearInterval(timerid);
+    }
+
+    timerid = setInterval(() => {
+      if(time > 0){
+        time = time - 1;
+      }
+      //time = time - 1;
+      document.getElementById("timer1").innerText = time;
+      document.getElementById("timer2").innerText = time;
+      console.log('timing');
+    
+      // if(time === 0){
+
+      //   showOverlay(s, 'clear');
+      //   render(s);
+
+      // }
+      
+      
+    }, 1000); // runs every 1000ms (1 second)
+  
   }
 
   function initState(s) {
@@ -419,13 +460,36 @@ function test_seed(){
     console.log("Match found:", data.room);
     
     //trigger
+    console.log("game started here");
     startGame();
+    timer(State);
+    
   });
+
   function startGame() {
     initState(State);
+    console.log("game started here2");
+    timer(State);
+    console.log("game started here3");
     socket.emit("game_init", "start_game");
 
   } 
+
+  socket.on("game_restart", function(matchId){
+    startGame();
+    timer(State,matchId);
+    
+
+  });
+
+  socket.on("game_end",function(winner){
+    console.log("endgame")
+    showOverlay(State, 'win', winner);
+    render(State);
+    
+  });
+
+
   socket.on("update_init", function(data) {
 
       console.log("backend-Pid",data.Pid);
@@ -434,13 +498,16 @@ function test_seed(){
 
       console.log("backend-start",data.cells);
       console.log("Frontend-start",State.cells);
-      if (State.cells !== data.cells){
+      
+      if (JSON.stringify(State.cells) !== JSON.stringify(data.cells)){
         State.cells = data.cells;
         console.log("Frontend-start-corrected", State.cells);
         render(State);
         
       }
   });
+
+  
 
   socket.on("update_second_init", function(data){
     if (!data.cells){
@@ -455,6 +522,8 @@ function test_seed(){
     }
     renderSecondBoard(data);
   });
+
+
 
   
 
