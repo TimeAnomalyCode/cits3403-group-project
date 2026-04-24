@@ -435,7 +435,9 @@ def check_player_win_and_dead(players_dict, match):
     p2 = players_dict[players[1]]  
     print('check win dead',players[0],players[1])
     print("p1.score",p1.score)
+    print("p1.trashpoint",p1.trashPoint)
     print("p2.score:",p2.score)
+    print("p2.trashpoint:",p2.trashPoint)
 
     #check
     if match_timers[match] == 0 or (p1.dead and p2.dead):
@@ -474,7 +476,10 @@ def restart_game(players_dict, match):
     players = room[match]["players"]
 
     # send restart to frontend
-    socketio.emit("game_restart", {"matchId": match}, room=match)
+    socketio.emit("game_restart", {
+        "matchId": match,
+        "backendSeed": Seed.state
+        }, room=match)
     
     for id in players:
         player = players_dict[id]
@@ -519,7 +524,10 @@ def handle_multiplayer_connect(auth=None):
             "players": [waiting_player, Pid]
         }
         print(room[match])
-        socketio.emit("start_game", {"room": match}, room=match)
+        socketio.emit("start_game", {
+            "room": match,
+            "backendSeed": Seed.state
+            }, room=match)
         waiting_player = None     
 timeing = 0
 @socketio.on('disconnect')
@@ -689,12 +697,24 @@ def receive_direction_communcation(data):
 @socketio.on("game_function")
 def receive_function_communcation(data):
     player = players_dict[request.sid]
+    match = player.matchID
+    players = room[match]["players"]
+    for i in players:
+        print(f" hello i am {i}")
+        if i != request.sid:
+            print(f" hello i am another player: {i}")
+            opponentID = i 
+            opponent = players_dict[opponentID]
+    print("before change")
+    print(f"(opponent.cells: {opponent.cells}")
+    print(f"(players.cells: {player.cells}")
+    print("\n")
     if data == "destroySpecificTile":
         # player1.cells, state = GameFunction.destroySpecificTile(player1.cells) #place for easy testing
         #the following has condition, harder in testing, so i seperate into two part of testing
         print("test")
         if player.trashPoint > 0:
-            player.cells, state = GameFunction.destroySpecificTile(player.cells)
+            opponent.cells, state = GameFunction.destroySpecificTile(opponent.cells)
             print("hiddenScore", player.trashPoint, state)
             if state:
                 player.trashPoint -= 1
@@ -703,7 +723,7 @@ def receive_function_communcation(data):
         # player1.cells, state = GameFunction.createRandomTile(player1.cells) #place for easy testing
         #the following has condition, harder in testing, so i seperate into two part of testing
         if player.trashPoint > 0:
-            player.cells, state = GameFunction.createRandomTile(player.cells)
+            opponent.cells, state = GameFunction.createRandomTile(opponent.cells)
             if state:
                 player.trashPoint -= 1
         pass
@@ -711,41 +731,49 @@ def receive_function_communcation(data):
         # player1.cells = GameFunction.rearrangeBoard(player1.cells) #place for easy testing
         #the following has condition, harder in testing, so i seperate into two part of testing
         if player.trashPoint > 0:
-            player.cells = GameFunction.rearrangeBoard(player.cells)
+            opponent.cells = GameFunction.rearrangeBoard(opponent.cells)
             player.trashPoint -= 1
         pass
     elif data == "makeRandomNegativeTile":
         # player1.cells, state = GameFunction.makeRandomNegativeTile(player1.cells) #place for easy testing
         #the following has condition, harder in testing, so i seperate into two part of testing
         if player.trashPoint > 0:
-            player.cells, state = GameFunction.makeRandomNegativeTile(player.cells)
+            opponent.cells, state = GameFunction.makeRandomNegativeTile(opponent.cells)
             if state:
                 player.trashPoint -= 1
         pass
     # send back to frontend
+    print("after change:")
+    print(f"(opponent.cells: {opponent.cells}")
+    print(f"(players.cells: {player.cells}")
+    
     socketio.emit("update_function", {
-        "cells": player.cells,
-        "score": player.score,
-        "won": player.won,
-        "dead": player.dead,
-        "hiddenScore": player.hiddenScore,
-        "trashPoint": player.trashPoint
-        }, room=request.sid)
+        "id": opponentID,
+        "cells": opponent.cells,
+        "score": opponent.score,
+        "won": opponent.won,
+        "dead": opponent.dead,
+        "hiddenScore": opponent.hiddenScore,
+        "trashPoint": opponent.trashPoint
+        }, room=request.sid)#request.sid
     
     #boardcast own board to second player
-    match = player.matchID
-    players = room[match]["players"]
+    # match = player.matchID
+    # players = room[match]["players"]
 
-    for i in players:
-        if i != request.sid:
-            socketio.emit("update_second_function", {
-                "cells": player.cells,
-                "score": player.score,
-                "won": player.won,
-                "dead": player.dead,
-                "hiddenScore": player.hiddenScore,
-                "trashPoint": player.trashPoint
-            }, to=i)
+    # for i in players:
+    #     if i != request.sid:
+    #         print(f"sending to: {i}")
+    socketio.emit("update_second_function", {
+                "id": opponentID,
+                "cells": opponent.cells,
+                "score": opponent.score,
+                "won": opponent.won,
+                "dead": opponent.dead,
+                "hiddenScore": opponent.hiddenScore,
+                "trashPoint": opponent.trashPoint,
+                "attackerTrashPoint": player.trashPoint
+            }, to=opponentID)#opponentID
 
 
    

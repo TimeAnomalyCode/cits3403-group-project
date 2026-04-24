@@ -458,8 +458,12 @@ test_seed();
 
   socket.on("start_game", (data) => {
     console.log("Match found:", data.room);
+    console.log("Current backend Seed:", data.backendSeed);
+    console.log("Current frontend Seed:", seed.state);
     
     //trigger
+    seed.state = data.backendSeed;
+    console.log("Current frontend Seed after:", seed.state);
     console.log("game started here");
     startGame();
     timer(State);
@@ -476,8 +480,15 @@ test_seed();
   } 
 
   socket.on("game_restart", function(matchId){
+    console.log("Current backend Seed:", matchId.backendSeed);
+    console.log("Current frontend Seed:", seed.state);
+    
+    //trigger
+    seed.state = matchId.backendSeed;
+    console.log("Current frontend Seed after:", seed.state);
+
     startGame();
-    timer(State,matchId);
+    timer(State,matchId.matchId);
     
 
   });
@@ -642,30 +653,47 @@ test_seed();
   // communication
   function GameFunctionCommunitcation(s,name){
     socket.emit("game_function", name);
-
+    console.log("sending function change");
+  }
     socket.on("update_function", function(data) {
       console.log("backend-function",data.cells);
       console.log("backend-function-trashPoint",data.trashPoint);
-      console.log("Frontend-function",s.cells);
-      if (JSON.stringify(s.cells) !== JSON.stringify(data.cells)){
+      console.log("Frontend-function",State.cells);
+      console.log("rendering which cell",data.id);
+      renderSecondBoard(data);
+      // if (JSON.stringify(s.cells) !== JSON.stringify(data.cells)){
 
-        s.cells = data.cells;
-        s.score = data.score;
-        s.won = data.won;
-        s.dead = data.dead;
-        s.hiddenScore = data.hiddenScore;
-        s.trashPoint = data.trashPoint;
-        console.log("Frontend-function-corrected",s.cells);
-        render(s);
-      }
+        // State.cells = data.cells;
+        // State.score = data.score;
+        // State.won = data.won;
+        // State.dead = data.dead;
+        // State.hiddenScore = data.hiddenScore;
+        // State.trashPoint = data.trashPoint;
+      //   console.log("Frontend-function-corrected",data.cells);
+      //   //render(s); // renader self
+      //   renderSecondBoard(data);
+      // }
     });
-  }
+  
 
   socket.on("update_second_function", function(data){
+    console.log("rendering which cell 2nd",data.id);
+    console.log(data.trashPoint)
     if (!data.cells){
       return;
     }
-    renderSecondBoard(data);
+    //renderSecondBoard(data);
+    State.cells       = data.cells;
+    State.score       = data.score;
+    State.won         = data.won;
+    State.dead        = data.dead;
+    State.hiddenScore = data.hiddenScore;
+    State.trashPoint  = data.trashPoint;
+    render(State);
+
+    //patch for getting another players trash Point, becasue own trash Point render at after 828,
+    // and treated as an event to handle, 
+    document.getElementById('player_2_trash_point').textContent = data.attackerTrashPoint
   });
 
 
@@ -684,7 +712,7 @@ test_seed();
     const c = Math.floor(seed.nextFloat() * N);
     return [r, c];
   }
-  
+  // these are targetting self, no need anymore(?)
   // replace a random Tile
   function createRandomTile(s, value = null) {
     let full_arry = []
@@ -710,14 +738,14 @@ test_seed();
 
     s.cells[r][c] = 2 ** getRandomInt(1, 6)
     
-    GameFunctionCommunitcation(s,"createRandomTile")
+    //GameFunctionCommunitcation(s,"createRandomTile")
     return true;
   }
 
   // remove the specific Tile 
   function destroySpecificTile(s,r,c){
     s.cells[r][c] = 0;
-    GameFunctionCommunitcation(s,"destroySpecificTile")
+    //GameFunctionCommunitcation(s,"destroySpecificTile")
   }
 
   // rearrange opponents board
@@ -764,7 +792,7 @@ test_seed();
     }
     
     
-    GameFunctionCommunitcation(s,"rearrangeBoard")
+    //GameFunctionCommunitcation(s,"rearrangeBoard")
   }
   
   // produce negative tiles 
@@ -791,7 +819,7 @@ test_seed();
       }
     s.cells[r][c] = (-1)*(2) ** getRandomInt(1, 3)
     
-    GameFunctionCommunitcation(s,"makeRandomNegativeTile")
+    //GameFunctionCommunitcation(s,"makeRandomNegativeTile")
 
     return true
   }
@@ -803,9 +831,12 @@ test_seed();
   document.getElementById('btnCreate').addEventListener('click', () => {
     // testing uisng trash point 
     if(State.trashPoint > 0){
-      if(createRandomTile(State)){
-        State.trashPoint = State.trashPoint - 1;
-      }
+      // if(createRandomTile(State)){
+      //   State.trashPoint = State.trashPoint - 1;
+      // }
+      GameFunctionCommunitcation(State,"createRandomTile")
+      State.trashPoint = State.trashPoint - 1;
+      
       render(State);
     }
 
@@ -831,8 +862,9 @@ test_seed();
       // pick random existing tile
       const [r, c] = filled[Math.floor(seed.nextFloat() * filled.length)];
       
-      destroySpecificTile(State, r, c)
+      //destroySpecificTile(State, r, c)
       State.trashPoint = State.trashPoint - 1;
+      GameFunctionCommunitcation(State,"destroySpecificTile")
       render(State);
     }
     
@@ -842,18 +874,21 @@ test_seed();
   // Rearrange board
   document.getElementById('btnShuffle').addEventListener('click', () => {
     if(State.trashPoint > 0){
-      rearrangeBoard(State);
+      GameFunctionCommunitcation(State,"rearrangeBoard")
       State.trashPoint = State.trashPoint - 1;
       render(State);
+      
     }
   });
 
   // Make negative tile
   document.getElementById('btnCreateNegative').addEventListener('click', () => {
     if(State.trashPoint > 0){
-      if (makeRandomNegativeTile(State)){
-        State.trashPoint = State.trashPoint - 1;
-      }
+      // if (makeRandomNegativeTile(State)){
+      //   State.trashPoint = State.trashPoint - 1;
+      // }
+    State.trashPoint = State.trashPoint - 1;
+    GameFunctionCommunitcation(State,"makeRandomNegativeTile")
     render(State);
     }
 
