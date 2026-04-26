@@ -14,6 +14,8 @@
         "editor.defaultFormatter": "monosans.djlint",
         "editor.foldingStrategy": "indentation"
     },
+    // https://stackoverflow.com/questions/37259740/passing-variables-from-flask-to-javascript#comment129128290_60548743
+    "html.validate.scripts": false,
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
