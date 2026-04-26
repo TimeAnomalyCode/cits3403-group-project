@@ -7,10 +7,16 @@
 
             <!-- Top Row -->
             <div class="row align-items-center text-center mb-3">
-                <div class="col-5">
+                <!-- <div class="col-5">
                     <button class="btn btn-primary w-100">
                         Create a Match
                     </button>
+                </div> -->
+
+                <div class="col-5">
+                    <a href="{{ url_for('match') }}" class="btn btn-primary w-100">
+                        Create a Match
+                    </a>
                 </div>
 
                 <div class="col-2 fw-bold">
@@ -18,9 +24,9 @@
                 </div>
 
                 <div class="col-5">
-                    <button class="btn btn-success w-100">
-                        Create a tournament
-                    </button>
+                    <a href="{{ url_for('create_tournament') }}" class="btn btn-success w-100">
+                         Create a Tournament
+                    </a>
                 </div>
             </div>
 
@@ -29,10 +35,12 @@
 
             <!-- Bottom Input -->
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Enter match code">
-                <button class="btn btn-outline-primary px-5">
-                    Join
-                </button>
+                <form action="{{url_for('match') }}" method="POST">
+                    <input type="text" name=""  class="form-control" placeholder="Enter match code">
+
+                        Join
+
+                </form>
             </div>
 
         </div>
