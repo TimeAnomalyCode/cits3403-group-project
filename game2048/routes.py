@@ -258,3 +258,9 @@ def about():
         data.append("<hr>")
 
     return "".join(data)
+
+
+@app.route("/board_test/<username>/<match_id>")
+def board(username, match_id):
+    data = {"username": username, "match_id": match_id}
+    return render_template("board.html", data=data)
