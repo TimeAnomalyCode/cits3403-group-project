@@ -472,11 +472,14 @@ class BoardAction {
     }
 }
 
-const socket = io();
-console.log(socket);
-
 const username = data.username || null;
 const match_id = data.match_id || null;
+
+const socket = io({
+    auth: {
+        match_id: match_id,
+    },
+});
 
 function end_game(text) {
     console.log("Match Ended: ", text);
