@@ -381,7 +381,7 @@ class MatchState:
         match = self.matches.get(id)
         return match
 
-    def create_match(self, host_username, host_sid):
+    def create_match(self, host_username):
         match_id = self.__generate_match_id()
         match_random = MatchRandom(match_id)
         match_timer = MatchTimer(self.__end_game, [match_id])
@@ -390,7 +390,7 @@ class MatchState:
         time_remaining = match_timer.create().remaining()
 
         match = {
-            "sids": {host_username: host_sid},
+            "sids": {host_username: ""},
             "host": host_username,
             "opponent": None,
             "status": MatchStatus.PENDING.value,
@@ -452,8 +452,3 @@ class MatchState:
 
 
 match_state = MatchState()
-match_id, match = match_state.create_match("jack", "1jk2jk31j2kjk1")
-match_state.join_match(match_id, "John", "jks82881")
-test = match_state.get_match_by_id(match_id)
-print(test)
-print(match_id)
