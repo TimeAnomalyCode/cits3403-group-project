@@ -1,24 +1,15 @@
+import math
+
 import sqlalchemy as sa
-from flask import (
-    render_template,
-    flash,
-    redirect,
-    url_for,
-    make_response,
-    send_from_directory,
-)
+
+from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory, jsonify
+from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
-from game2048 import app, db, socketio
-from game2048.forms import (
-    RegistrationForm,
-    LoginForm,
-    ChangeUsername,
-    ChangePassword,
-    ResetPasswordRequestForm,
-    ResetPasswordForm,
-)
-from game2048.models import User
+from game2048 import app, db, mail, socketio
+from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword, ResetPasswordRequestForm, ResetPasswordForm
+from game2048.models import User,Tournament, Match, MatchPlayer
 from game2048.email import send_password_reset_email
+from game2048.tournament import create_Tournament, get_simple_bracket, add_more_matches
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -257,4 +248,77 @@ def about():
 
         data.append("<hr>")
 
-    return "".join(data)
+    return ''.join(data)
+
+# ====================== Tournament Functions ======================
+# Once user clicks "Create Tournament", we will create a tournament,  
+# then redirect to the tournament page where the bracket will be generated 
+# based on the tournament code.
+
+# These functions are used to initialize tournament and generate bracket
+@app.route("/create_tournament")
+@app.route("/tournament")
+@login_required
+def create_tournament():
+    tournament_code = create_Tournament(current_user.id)
+    # bracket = get_simple_bracket(tournament_code)
+    
+    return redirect(url_for('tournament', tournament_code=tournament_code))
+        
+# These function will generate tournament_bracket site
+@app.route("/tournament/<tournament_code>", methods=['GET', 'POST'])
+@login_required
+def tournament(tournament_code):
+    # find tournament by code
+    tournament = db.session.scalar(
+        sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
+    )
+    if not tournament:
+        return render_template('404.html'), 404
+
+    # Count how many players have joined this tournament 
+    players_count = db.session.scalars(
+        sa.select(MatchPlayer)
+        .join(Match)
+        .where(Match.tournament_id == tournament.id)
+    ).all()
+
+    
+    bracket = get_simple_bracket(tournament_code)
+
+    return render_template(
+        'tournament_bracket.html', 
+        bracket=bracket, 
+        tournament_code=tournament_code, 
+        match_count=len(tournament.matches),
+        players_count=len(players_count)
+        )
+
+# This function will add more matches to the tournament when the host clicks "Add More Matches" button
+@app.route("/moreMatches/<tournament_code>", methods=['POST'])
+@login_required
+def more_matches(tournament_code):
+    # find tournament by code
+    tournament = db.session.scalar(
+        sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
+    )
+    if not tournament:
+        return render_template('404.html'), 404
+    
+    add_more_matches(tournament)
+
+    return jsonify(
+        status="ok",
+        #added=match_count,
+        total_matches=len(tournament.matches)
+    )
+
+# ====================== Match Functions ======================
+@app.route("/match", methods=['GET', 'POST'])
+@login_required
+def match():
+    
+    match_id = '123ABC'
+
+    return render_template('match.html', match_id=match_id)
+
