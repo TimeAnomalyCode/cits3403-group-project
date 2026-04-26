@@ -9,17 +9,16 @@ def create_tournament(current_user_id):
     tournament_code = secrets.token_hex(3)
 
     while True:
-        tournament_code = secrets.token_hex(3)  # 生成随机6字符代码
+        tournament_code = secrets.token_hex(3)  # generate a random 6-character code (3 bytes hex)
         
-        # 查询数据库：有没有已经存在这个 code
+        # query the database: check if this code already exists
         exists = db.session.scalar(
             sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
         )
-        # 如果不存在，跳出循环，使用这个 code
+        # if it doesn't exist, break the loop and use this code
         if not exists:
             break
 
-    # 自动生成 tournament（用户进入页面时）
     tournament = Tournament(
         tournament_code=tournament_code,  
         host_user_id=current_user_id,
@@ -27,9 +26,9 @@ def create_tournament(current_user_id):
     )
 
     db.session.add(tournament)
-    db.session.flush()  # 立刻生成 tournament.id，但不正式提交
+    db.session.flush()  
 
-    # 初始自动生成 2 场 Match 
+    # initialize 2 matches 
     initial_matches = [
         Match(tournament_id=tournament.id, round_number=1, match_number=1, ),
         Match(tournament_id=tournament.id, round_number=1, match_number=2),
@@ -39,7 +38,8 @@ def create_tournament(current_user_id):
 
     first_match = initial_matches[0]
 
-    # 把当前玩家（你）写入这场 match（核心代码）
+    # register the host player to the first match by default
+    """ This is part no complete"""
     mp = MatchPlayer(
         match_id=first_match.id,
         user_id=current_user_id
@@ -49,18 +49,25 @@ def create_tournament(current_user_id):
 
     return  tournament_code  # return tournament.id
 
+
 def get_simple_bracket(tournament_code):
     """
-    从数据库读取当前 tournament 的 Round1 比赛与真实玩家，生成对阵图
+    Get tournment player names for the first round, and generate a simple bracket structure for the frontend to render.
+    return format：
+    [
+        [ ["Alice", "Bob"], ["Charlie", "Waiting"] ],  # Round 1
+        [ ["", ""], ["", ""] ],  # Round 2 (占位)
+        [ ["", ""], ["", ""] ],  # Round 3 (占位)
+        ...
     """
-    # 1. 根据 tournament_code 找到这场比赛
+    # 1. find tournament by code
     tournament = db.session.scalar(
         db.select(Tournament).where(Tournament.tournament_code == tournament_code)
     )
     if not tournament:
         return []
 
-    # 2. 取出这场比赛所有 round_number = 1 的比赛（第一轮）
+    # 2. get all match in these tournament where round_number = 1 (first round)
     round1_matches = db.session.scalars(
         db.select(Match)
         .where(Match.tournament_id == tournament.id)
@@ -68,7 +75,7 @@ def get_simple_bracket(tournament_code):
         .order_by(Match.match_number)
     ).all()
 
-    # 3. 从每一场 match 里提取两个玩家的名字
+    # 3. get player names for these matches 
     player_names = []
     for match in round1_matches:
         # 取出这场比赛的两个玩家
@@ -78,7 +85,6 @@ def get_simple_bracket(tournament_code):
             .where(MatchPlayer.match_id == match.id)
         ).all()
 
-        # 把玩家名字加入列表（没有则显示占位）
         if len(players_in_match) >= 1:
             player_names.append(players_in_match[0].username)
         else:
@@ -91,21 +97,20 @@ def get_simple_bracket(tournament_code):
 
     num_players = len(player_names)
     if num_players < 2:
-        num_players = 4  # 默认4人
+        num_players = 4  
         player_names = ["Waiting", "Waiting", "Waiting", "Waiting"]
 
-    # 5. 构建第一轮对阵（两两配对）
+    # 5. gen bracket for the first round (pairing every 2 players)
     first_round = []
     for i in range(0, num_players, 2):
         p1 = player_names[i] if i < len(player_names) else "Waiting"
         p2 = player_names[i+1] if i+1 < len(player_names) else "Waiting"
         first_round.append([p1, p2])
 
-    # 6. 生成完整 bracket 结构
     all_rounds = [first_round]
     # total_rounds = int(math.log2(num_players))
 
-    # 后续轮次用空占位
+    # empty matches for future rounds 
     current_matches = len(first_round) // 2
     while current_matches >= 1:
         all_rounds.append([["", ""] for _ in range(current_matches)])
@@ -113,6 +118,8 @@ def get_simple_bracket(tournament_code):
 
     return all_rounds
 
+# These functions are for the "Add More Matches" button, 
+# which allows the host to expand the tournament bracket 
 def add_more_matches(tournament):
 
     # Calculate how many matches to add 
