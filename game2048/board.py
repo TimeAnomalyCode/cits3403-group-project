@@ -149,6 +149,228 @@ class MatchTimer:
         return max(0, self.end_time - time.time())
 
 
+class BoardLogic:
+    @staticmethod
+    def compress(row):
+        new = []
+        for i in row:
+            if i != 0:
+                new.append(i)
+        return new
+
+    @staticmethod
+    def merge(row):
+        score = 0
+        for i in range(len(row) - 1):
+            if row[i] == row[i + 1]:
+                row[i] = row[i] * 2
+                row[i + 1] = 0
+
+                score += row[i]
+            elif row[i] < 0 or row[i + 1] < 0:
+                s = row[i] + row[i + 1]
+                if s == 0:
+                    row[i] = 0
+                    row[i + 1] = 0
+        return row, score
+
+    @staticmethod
+    def left(cell):
+        new_cell = []
+        Total_score_for_move = 0
+        moved = False
+
+        for r in cell:
+            row = BoardLogic.compress(r)
+            row, score = BoardLogic.merge(row)
+            row = BoardLogic.compress(row)
+
+            length = len(r) - len(row)
+
+            # fill back with 0
+            for i in range(length):
+                row.append(0)
+
+            if row != r:
+                moved = True
+
+            new_cell.append(row)
+            Total_score_for_move += score
+
+        return new_cell, moved, Total_score_for_move
+
+    @staticmethod
+    def right(cell):
+        reverse_cell = []
+        temp_cell = []
+        for i in cell:
+            reverse_cell.append(i[::-1])
+        new_cell, moved, Total_score_for_move = BoardLogic.left(reverse_cell)
+        for r in new_cell:
+            temp_cell.append(r[::-1])
+        new_cell = temp_cell
+        return new_cell, moved, Total_score_for_move
+
+    @staticmethod
+    def transform(cell):
+        new_cell = []
+
+        # transform
+        for c in range(len(cell)):
+            new_array = []
+            for r in cell:
+                new_array.append(r[c])
+            # print(new_array)
+            new_cell.append(new_array)
+        return new_cell
+
+    @staticmethod
+    def up(cell):
+        Total_score_for_move = 0
+        moved = False
+
+        cell = BoardLogic.transform(cell)
+        # print(cell)
+        cell2 = []
+        for c in cell:
+            column = BoardLogic.compress(c)
+            column, score = BoardLogic.merge(column)
+            column = BoardLogic.compress(column)
+
+            length = len(c) - len(column)
+
+            for i in range(length):
+                column.append(0)
+
+            if c != column:
+                moved = True
+            # print(column)
+            cell2.append(column)
+            # for l in range(len(column)):
+            #     new_cell[l].append(column[l])
+
+            Total_score_for_move += score
+        # print(cell2)
+        new_cell = BoardLogic.transform(cell2)
+        # print(cell2)
+        return new_cell, moved, Total_score_for_move
+
+    @staticmethod
+    def down(cell):
+        Total_score_for_move = 0
+        moved = False
+        cell = BoardLogic.transform(cell)
+        print(cell)
+        cell2 = []
+        for c in cell:
+            c = c[::-1]
+            column = BoardLogic.compress(c)
+            column, score = BoardLogic.merge(column)
+            column = BoardLogic.compress(column)
+
+            length = len(c) - len(column)
+
+            for i in range(length):
+                column.append(0)
+
+            if c != column:
+                moved = True
+            # print(column)
+            column = column[::-1]
+            cell2.append(column)
+            Total_score_for_move += score
+        # print(cell2)
+        new_cell = BoardLogic.transform(cell2)
+        # print(cell2)
+        return new_cell, moved, Total_score_for_move
+
+    @staticmethod
+    def hasMove(cell):
+        N = len(cell)
+        for r in range(N):
+            for c in range(N):
+                if cell[r][c] == 0:
+                    return True
+                if c < N - 1 and cell[r][c] == cell[r][c + 1]:
+                    return True
+                if r < N - 1 and cell[r][c] == cell[r + 1][c]:
+                    return True
+                if c < N - 1 and (cell[r][c] + cell[r][c + 1]) <= 0:
+                    return True
+                if r < N - 1 and (cell[r][c] + cell[r + 1][c]) <= 0:
+                    return True
+        return False
+
+
+class BoardAction:
+    @staticmethod
+    def spawnTile(cell, match_random: MatchRandom):
+        r, c = match_random.randomPickEmpty(cell)
+
+        if r is None or c is None:
+            return cell
+
+        probability = match_random.next_float()
+        if probability < 0.9:
+            cell[r][c] = 2
+        else:
+            cell[r][c] = 4
+
+        return cell
+
+    @staticmethod
+    def destroySpecificTile(cell, match_random: MatchRandom):
+        r, c = match_random.randomPickNonEmpty(cell)
+        if r is None or c is None:
+            return cell, False
+
+        cell[r][c] = 0
+        return cell, True
+
+    @staticmethod
+    def createRandomTile(cell, match_random: MatchRandom):
+        r, c = match_random.randomPickEmpty(cell)
+        if r is None or c is None:
+            return cell, False
+        cell[r][c] = 2 ** match_random.next_range(1, 7)
+        return cell, True
+
+    @staticmethod
+    def rearrangeBoard(cell, match_random: MatchRandom):
+        N = len(cell)
+        values = []
+
+        for r in range(N):
+            for c in range(N):
+                if cell[r][c] > 0:
+                    values.append(cell[r][c])
+                    cell[r][c] = 0
+
+        values = match_random.fisher_yates_shuffle(values)
+
+        empty = []
+        for r in range(N):
+            for c in range(N):
+                if cell[r][c] == 0:
+                    empty.append([r, c])
+
+        empty = match_random.fisher_yates_shuffle(empty)
+
+        for i in range(len(values)):
+            r, c = empty[i]
+            cell[r][c] = values[i]
+
+        return cell
+
+    @staticmethod
+    def makeRandomNegativeTile(cell, match_random: MatchRandom):
+        r, c = match_random.randomPickEmpty(cell)
+        if r is None or c is None:
+            return cell, False
+        cell[r][c] = (-1) * 2 ** match_random.next_range(1, 4)
+        return cell, True
+
+
 class MatchState:
     def __init__(self):
         self.matches: dict[str, TypeMatch] = {}
