@@ -1,0 +1,78 @@
+<!-- ------------------------------------------------------ -->
+<!-- Use form_field and/or submit_cancel when building form -->
+<!-- ------------------------------------------------------ -->
+
+<!-- Form Field creates the basic label and input -->
+<!-- It also creates a Checkbox or a Submit Button -->
+{% macro form_field(field) %}
+
+    {% if field.type == 'BooleanField' %}
+
+        <div class="mb-3 form-check">
+            {{ field(class="form-check-input") }}
+            {{ field.label(class="form-check-label") }}
+        </div>
+
+    {% elif field.type == 'SubmitField' %}
+        <div class="mb-3">
+            {{ field(class="btn btn-primary w-100") }}
+        </div>
+
+    {% else %}
+
+        <div class="mb-3">
+            {{ field.label(class="form-label") }}
+            {% if field.errors %}
+                {{ field(class="form-control is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for error in field.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ field(class="form-control") }}
+            {% endif %}
+        </div>
+
+    {% endif %}
+{% endmacro %}
+
+<!-- This creates a Submit Button and a Cancel Button -->
+{% macro submit_cancel(submit_field, cancel_url) %}
+    <div class="d-grid gap-2">
+        {{ submit_field(class="btn btn-primary w-100") }}
+
+        <a href="{{ cancel_url }}" class="btn btn-outline-secondary">
+            Cancel
+        </a>
+    </div>
+{% endmacro %}
+
+<!-- -------------------------------------------------------------------------------------------------------------- -->
+<!-- Use quick_form_submit or quick_form_submit_cancel when you have a full form of form_field and/or submit_cancel -->
+<!-- -------------------------------------------------------------------------------------------------------------- -->
+
+<!-- This quickly creates a large form with just a submit button -->
+{% macro quick_form_submit(form) %}
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+        {% for field in form %}
+            {% if field.widget.input_type != 'hidden' %}
+                {{ form_field(field) }}
+            {% endif %}
+        {% endfor %}
+    </form>
+{% endmacro %}
+
+<!-- This quickly creates a large form with just a submit button and a cancel button -->
+{% macro quick_form_submit_cancel(form, cancel_url) %}
+    <form method="post" action="">
+        {{ form.hidden_tag() }}
+        {% for field in form %}
+            {% if field.widget.input_type != 'hidden' and field.type != 'SubmitField' %}
+                {{ form_field(field) }}
+            {% endif %}
+        {% endfor %}
+        {{ submit_cancel(form.submit, cancel_url) }}
+    </form>
+{% endmacro %}

@@ -28,10 +28,17 @@ pip install -r requirements.txt
 ```
 flask run
 ```
-# Formatting and Linting
-> We are using djLint to help tidy the code
-1. Download the djLint Plugin on VS Code
-2. That's it. You should be able to save HTML and format it automatically
+# Formatting and Linting and QOL
+## VS Code Extensions
+1. Code Spell Checker: To prevent typos
+2. Jinja: To have Jinja language support when working in HTML
+3. djLint: To format and lint HTML and Jinja
+4. Error Lens: To see errors in JS early
+5. HTML CSS Support: To have autocomplete with CSS
+6. Prettier: To format and lint JS and CSS
+7. Python: To have Python language support
+8. Ruff: To format and lint Python
+9. SQLite Viewer: To view SQLite Database
 # Run Tests
 ```
 some python command
