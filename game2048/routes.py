@@ -260,7 +260,36 @@ def about():
     return "".join(data)
 
 
-@app.route("/board_test/<username>/<match_id>")
-def board(username, match_id):
-    data = {"username": username, "match_id": match_id}
+from game2048.board import match_state
+from flask_socketio import join_room, leave_room, emit
+from flask import request
+
+
+@app.route("/match")
+@login_required
+def create_match():
+    match_id, match = match_state.create_match(current_user.username)
+    return redirect(url_for("match", match_id=match_id))
+
+
+@app.route("/match/<match_id>")
+@login_required
+def match(match_id):
+    match = match_state.get_match_by_id(match_id)
+
+    data = {"username": current_user.username, "match_id": match_id, "match": match}
     return render_template("board.html", data=data)
+
+
+@socketio.on("connect")
+def on_connect(auth):
+    match_id = auth.get("match_id") if auth else None
+    if match_id is None:
+        return print("No match_id")
+
+    match = match_state.get_match_by_id(match_id)
+    if match is None:
+        return print("No match found")
+
+    match["sids"][current_user.username] = request.sid
+    join_room(match_id)
