@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from game2048.models import MatchPlayer, Match, Tournament, User
 from game2048 import db
 
-def create_tournament(current_user_id):
+def create_Tournament(current_user_id):
     tournament_code = secrets.token_hex(3)
 
     while True:

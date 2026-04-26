@@ -9,7 +9,7 @@ from game2048 import app, db, mail, socketio
 from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword, ResetPasswordRequestForm, ResetPasswordForm
 from game2048.models import User,Tournament, Match, MatchPlayer
 from game2048.email import send_password_reset_email
-from game2048.tournament import create_tournament, get_simple_bracket, add_more_matches
+from game2048.tournament import create_Tournament, get_simple_bracket, add_more_matches
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -239,8 +239,8 @@ def about():
 @app.route("/create_tournament")
 @app.route("/tournament")
 @login_required
-def create_tournament_route():
-    tournament_code = create_tournament(current_user.id)
+def create_tournament():
+    tournament_code = create_Tournament(current_user.id)
     # bracket = get_simple_bracket(tournament_code)
     
     return redirect(url_for('tournament', tournament_code=tournament_code))
