@@ -310,7 +310,7 @@ def on_start_game(match_id):
     if match is None:
         return
 
-    if match["host"] == username and match["status"] == MatchStatus.PENDING:
-        match["status"] = MatchStatus.START
+    if match["host"] == username and match["status"] == MatchStatus.PENDING.value:
+        match["status"] = MatchStatus.START.value
         emit("game_state", match, to=match_id)
-        match["status"] = MatchStatus.ONGOING
+        match["status"] = MatchStatus.ONGOING.value
