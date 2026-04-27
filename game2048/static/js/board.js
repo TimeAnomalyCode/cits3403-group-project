@@ -145,7 +145,6 @@ class MatchTimer {
     }
 
     create() {
-        console.log(this);
         if (this.timer !== null) {
             return this;
         }
