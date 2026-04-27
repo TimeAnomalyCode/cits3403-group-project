@@ -135,11 +135,10 @@ class MatchRandom {
 }
 
 class MatchTimer {
-    constructor(callback, args = [], duration = 180) {
-        this.duration = duration;
+    constructor(callback, args = []) {
+        this.duration = 9999;
         this.callback = callback;
         this.args = args;
-        this.hasStart = false;
 
         this.timer = null;
         this.endTime = null;
@@ -157,15 +156,14 @@ class MatchTimer {
         return this;
     }
 
-    start() {
-        if (this.hasStart) {
+    start(duration) {
+        if (this.timer !== null) {
             return this;
         }
 
+        this.duration = duration;
         this.endTime = Date.now() + this.duration * 1000;
         this.create();
-        this.hasStart = true;
-
         return this;
     }
 
@@ -189,7 +187,7 @@ class MatchTimer {
             return this.duration;
         }
 
-        return Math.max(0, (this.endTime - Date.now()) / 1000);
+        return Math.ceil(Math.max(0, (this.endTime - Date.now()) / 1000));
     }
 
     clear() {
@@ -197,7 +195,6 @@ class MatchTimer {
             clearTimeout(this.timer);
             this.timer = null;
         }
-        this.hasStart = false;
         this.endTime = null;
         return this;
     }
@@ -518,6 +515,10 @@ document.getElementById("start_game").addEventListener("click", () => {
     socket.emit("start_game", match_id);
 });
 
+setInterval(() => {
+    timerEl.innerText = match_timer.remaining();
+}, 250);
+
 const socket = io({
     auth: {
         match_id: match_id,
@@ -541,7 +542,7 @@ socket.on("game_state", (match) => {
     if (match.status === MATCH_STATUS.PENDING) {
         disableMovement();
     } else if (match.status === MATCH_STATUS.START) {
-        match_timer.start();
+        match_timer.start(match.timer);
         enableMovement();
     } else if (match.status === MATCH_STATUS.ONGOING) {
         match_timer.update(match.timer);
