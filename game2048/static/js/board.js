@@ -508,6 +508,7 @@ const keyMap = {
 };
 const match_random = new MatchRandom();
 const match_timer = new MatchTimer(end_game, ["random Test"]);
+const timerEl = document.getElementById("timer1");
 const username = data.username;
 const match_id = data.match_id;
 let cell = [];
@@ -525,10 +526,12 @@ const socket = io({
 
 socket.on("game_state", (match) => {
     console.log(match);
+
     opponent_username = match.host !== username ? match.host : match.opponent;
+    setOpponentName();
+
     cell = match.cells.username;
     match_random.setup(match.random_array, match.random_array_index);
-    match_timer.create();
 
     if (match.dead.username) {
         disableMovement();
@@ -560,6 +563,11 @@ function enableMovement() {
 
 function disableMovement() {
     document.removeEventListener("keydown", handleMovement);
+}
+
+function setOpponentName() {
+    document.getElementById("opponent_username").innerText =
+        opponent_username || "Waiting for player...";
 }
 
 function end_game(text) {
