@@ -533,7 +533,7 @@ socket.on("game_state", (match) => {
     setOpponentName();
 
     cell = match.cells.username;
-    match_random.setup(match.random_array, match.random_array_index);
+    match_random.setup(match.random_array, match.random_array_index[username]);
 
     if (match.dead.username) {
         disableMovement();
