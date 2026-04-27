@@ -260,7 +260,7 @@ def about():
     return "".join(data)
 
 
-from game2048.board import match_state
+from game2048.board import match_state, MatchStatus
 from flask_socketio import join_room, leave_room, emit
 from flask import request
 
@@ -275,9 +275,15 @@ def create_match():
 @app.route("/match/<match_id>")
 @login_required
 def match(match_id):
+    username = current_user.username
     match = match_state.get_match_by_id(match_id)
+    if match is None:
+        return redirect(url_for("create_match"))
 
-    data = {"username": current_user.username, "match_id": match_id, "match": match}
+    if match["opponent"] is None and username != match["host"]:
+        match_state.join_match(match_id, username)
+
+    data = {"username": username, "match_id": match_id, "match": match}
     return render_template("board.html", data=data)
 
 
@@ -293,3 +299,18 @@ def on_connect(auth):
 
     match["sids"][current_user.username] = request.sid
     join_room(match_id)
+    emit("game_state", match, to=match_id)
+
+
+@socketio.on("start_game")
+def on_start_game(match_id):
+    username = current_user.username
+    match = match_state.get_match_by_id(match_id)
+
+    if match is None:
+        return
+
+    if match["host"] == username and match["status"] == MatchStatus.PENDING:
+        match["status"] = MatchStatus.START
+        emit("game_state", match, to=match_id)
+        match["status"] = MatchStatus.ONGOING
