@@ -136,7 +136,7 @@ class MatchRandom {
 
 class MatchTimer {
     constructor(callback, args = []) {
-        this.duration = 9999;
+        this.duration = 180;
         this.callback = callback;
         this.args = args;
 
@@ -145,6 +145,7 @@ class MatchTimer {
     }
 
     create() {
+        console.log(this);
         if (this.timer !== null) {
             return this;
         }
@@ -177,7 +178,7 @@ class MatchTimer {
 
         this.clear();
         this.duration = seconds_left;
-        this.start();
+        this.start(seconds_left);
 
         return this;
     }
