@@ -24,14 +24,23 @@ const MATCH_STATUS = {
 };
 
 class MatchRandom {
-    constructor(randomArray, startIndex = 0) {
-        if (!Array.isArray(randomArray) || randomArray.length === 0) {
+    constructor() {
+        this.random_array = [];
+        this.bufferSize = 0;
+        this.index = 0;
+    }
+
+    setup(random_array, start_index) {
+        if (!Array.isArray(random_array) || random_array.length === 0) {
             throw new Error("randomArray must be a non-empty array");
         }
 
-        this.random_array = randomArray;
-        this.bufferSize = randomArray.length;
-        this.index = startIndex % this.bufferSize;
+        if (this.random_array.length === 0) {
+            this.random_array = random_array;
+            this.bufferSize = random_array.length;
+        }
+
+        this.index = start_index % this.bufferSize;
     }
 
     get_array() {
@@ -156,6 +165,21 @@ class MatchTimer {
         this.endTime = Date.now() + this.duration * 1000;
         this.create();
         this.hasStart = true;
+
+        return this;
+    }
+
+    update(seconds_left) {
+        const currentRemaining = this.remaining();
+
+        // Only resync if the difference is meaningful
+        if (Math.abs(currentRemaining - seconds_left) <= 2) {
+            return this;
+        }
+
+        this.clear();
+        this.duration = seconds_left;
+        this.start();
 
         return this;
     }
@@ -472,14 +496,71 @@ class BoardAction {
     }
 }
 
-const username = data.username || null;
-const match_id = data.match_id || null;
+const keyMap = {
+    ArrowUp: "up",
+    ArrowDown: "down",
+    ArrowLeft: "left",
+    ArrowRight: "right",
+    w: "up",
+    a: "left",
+    s: "down",
+    d: "right",
+};
+const match_random = new MatchRandom();
+const match_timer = new MatchTimer(end_game, ["random Test"]);
+const username = data.username;
+const match_id = data.match_id;
+let cell = [];
+let opponent_username = "";
+
+document.getElementById("start_game").addEventListener("click", () => {
+    socket.emit("start_game", match_id);
+});
 
 const socket = io({
     auth: {
         match_id: match_id,
     },
 });
+
+socket.on("game_state", (match) => {
+    console.log(match);
+    opponent_username = match.host !== username ? match.host : match.opponent;
+    cell = match.cells.username;
+    match_random.setup(match.random_array, match.random_array_index);
+    match_timer.create();
+
+    if (match.dead.username) {
+        disableMovement();
+        return;
+    }
+
+    if (match.status === MATCH_STATUS.PENDING) {
+        disableMovement();
+    } else if (match.status === MATCH_STATUS.START) {
+        match_timer.start();
+        enableMovement();
+    } else if (match.status === MATCH_STATUS.ONGOING) {
+        match_timer.update(match.timer);
+    } else if (match.status === MATCH_STATUS.END) {
+        disableMovement();
+    }
+});
+
+function handleMovement(e) {
+    if (keyMap[e.key]) {
+        e.preventDefault();
+        // move board 1
+    }
+}
+
+function enableMovement() {
+    document.addEventListener("keydown", handleMovement);
+}
+
+function disableMovement() {
+    document.removeEventListener("keydown", handleMovement);
+}
 
 function end_game(text) {
     console.log("Match Ended: ", text);
