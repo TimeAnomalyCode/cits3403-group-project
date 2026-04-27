@@ -413,7 +413,7 @@ class MatchState:
         self.matches_timer[match_id] = match_timer
         return (match_id, match)
 
-    def join_match(self, match_id, opponent_username, opponent_sid):
+    def join_match(self, match_id, opponent_username):
         match = self.get_match_by_id(match_id)
 
         if match is None:
@@ -422,7 +422,7 @@ class MatchState:
         match_random = MatchRandom(match_id)
         self.matches_random[match_id][opponent_username] = match_random
 
-        match["sids"][opponent_username] = opponent_sid
+        match["sids"][opponent_username] = ""
         match["opponent"] = opponent_username
         match["cells"][opponent_username] = [
             [0, 0, 0, 0],
