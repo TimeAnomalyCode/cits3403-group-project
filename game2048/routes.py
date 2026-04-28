@@ -310,7 +310,19 @@ def on_start_game(match_id):
     if match is None:
         return
 
-    if match["host"] == username and match["status"] == MatchStatus.PENDING.value:
+    if (
+        match["host"] == username
+        and match["status"] == MatchStatus.PENDING.value
+        and len(match["sids"]) == 2
+    ):
         match["status"] = MatchStatus.START.value
+        match_state.start_match(match_id)
+        # print("1: ", match)
+        # print(match_state.matches_random[match_id][current_user.username].get_index())
+        # data = {"type": "move", "match_id": match_id, "direction": "left"}
+        # match_state.handle_action(match_id, current_user.username, data)
+        # print("2:", match)
+        # print(match_state.matches_random[match_id][current_user.username].get_index())
+
         emit("game_state", match, to=match_id)
         match["status"] = MatchStatus.ONGOING.value
