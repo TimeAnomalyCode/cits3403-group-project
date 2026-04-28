@@ -3,7 +3,7 @@ import string
 import threading
 import time
 from enum import Enum
-from typing import TypedDict
+from typing import TypedDict, Literal
 # from game2048 import socketio
 
 # ----------------------------------------------------------------
@@ -33,6 +33,18 @@ class TypeMatch(TypedDict):
     random_array: list
     random_array_index: dict[str, int]
     timer: int
+
+
+class TypeMove(TypedDict):
+    match_id: str
+    type: Literal["move"]
+    direction: Literal["left", "right", "up", "down"]
+
+
+class TypeAttack(TypedDict):
+    match_id: str
+    type: Literal["attack"]
+    attack_id: str
 
 
 # ----------------------------------------------------------------
@@ -437,6 +449,102 @@ class MatchState:
         match["random_array_index"][opponent_username] = 0
 
         return match
+
+    def start_match(self, match_id):
+        match = self.get_match_by_id(match_id)
+
+        if match is None:
+            return None
+
+        player1 = match["host"]
+        player2 = match["opponent"]
+
+        player1_match_random = self.matches_random[match_id][player1]
+        player2_match_random = self.matches_random[match_id][player2]
+
+        BoardAction.spawnTile(match["cells"][player1], player1_match_random)
+        BoardAction.spawnTile(match["cells"][player1], player1_match_random)
+
+        BoardAction.spawnTile(match["cells"][player2], player2_match_random)
+        BoardAction.spawnTile(match["cells"][player2], player2_match_random)
+
+        self.__sync_random_index(match_id)
+
+        return match
+
+    def handle_action(self, match_id, username, data: TypeMove | TypeAttack):
+        match = self.get_match_by_id(match_id)
+
+        if match is None or not self.__is_player_input_valid(data):
+            return None
+
+        if data["type"] == "move":
+            self.__handle_player_direction(match_id, match, username, data)
+
+        if data["type"] == "attack":
+            pass
+
+        self.__sync_random_index(match_id)
+        return match
+
+    def __is_player_input_valid(self, data: TypeMove | TypeAttack):
+        is_valid = False
+        type_move_keys = ["match_id", "type", "direction"]
+        type_attack_keys = ["match_id", "type", "attack_id"]
+
+        if all(key in data for key in type_move_keys) or all(
+            key in data for key in type_attack_keys
+        ):
+            is_valid = True
+
+        if data["type"] == "move" and data["direction"] not in [
+            "left",
+            "right",
+            "up",
+            "down",
+        ]:
+            is_valid = False
+
+        return is_valid
+
+    def __handle_player_direction(
+        self, match_id, match: TypeMatch, username, data: TypeMove | TypeAttack
+    ):
+        moved = False
+        score = 0
+
+        if data["direction"] == "left":
+            match["cells"][username], moved, score = BoardLogic.left(
+                match["cells"][username]
+            )
+        elif data["direction"] == "right":
+            match["cells"][username], moved, score = BoardLogic.right(
+                match["cells"][username]
+            )
+        elif data["direction"] == "up":
+            match["cells"][username], moved, score = BoardLogic.up(
+                match["cells"][username]
+            )
+        elif data["direction"] == "down":
+            match["cells"][username], moved, score = BoardLogic.down(
+                match["cells"][username]
+            )
+
+        BoardAction.spawnTile(
+            match["cells"][username], self.matches_random[match_id][username]
+        )
+        match["score"][username] += score
+        if match["hidden_score"][username] > 128:
+            match["trash_point"][username] += 1
+            match["hidden_score"][username] -= 128
+        if not BoardLogic.hasMove(match["cells"][username]):
+            match["dead"][username] = True
+
+    def __sync_random_index(self, match_id):
+        match = self.get_match_by_id(match_id)
+
+        for username, m_random in self.matches_random[match_id].items():
+            match["random_array_index"][username] = m_random.get_index()
 
     def __generate_match_id(self):
         characters = string.ascii_letters + string.digits
