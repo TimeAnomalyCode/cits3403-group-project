@@ -44,7 +44,12 @@ class TypeMove(TypedDict):
 class TypeAttack(TypedDict):
     match_id: str
     type: Literal["attack"]
-    attack_id: str
+    attack_id: Literal[
+        "destroySpecificTile",
+        "createRandomTile",
+        "rearrangeBoard",
+        "makeRandomNegativeTile",
+    ]
 
 
 # ----------------------------------------------------------------
@@ -478,11 +483,13 @@ class MatchState:
         if match is None or not self.__is_player_input_valid(data):
             return None
 
+        if match["dead"][username]:
+            return None
+
         if data["type"] == "move":
             self.__handle_player_direction(match_id, match, username, data)
-
-        if data["type"] == "attack":
-            pass
+        elif data["type"] == "attack":
+            self.__handle_player_attack(match_id, match, username, data)
 
         self.__sync_random_index(match_id)
         return match
@@ -539,6 +546,40 @@ class MatchState:
             match["hidden_score"][username] -= 128
         if not BoardLogic.hasMove(match["cells"][username]):
             match["dead"][username] = True
+
+    def __handle_player_attack(
+        self, match_id, match: TypeMatch, username, data: TypeMove | TypeAttack
+    ):
+        if match["trash_point"] <= 0:
+            return
+
+        opponent_username = (
+            match["opponent"] if match["host"] == username else match["host"]
+        )
+        match_random = self.matches_random[match_id][opponent_username]
+        state_player = False
+
+        if data["attack_id"] == "destroySpecificTile":
+            match["cells"][opponent_username], state = BoardAction.destroySpecificTile(
+                match["cells"][opponent_username], match_random
+            )
+        elif data["attack_id"] == "createRandomTile":
+            match["cells"][opponent_username], state = BoardAction.createRandomTile(
+                match["cells"][opponent_username], match_random
+            )
+        elif data["attack_id"] == "rearrangeBoard":
+            match["cells"][opponent_username], state = BoardAction.rearrangeBoard(
+                match["cells"][opponent_username], match_random
+            )
+        elif data["attack_id"] == "makeRandomNegativeTile":
+            match["cells"][opponent_username], state = (
+                BoardAction.makeRandomNegativeTile(
+                    match["cells"][opponent_username], match_random
+                )
+            )
+
+        if state_player:
+            match["cells"][username] -= 1
 
     #  Sync at the end of Board Logic / Board Action
     def __sync_random_index(self, match_id):
