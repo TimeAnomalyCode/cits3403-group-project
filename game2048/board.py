@@ -540,6 +540,7 @@ class MatchState:
         if not BoardLogic.hasMove(match["cells"][username]):
             match["dead"][username] = True
 
+    #  Sync at the end of Board Logic / Board Action
     def __sync_random_index(self, match_id):
         match = self.get_match_by_id(match_id)
 
