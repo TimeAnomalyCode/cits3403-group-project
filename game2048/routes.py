@@ -6,6 +6,7 @@ from flask import (
     url_for,
     make_response,
     send_from_directory,
+    request,
 )
 from flask_login import current_user, login_user, logout_user, login_required
 from game2048 import app, db, socketio
@@ -19,6 +20,8 @@ from game2048.forms import (
 )
 from game2048.models import User
 from game2048.email import send_password_reset_email
+from game2048.board import match_state, MatchStatus
+from flask_socketio import join_room, leave_room, emit
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -260,11 +263,6 @@ def about():
     return "".join(data)
 
 
-from game2048.board import match_state, MatchStatus
-from flask_socketio import join_room, leave_room, emit
-from flask import request
-
-
 @app.route("/match")
 @login_required
 def create_match():
@@ -326,3 +324,16 @@ def on_start_game(match_id):
 
         emit("game_state", match, to=match_id)
         match["status"] = MatchStatus.ONGOING.value
+
+
+@socketio.on("game_state")
+def on_game_state(data):
+    username = current_user.username
+    match_id = data["match_id"]
+    match = match_state.get_match_by_id(match_id)
+
+    if match is None:
+        return
+
+    match_state.handle_action(match_id, username, data)
+    emit("game_state", match, to=match_id)
