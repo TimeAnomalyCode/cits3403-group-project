@@ -2,6 +2,7 @@ import random
 import string
 import threading
 import time
+import math
 from enum import Enum
 from typing import TypedDict, Literal
 # from game2048 import socketio
@@ -473,8 +474,10 @@ class MatchState:
         BoardAction.spawnTile(match["cells"][player2], player2_match_random)
         BoardAction.spawnTile(match["cells"][player2], player2_match_random)
 
-        self.__sync_random_index(match_id)
+        self.matches_timer[match_id].start()
 
+        self.__sync_random_index(match_id)
+        self.__sync_match_timer(match_id)
         return match
 
     def handle_action(self, match_id, username, data: TypeMove | TypeAttack):
@@ -492,6 +495,7 @@ class MatchState:
             self.__handle_player_attack(match_id, match, username, data)
 
         self.__sync_random_index(match_id)
+        self.__sync_match_timer(match_id)
         return match
 
     def __is_player_input_valid(self, data: TypeMove | TypeAttack):
@@ -556,7 +560,7 @@ class MatchState:
         opponent_username = (
             match["opponent"] if match["host"] == username else match["host"]
         )
-        match_random = self.matches_random[match_id][opponent_username]
+        match_random = self.matches_random[match_id][username]
         state_player = False
 
         if data["attack_id"] == "destroySpecificTile":
@@ -588,6 +592,10 @@ class MatchState:
         for username, m_random in self.matches_random[match_id].items():
             match["random_array_index"][username] = m_random.get_index()
 
+    def __sync_match_timer(self, match_id):
+        match = self.get_match_by_id(match_id)
+        match["timer"] = math.ceil(self.matches_timer[match_id].remaining())
+
     def __generate_match_id(self):
         characters = string.ascii_letters + string.digits
 
@@ -597,6 +605,7 @@ class MatchState:
             if code not in self.matches:
                 return code
 
+    # Save data to database here
     def __end_game(self, match_id):
         print("END: ", match_id)
 
