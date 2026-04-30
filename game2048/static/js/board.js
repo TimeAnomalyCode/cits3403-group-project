@@ -606,7 +606,7 @@ function handleMovement(e) {
             client_match["hidden_score"][username] -= 128;
         }
         if (!BoardLogic.hasMove(client_match["cells"][username])) {
-            client_match["dead"][username] = True;
+            client_match["dead"][username] = true;
         }
 
         renderPlayer();
