@@ -295,6 +295,9 @@ def on_connect(auth):
     if match is None:
         return print("No match found")
 
+    if match["status"] == MatchStatus.ONGOING.value:
+        match_state.sync_for_reconnection(match_id)
+
     match["sids"][current_user.username] = request.sid
     join_room(match_id)
     emit("game_state", match, to=match_id)
