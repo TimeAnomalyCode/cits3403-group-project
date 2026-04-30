@@ -170,6 +170,12 @@ class MatchTimer {
     update(seconds_left) {
         const currentRemaining = this.remaining();
 
+        // If timer is not running
+        if (this.timer === null) {
+            this.start(seconds_left);
+            return this;
+        }
+
         // Only resync if the difference is meaningful
         if (Math.abs(currentRemaining - seconds_left) <= 2) {
             return this;
@@ -508,8 +514,13 @@ const match_timer = new MatchTimer(end_game, ["random Test"]);
 const timerEl = document.getElementById("timer1");
 const username = data.username;
 const match_id = data.match_id;
-let cell = [];
 let opponent_username = "";
+let client_match = {};
+const N = 4;
+const layer1 = document.getElementById("layer1");
+const layer2 = document.getElementById("layer2");
+const board1 = document.getElementById("board1");
+const board2 = document.getElementById("board2");
 
 document.getElementById("start_game").addEventListener("click", () => {
     socket.emit("start_game", match_id);
@@ -527,6 +538,7 @@ const socket = io({
 
 socket.on("game_state", (match) => {
     console.log(match);
+    client_match = match;
 
     opponent_username = match.host !== username ? match.host : match.opponent;
     setOpponentName();
@@ -543,18 +555,64 @@ socket.on("game_state", (match) => {
         disableMovement();
     } else if (match.status === MATCH_STATUS.START) {
         match_timer.start(match.timer);
+        renderPlayer();
+        renderOpponent();
         enableMovement();
     } else if (match.status === MATCH_STATUS.ONGOING) {
         match_timer.update(match.timer);
+        renderPlayer();
+        renderOpponent();
+        enableMovement();
     } else if (match.status === MATCH_STATUS.END) {
+        renderPlayer();
+        renderOpponent();
         disableMovement();
     }
 });
 
 function handleMovement(e) {
+    const direction = keyMap[e.key];
+    let moved = false;
+    let score = 0;
+
     if (keyMap[e.key]) {
         e.preventDefault();
-        // move board 1
+        if (direction === "left") {
+            (client_match["cells"][username],
+                moved,
+                (score = BoardLogic.left(client_match["cells"][username])));
+        } else if (direction === "right") {
+            (client_match["cells"][username],
+                moved,
+                (score = BoardLogic.right(client_match["cells"][username])));
+        } else if (direction === "up") {
+            (client_match["cells"][username],
+                moved,
+                (score = BoardLogic.up(client_match["cells"][username])));
+        } else if (direction === "down") {
+            (client_match["cells"][username],
+                moved,
+                (score = BoardLogic.down(client_match["cells"][username])));
+        }
+
+        BoardAction.spawnTile(client_match["cells"][username], match_random);
+
+        client_match["score"][username] += score;
+        if (client_match["hidden_score"][username] > 128) {
+            client_match["trash_point"][username] += 1;
+            client_match["hidden_score"][username] -= 128;
+        }
+        if (!BoardLogic.hasMove(client_match["cells"][username])) {
+            client_match["dead"][username] = True;
+        }
+
+        renderPlayer();
+
+        socket.emit("game_state", {
+            type: "move",
+            match_id: match_id,
+            direction: direction,
+        });
     }
 }
 
@@ -574,4 +632,91 @@ function setOpponentName() {
 function end_game(text) {
     console.log("Match Ended: ", text);
     console.log(Date.now());
+
+    let isWin = false;
+    const score = client_match.score[username];
+    const opponent_score = client_match.score[opponent_username];
+    if (score > opponent_score) {
+        isWin = true;
+    }
+
+    showGameOver(isWin, score);
+}
+
+function showGameOver(isWin, score) {
+    const badge = document.getElementById("resultBadge");
+    const title = document.getElementById("resultTitle");
+    const scoreEl = document.getElementById("finalScore");
+
+    scoreEl.textContent = score;
+
+    if (isWin) {
+        badge.textContent = "Victory";
+        badge.className = "badge bg-success mb-3 px-3 py-2";
+
+        title.textContent = "You Won!";
+        title.classList.remove("text-danger");
+        title.classList.add("text-success");
+    } else {
+        badge.textContent = "Game Over";
+        badge.className = "badge bg-danger mb-3 px-3 py-2";
+
+        title.textContent = "You Lost";
+        title.classList.remove("text-success");
+        title.classList.add("text-danger");
+    }
+
+    document.getElementById("gameOverOverlay").classList.remove("d-none");
+}
+
+function renderPlayer() {
+    render(layer1, board1, client_match.cells[username]);
+}
+
+function renderOpponent() {
+    render(layer2, board2, client_match.cells[opponent_username]);
+}
+
+function render(layerEl, boardEl, cell) {
+    layerEl.innerHTML = "";
+
+    for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+            const v = cell[r][c];
+
+            //skip the coming loop if the value is falsely
+            if (!v) {
+                continue;
+            }
+
+            const g = cellGeometry(boardEl, r, c);
+
+            //making new block in web page
+            const el = document.createElement("div");
+            el.className =
+                "position-absolute bg-warning text-dark fw-bold d-flex justify-content-center align-items-center rounded";
+            el.textContent = v;
+
+            el.style.width = g.w + "px";
+            el.style.height = g.h + "px";
+            el.style.top = g.top + "px";
+            el.style.left = g.left + "px";
+
+            layerEl.appendChild(el);
+        }
+    }
+}
+
+function cellGeometry(boardEl, r, c) {
+    const cells = boardEl.querySelectorAll(".col-3 > div");
+    const el = cells[r * N + c];
+    const eR = el.getBoundingClientRect();
+    const bR = boardEl.getBoundingClientRect();
+
+    return {
+        top: eR.top - bR.top,
+        left: eR.left - bR.left,
+        w: eR.width,
+        h: eR.height,
+    };
 }
