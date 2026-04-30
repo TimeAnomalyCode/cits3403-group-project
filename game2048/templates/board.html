@@ -31,7 +31,9 @@
             <button class="btn btn-info btn-sm" id="btnCreateNegative">
                 Create Negative Tile
             </button>
-
+            <h1>
+                Match Code: {{ data.match_id }}
+            </h1>
         </div>
     </div>
     <!--both game board in a row-->
@@ -299,36 +301,39 @@
 
         </div>
     </div>
-    <!-- RESULT BANNER -->
-    <div class="container text-center d-none" id="resultBanner">
-        <div class="bg-dark p-4 rounded shadow">
-            <h3 id="resultTitle">
-            </h3>
-            <p id="resultSub">
-            </p>
+    {# djlint:off H021 #}
+    <div id="gameOverOverlay"
+         class="position-fixed top-0 start-0 w-100 h-100 d-none"
+         style="z-index: 1050;
+                background: rgba(0,0,0,0.75);
+                backdrop-filter: blur(6px)">
 
-            <div class="row">
-                <div class="col">
-                    <div>
-                        Player 1
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="card text-center shadow-lg border-0 rounded-4"
+                 style="max-width: 420px;
+                        width: 90%">
+                <div class="card-body p-5">
+
+                    <span id="resultBadge" class="badge mb-3 px-3 py-2">Result</span>
+
+                    <h2 id="resultTitle" class="fw-bold mb-3">
+                        Result
+                    </h2>
+                    <p class="text-muted mb-4">
+                        Final score: <span id="finalScore">0</span>
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-primary btn-lg" href="{{ url_for('create_match') }}">
+                            Play Again
+                        </a>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('home') }}">
+                            Close
+                        </a>
                     </div>
-                    <div id="rScore1">
-                        0
-                    </div>
-                </div>
-                <div class="col">
-                    <div>
-                        Player 2
-                    </div>
-                    <div id="rScore2">
-                        0
-                    </div>
+
                 </div>
             </div>
-
-            <button class="btn btn-success mt-3" id="btnRetry">
-                Play Again
-            </button>
         </div>
     </div>
 {% endblock content %}
