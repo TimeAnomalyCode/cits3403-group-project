@@ -555,7 +555,6 @@ socket.on("game_state", (match) => {
 
     if (match.dead[username]) {
         disableMovement();
-        return;
     }
 
     if (match.status === MATCH_STATUS.PENDING) {
@@ -605,6 +604,7 @@ function handleMovement(e) {
         BoardAction.spawnTile(client_match["cells"][username], match_random);
 
         client_match["score"][username] += score;
+        client_match["hidden_score"][username] += score;
         if (client_match["hidden_score"][username] > 128) {
             client_match["trash_point"][username] += 1;
             client_match["hidden_score"][username] -= 128;
@@ -675,7 +675,7 @@ function showGameOver(isWin, score) {
 function renderPlayer() {
     player_1_score.textContent = client_match.score[username];
     // console.log("SCORE: ", client_match.score[username]);
-    player_1_trash_point.textContent = client_match.score[username];
+    player_1_trash_point.textContent = client_match.trash_point[username];
     render(layer1, board1, client_match.cells[username]);
 }
 
