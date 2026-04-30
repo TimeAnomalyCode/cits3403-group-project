@@ -512,15 +512,18 @@ const keyMap = {
 const match_random = new MatchRandom();
 const match_timer = new MatchTimer(end_game, ["random Test"]);
 const timerEl = document.getElementById("timer1");
+const layer1 = document.getElementById("layer1");
+const layer2 = document.getElementById("layer2");
+const board1 = document.getElementById("board1");
+const board2 = document.getElementById("board2");
+const badge = document.getElementById("resultBadge");
+const title = document.getElementById("resultTitle");
+const scoreEl = document.getElementById("finalScore");
 const username = data.username;
 const match_id = data.match_id;
 let opponent_username = "";
 let client_match = {};
 const N = 4;
-const layer1 = document.getElementById("layer1");
-const layer2 = document.getElementById("layer2");
-const board1 = document.getElementById("board1");
-const board2 = document.getElementById("board2");
 
 document.getElementById("start_game").addEventListener("click", () => {
     socket.emit("start_game", match_id);
@@ -644,10 +647,6 @@ function end_game(text) {
 }
 
 function showGameOver(isWin, score) {
-    const badge = document.getElementById("resultBadge");
-    const title = document.getElementById("resultTitle");
-    const scoreEl = document.getElementById("finalScore");
-
     scoreEl.textContent = score;
 
     if (isWin) {
