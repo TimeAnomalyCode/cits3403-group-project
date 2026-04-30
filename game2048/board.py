@@ -545,6 +545,7 @@ class MatchState:
             match["cells"][username], self.matches_random[match_id][username]
         )
         match["score"][username] += score
+        match["hidden_score"][username] += score
         if match["hidden_score"][username] > 128:
             match["trash_point"][username] += 1
             match["hidden_score"][username] -= 128
@@ -585,6 +586,10 @@ class MatchState:
         if state_player:
             match["cells"][username] -= 1
 
+    def sync_for_reconnection(self, match_id):
+        self.__sync_match_timer(match_id)
+        self.__sync_random_index(match_id)
+
     #  Sync at the end of Board Logic / Board Action
     def __sync_random_index(self, match_id):
         match = self.get_match_by_id(match_id)
@@ -608,6 +613,7 @@ class MatchState:
     # Save data to database here
     def __end_game(self, match_id):
         print("END: ", match_id)
+        print(time.time())
 
 
 match_state = MatchState()
