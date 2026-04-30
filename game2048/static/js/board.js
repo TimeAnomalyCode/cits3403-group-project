@@ -516,6 +516,10 @@ const layer1 = document.getElementById("layer1");
 const layer2 = document.getElementById("layer2");
 const board1 = document.getElementById("board1");
 const board2 = document.getElementById("board2");
+const player_1_score = document.getElementById("player_1_score");
+const player_1_trash_point = document.getElementById("player_1_trash_point");
+const player_2_score = document.getElementById("player_2_score");
+const player_2_trash_point = document.getElementById("player_2_trash_point");
 const badge = document.getElementById("resultBadge");
 const title = document.getElementById("resultTitle");
 const scoreEl = document.getElementById("finalScore");
@@ -581,21 +585,21 @@ function handleMovement(e) {
     if (keyMap[e.key]) {
         e.preventDefault();
         if (direction === "left") {
-            (client_match["cells"][username],
-                moved,
-                (score = BoardLogic.left(client_match["cells"][username])));
+            [client_match["cells"][username], moved, score] = BoardLogic.left(
+                client_match["cells"][username],
+            );
         } else if (direction === "right") {
-            (client_match["cells"][username],
-                moved,
-                (score = BoardLogic.right(client_match["cells"][username])));
+            [client_match["cells"][username], moved, score] = BoardLogic.right(
+                client_match["cells"][username],
+            );
         } else if (direction === "up") {
-            (client_match["cells"][username],
-                moved,
-                (score = BoardLogic.up(client_match["cells"][username])));
+            [client_match["cells"][username], moved, score] = BoardLogic.up(
+                client_match["cells"][username],
+            );
         } else if (direction === "down") {
-            (client_match["cells"][username],
-                moved,
-                (score = BoardLogic.down(client_match["cells"][username])));
+            [client_match["cells"][username], moved, score] = BoardLogic.down(
+                client_match["cells"][username],
+            );
         }
 
         BoardAction.spawnTile(client_match["cells"][username], match_random);
@@ -669,10 +673,16 @@ function showGameOver(isWin, score) {
 }
 
 function renderPlayer() {
+    player_1_score.textContent = client_match.score[username];
+    // console.log("SCORE: ", client_match.score[username]);
+    player_1_trash_point.textContent = client_match.score[username];
     render(layer1, board1, client_match.cells[username]);
 }
 
 function renderOpponent() {
+    player_2_score.textContent = client_match.score[opponent_username];
+    player_2_trash_point.textContent =
+        client_match.trash_point[opponent_username];
     render(layer2, board2, client_match.cells[opponent_username]);
 }
 
