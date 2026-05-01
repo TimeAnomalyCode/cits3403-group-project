@@ -638,7 +638,7 @@ class MatchState:
         match = self.get_match_by_id(match_id)
 
         match["status"] = MatchStatus.END.value
-        emit("game_state", match, to=match_id)
+        socketio.emit("game_state", match, to=match_id)
 
 
 match_state = MatchState()
