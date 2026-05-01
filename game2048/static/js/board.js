@@ -422,7 +422,11 @@ class BoardAction {
     /**
      * @param {MatchRandom} match_random
      */
-    static destroySpecificTile(cell, match_random, cost = 4) {
+    static destroySpecificTile(cell, trash_point, match_random, cost = 4) {
+        if (trash_point < cost) {
+            return [cell, 0];
+        }
+
         const [r, c] = match_random.randomPickNonEmpty(cell);
 
         if (r === null || c === null) {
@@ -436,7 +440,11 @@ class BoardAction {
     /**
      * @param {MatchRandom} match_random
      */
-    static createRandomTile(cell, match_random, cost = 1) {
+    static createRandomTile(cell, trash_point, match_random, cost = 1) {
+        if (trash_point < cost) {
+            return [cell, 0];
+        }
+
         const [r, c] = match_random.randomPickEmpty(cell);
 
         if (r === null || c === null) {
@@ -450,7 +458,11 @@ class BoardAction {
     /**
      * @param {MatchRandom} match_random
      */
-    static rearrangeBoard(cell, match_random, cost = 4) {
+    static rearrangeBoard(cell, trash_point, match_random, cost = 4) {
+        if (trash_point < cost) {
+            return [cell, 0];
+        }
+
         const N = cell.length;
         const values = [];
 
@@ -487,7 +499,11 @@ class BoardAction {
     /**
      * @param {MatchRandom} match_random
      */
-    static makeRandomNegativeTile(cell, match_random, cost = 2) {
+    static makeRandomNegativeTile(cell, trash_point, match_random, cost = 2) {
+        if (trash_point < cost) {
+            return [cell, 0];
+        }
+
         const [r, c] = match_random.randomPickEmpty(cell);
 
         if (r === null || c === null) {
@@ -594,6 +610,7 @@ function handleMovement(e) {
     const attack = attackMap[e.key];
     let moved = false;
     let score = 0;
+    let cost = 0;
     e.preventDefault();
 
     if (direction) {
@@ -636,11 +653,44 @@ function handleMovement(e) {
         });
     }
 
-    if (attack) {
+    if (attack && client_match.trash_point[username] > 0) {
         if (attack === "destroySpecificTile") {
+            [client_match["cells"][opponent_username], cost] =
+                BoardAction.destroySpecificTile(
+                    client_match["cells"][opponent_username],
+                    client_match["trash_point"][username],
+                    match_random,
+                );
         } else if (attack === "createRandomTile") {
+            [client_match["cells"][opponent_username], cost] =
+                BoardAction.createRandomTile(
+                    client_match["cells"][opponent_username],
+                    client_match["trash_point"][username],
+                    match_random,
+                );
         } else if (attack === "rearrangeBoard") {
+            [client_match["cells"][opponent_username], cost] =
+                BoardAction.rearrangeBoard(
+                    client_match["cells"][opponent_username],
+                    client_match["trash_point"][username],
+                    match_random,
+                );
         } else if (attack === "makeRandomNegativeTile") {
+            [client_match["cells"][opponent_username], cost] =
+                BoardAction.makeRandomNegativeTile(
+                    client_match["cells"][opponent_username],
+                    client_match["trash_point"][username],
+                    match_random,
+                );
+        }
+
+        if (cost > 0) {
+            client_match["trash_point"][username] -= cost;
+            socket.emit("game_state", {
+                type: "attack",
+                match_id: match_id,
+                attack_id: attack,
+            });
         }
     }
 }
