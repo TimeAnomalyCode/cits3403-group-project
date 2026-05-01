@@ -583,6 +583,7 @@ socket.on("game_state", (match) => {
         disableMovement();
         renderPlayer();
         renderOpponent();
+        console.log(`${username} is Dead`);
         return;
     }
 
