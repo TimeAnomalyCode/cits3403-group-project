@@ -5,7 +5,10 @@ import time
 import math
 from enum import Enum
 from typing import TypedDict, Literal
-# from game2048 import socketio
+from flask import request
+from game2048 import socketio
+from flask_socketio import join_room, emit
+from flask_login import current_user
 
 # ----------------------------------------------------------------
 # Enums and Type Annotations
@@ -488,8 +491,7 @@ class MatchState:
 
         self.matches_timer[match_id].start()
 
-        self.__sync_random_index(match_id)
-        self.__sync_match_timer(match_id)
+        self.sync_for_reconnection(match_id)
         return match
 
     def handle_action(self, match_id, username, data: TypeMove | TypeAttack):
@@ -506,8 +508,7 @@ class MatchState:
         elif data["type"] == "attack":
             self.__handle_player_attack(match_id, match, username, data)
 
-        self.__sync_random_index(match_id)
-        self.__sync_match_timer(match_id)
+        self.sync_for_reconnection(match_id)
         return match
 
     def __is_player_input_valid(self, data: TypeMove | TypeAttack):
@@ -634,6 +635,67 @@ class MatchState:
     def __end_game(self, match_id):
         print("END: ", match_id)
         print(time.time())
+        match = self.get_match_by_id(match_id)
+
+        match["status"] = MatchStatus.END.value
+        emit("game_state", match, to=match_id)
 
 
 match_state = MatchState()
+
+
+@socketio.on("connect")
+def on_connect(auth):
+    match_id = auth.get("match_id") if auth else None
+    if match_id is None:
+        return print("No match_id")
+
+    match = match_state.get_match_by_id(match_id)
+    if match is None:
+        return print("No match found")
+
+    if match["status"] == MatchStatus.ONGOING.value:
+        match_state.sync_for_reconnection(match_id)
+
+    match["sids"][current_user.username] = request.sid
+    join_room(match_id)
+    emit("game_state", match, to=match_id)
+
+
+@socketio.on("start_game")
+def on_start_game(match_id):
+    username = current_user.username
+    match = match_state.get_match_by_id(match_id)
+
+    if match is None:
+        return
+
+    if (
+        match["host"] == username
+        and match["status"] == MatchStatus.PENDING.value
+        and len(match["sids"]) == 2
+    ):
+        match["status"] = MatchStatus.START.value
+        match_state.start_match(match_id)
+        # print("1: ", match)
+        # print(match_state.matches_random[match_id][current_user.username].get_index())
+        # data = {"type": "move", "match_id": match_id, "direction": "left"}
+        # match_state.handle_action(match_id, current_user.username, data)
+        # print("2:", match)
+        # print(match_state.matches_random[match_id][current_user.username].get_index())
+
+        emit("game_state", match, to=match_id)
+        match["status"] = MatchStatus.ONGOING.value
+
+
+@socketio.on("game_state")
+def on_game_state(data):
+    username = current_user.username
+    match_id = data["match_id"]
+    match = match_state.get_match_by_id(match_id)
+
+    if match is None:
+        return
+
+    match_state.handle_action(match_id, username, data)
+    emit("game_state", match, to=match_id)
