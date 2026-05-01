@@ -9,7 +9,7 @@ from flask import (
     request,
 )
 from flask_login import current_user, login_user, logout_user, login_required
-from game2048 import app, db, socketio
+from game2048 import app, db
 from game2048.forms import (
     RegistrationForm,
     LoginForm,
@@ -20,8 +20,7 @@ from game2048.forms import (
 )
 from game2048.models import User
 from game2048.email import send_password_reset_email
-from game2048.board import match_state, MatchStatus
-from flask_socketio import join_room, leave_room, emit
+from game2048.board import match_state
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -283,60 +282,3 @@ def match(match_id):
 
     data = {"username": username, "match_id": match_id, "match": match}
     return render_template("board.html", data=data)
-
-
-@socketio.on("connect")
-def on_connect(auth):
-    match_id = auth.get("match_id") if auth else None
-    if match_id is None:
-        return print("No match_id")
-
-    match = match_state.get_match_by_id(match_id)
-    if match is None:
-        return print("No match found")
-
-    if match["status"] == MatchStatus.ONGOING.value:
-        match_state.sync_for_reconnection(match_id)
-
-    match["sids"][current_user.username] = request.sid
-    join_room(match_id)
-    emit("game_state", match, to=match_id)
-
-
-@socketio.on("start_game")
-def on_start_game(match_id):
-    username = current_user.username
-    match = match_state.get_match_by_id(match_id)
-
-    if match is None:
-        return
-
-    if (
-        match["host"] == username
-        and match["status"] == MatchStatus.PENDING.value
-        and len(match["sids"]) == 2
-    ):
-        match["status"] = MatchStatus.START.value
-        match_state.start_match(match_id)
-        # print("1: ", match)
-        # print(match_state.matches_random[match_id][current_user.username].get_index())
-        # data = {"type": "move", "match_id": match_id, "direction": "left"}
-        # match_state.handle_action(match_id, current_user.username, data)
-        # print("2:", match)
-        # print(match_state.matches_random[match_id][current_user.username].get_index())
-
-        emit("game_state", match, to=match_id)
-        match["status"] = MatchStatus.ONGOING.value
-
-
-@socketio.on("game_state")
-def on_game_state(data):
-    username = current_user.username
-    match_id = data["match_id"]
-    match = match_state.get_match_by_id(match_id)
-
-    if match is None:
-        return
-
-    match_state.handle_action(match_id, username, data)
-    emit("game_state", match, to=match_id)
