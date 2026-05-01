@@ -422,35 +422,35 @@ class BoardAction {
     /**
      * @param {MatchRandom} match_random
      */
-    static destroySpecificTile(cell, match_random) {
+    static destroySpecificTile(cell, match_random, cost = 4) {
         const [r, c] = match_random.randomPickNonEmpty(cell);
 
         if (r === null || c === null) {
-            return [cell, false];
+            return [cell, 0];
         }
 
         cell[r][c] = 0;
-        return [cell, true];
+        return [cell, cost];
     }
 
     /**
      * @param {MatchRandom} match_random
      */
-    static createRandomTile(cell, match_random) {
+    static createRandomTile(cell, match_random, cost = 1) {
         const [r, c] = match_random.randomPickEmpty(cell);
 
         if (r === null || c === null) {
-            return [cell, false];
+            return [cell, 0];
         }
 
         cell[r][c] = 2 ** match_random.next_range(1, 7);
-        return [cell, true];
+        return [cell, cost];
     }
 
     /**
      * @param {MatchRandom} match_random
      */
-    static rearrangeBoard(cell, match_random) {
+    static rearrangeBoard(cell, match_random, cost = 4) {
         const N = cell.length;
         const values = [];
 
@@ -481,25 +481,25 @@ class BoardAction {
             cell[r][c] = values[i];
         }
 
-        return cell;
+        return [cell, cost];
     }
 
     /**
      * @param {MatchRandom} match_random
      */
-    static makeRandomNegativeTile(cell, match_random) {
+    static makeRandomNegativeTile(cell, match_random, cost = 2) {
         const [r, c] = match_random.randomPickEmpty(cell);
 
         if (r === null || c === null) {
-            return [cell, false];
+            return [cell, 0];
         }
 
         cell[r][c] = -1 * 2 ** match_random.next_range(1, 4);
-        return [cell, true];
+        return [cell, cost];
     }
 }
 
-const keyMap = {
+const moveMap = {
     ArrowUp: "up",
     ArrowDown: "down",
     ArrowLeft: "left",
@@ -508,6 +508,12 @@ const keyMap = {
     a: "left",
     s: "down",
     d: "right",
+};
+const attackMap = {
+    i: "destroySpecificTile",
+    j: "createRandomTile",
+    k: "rearrangeBoard",
+    l: "makeRandomNegativeTile",
 };
 const match_random = new MatchRandom();
 const match_timer = new MatchTimer(end_game, ["random Test"]);
@@ -584,12 +590,13 @@ socket.on("game_state", (match) => {
 });
 
 function handleMovement(e) {
-    const direction = keyMap[e.key];
+    const direction = moveMap[e.key];
+    const attack = attackMap[e.key];
     let moved = false;
     let score = 0;
+    e.preventDefault();
 
     if (direction) {
-        e.preventDefault();
         if (direction === "left") {
             [client_match["cells"][username], moved, score] = BoardLogic.left(
                 client_match["cells"][username],
@@ -627,6 +634,14 @@ function handleMovement(e) {
             match_id: match_id,
             direction: direction,
         });
+    }
+
+    if (attack) {
+        if (attack === "destroySpecificTile") {
+        } else if (attack === "createRandomTile") {
+        } else if (attack === "rearrangeBoard") {
+        } else if (attack === "makeRandomNegativeTile") {
+        }
     }
 }
 
