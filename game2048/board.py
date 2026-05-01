@@ -637,6 +637,7 @@ class MatchState:
         print(time.time())
         match = self.get_match_by_id(match_id)
 
+        self.sync_for_reconnection(match_id)
         match["status"] = MatchStatus.END.value
         socketio.emit("game_state", match, to=match_id)
 
