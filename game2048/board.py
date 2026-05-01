@@ -337,7 +337,10 @@ class BoardAction:
         return cell
 
     @staticmethod
-    def destroySpecificTile(cell, match_random: MatchRandom, cost=4):
+    def destroySpecificTile(cell, trash_point, match_random: MatchRandom, cost=4):
+        if trash_point < cost:
+            return cell, 0
+
         r, c = match_random.randomPickNonEmpty(cell)
         if r is None or c is None:
             return cell, 0
@@ -346,7 +349,10 @@ class BoardAction:
         return cell, cost
 
     @staticmethod
-    def createRandomTile(cell, match_random: MatchRandom, cost=1):
+    def createRandomTile(cell, trash_point, match_random: MatchRandom, cost=1):
+        if trash_point < cost:
+            return cell, 0
+
         r, c = match_random.randomPickEmpty(cell)
         if r is None or c is None:
             return cell, 0
@@ -354,7 +360,10 @@ class BoardAction:
         return cell, cost
 
     @staticmethod
-    def rearrangeBoard(cell, match_random: MatchRandom, cost=4):
+    def rearrangeBoard(cell, trash_point, match_random: MatchRandom, cost=4):
+        if trash_point < cost:
+            return cell, 0
+
         N = len(cell)
         values = []
 
@@ -381,7 +390,10 @@ class BoardAction:
         return cell, cost
 
     @staticmethod
-    def makeRandomNegativeTile(cell, match_random: MatchRandom, cost=2):
+    def makeRandomNegativeTile(cell, trash_point, match_random: MatchRandom, cost=2):
+        if trash_point < cost:
+            return cell, 0
+
         r, c = match_random.randomPickEmpty(cell)
         if r is None or c is None:
             return cell, 0
@@ -555,7 +567,7 @@ class MatchState:
     def __handle_player_attack(
         self, match_id, match: TypeMatch, username, data: TypeMove | TypeAttack
     ):
-        if match["trash_point"] <= 0:
+        if match["trash_point"][username] <= 0:
             return
 
         opponent_username = (
@@ -566,20 +578,28 @@ class MatchState:
 
         if data["attack_id"] == "destroySpecificTile":
             match["cells"][opponent_username], cost = BoardAction.destroySpecificTile(
-                match["cells"][opponent_username], match_random
+                match["cells"][opponent_username],
+                match["trash_point"][username],
+                match_random,
             )
         elif data["attack_id"] == "createRandomTile":
             match["cells"][opponent_username], cost = BoardAction.createRandomTile(
-                match["cells"][opponent_username], match_random
+                match["cells"][opponent_username],
+                match["trash_point"][username],
+                match_random,
             )
         elif data["attack_id"] == "rearrangeBoard":
             match["cells"][opponent_username], cost = BoardAction.rearrangeBoard(
-                match["cells"][opponent_username], match_random
+                match["cells"][opponent_username],
+                match["trash_point"][username],
+                match_random,
             )
         elif data["attack_id"] == "makeRandomNegativeTile":
             match["cells"][opponent_username], cost = (
                 BoardAction.makeRandomNegativeTile(
-                    match["cells"][opponent_username], match_random
+                    match["cells"][opponent_username],
+                    match["trash_point"][username],
+                    match_random,
                 )
             )
 
