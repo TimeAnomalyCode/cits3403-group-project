@@ -562,7 +562,7 @@ class MatchState:
             match["opponent"] if match["host"] == username else match["host"]
         )
         match_random = self.matches_random[match_id][username]
-        cost = False
+        cost = 0
 
         if data["attack_id"] == "destroySpecificTile":
             match["cells"][opponent_username], cost = BoardAction.destroySpecificTile(
