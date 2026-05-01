@@ -545,16 +545,23 @@ const socket = io({
 
 socket.on("game_state", (match) => {
     console.log(match);
+    // Timer always updates so better to just load from server
     client_match = match;
 
-    opponent_username = match.host !== username ? match.host : match.opponent;
-    setOpponentName();
+    if (!opponent_username) {
+        opponent_username =
+            match.host !== username ? match.host : match.opponent;
+        setOpponentName();
+    }
 
-    cell = match.cells[username];
     match_random.setup(match.random_array, match.random_array_index[username]);
 
     if (match.dead[username]) {
+        match_timer.update(match.timer);
         disableMovement();
+        renderPlayer();
+        renderOpponent();
+        return;
     }
 
     if (match.status === MATCH_STATUS.PENDING) {
@@ -581,7 +588,7 @@ function handleMovement(e) {
     let moved = false;
     let score = 0;
 
-    if (keyMap[e.key]) {
+    if (direction) {
         e.preventDefault();
         if (direction === "left") {
             [client_match["cells"][username], moved, score] = BoardLogic.left(
