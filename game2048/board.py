@@ -562,7 +562,7 @@ class MatchState:
             match["opponent"] if match["host"] == username else match["host"]
         )
         match_random = self.matches_random[match_id][username]
-        state_player = False
+        state = False
 
         if data["attack_id"] == "destroySpecificTile":
             match["cells"][opponent_username], state = BoardAction.destroySpecificTile(
@@ -583,8 +583,8 @@ class MatchState:
                 )
             )
 
-        if state_player:
-            match["cells"][username] -= 1
+        if state:
+            match["trash_point"][username] -= 1
 
     def sync_for_reconnection(self, match_id):
         self.__sync_match_timer(match_id)
