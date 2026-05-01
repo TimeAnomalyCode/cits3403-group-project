@@ -583,7 +583,7 @@ class MatchState:
                 )
             )
 
-        if cost != 0:
+        if cost > 0:
             match["trash_point"][username] -= cost
 
     def sync_for_reconnection(self, match_id):
