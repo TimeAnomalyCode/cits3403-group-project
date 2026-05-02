@@ -193,6 +193,28 @@ def change_password():
     return render_template("change_password.html", title="Change Password", form=form)
 
 
+@app.route("/match")
+@login_required
+def create_match():
+    match_id, match = match_state.create_match(current_user.username)
+    return redirect(url_for("match", match_id=match_id))
+
+
+@app.route("/match/<match_id>")
+@login_required
+def match(match_id):
+    username = current_user.username
+    match = match_state.get_match_by_id(match_id)
+    if match is None:
+        return redirect(url_for("create_match"))
+
+    if match["opponent"] is None and username != match["host"]:
+        match_state.join_match(match_id, username)
+
+    data = {"username": username, "match_id": match_id, "match": match}
+    return render_template("board.html", data=data)
+
+
 # ----------------------------------------------------------------
 # Anything Below is just helper functions or testing
 # (Should be removed or made official)
@@ -260,25 +282,3 @@ def about():
         data.append("<hr>")
 
     return "".join(data)
-
-
-@app.route("/match")
-@login_required
-def create_match():
-    match_id, match = match_state.create_match(current_user.username)
-    return redirect(url_for("match", match_id=match_id))
-
-
-@app.route("/match/<match_id>")
-@login_required
-def match(match_id):
-    username = current_user.username
-    match = match_state.get_match_by_id(match_id)
-    if match is None:
-        return redirect(url_for("create_match"))
-
-    if match["opponent"] is None and username != match["host"]:
-        match_state.join_match(match_id, username)
-
-    data = {"username": username, "match_id": match_id, "match": match}
-    return render_template("board.html", data=data)
