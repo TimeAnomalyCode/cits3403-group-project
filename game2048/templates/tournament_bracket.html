@@ -1,0 +1,244 @@
+{# Just copy this code, delete all comments and write HTML/Jinja in between the content block #}
+
+<style>
+    :root {
+        --bg-color: #f4f7f6;
+        --match-blue: #ffffff;
+        --line-color: #a0aec0;
+        --box-border: #a0aec0;
+    }
+
+    /* body {
+        background-color: var(--bg-color);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+    } */
+
+    /* 布局容器 */
+    .bracket-container {
+        position: relative;
+        display: flex;
+        padding: 40px;
+        gap: 80px; 
+    }
+
+    .round {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        z-index: 2;
+    }
+
+    .match {
+        width: 140px;
+        background: white;
+        border: 2px solid var(--box-border);
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom:20px ;
+    }
+
+    .player {
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+        color: #686868; /* font color */
+        min-height: 20px;
+        border-bottom: 1px solid #a0aec0;
+        background-color: #dadada;
+    }
+
+    /* .player:first-child {
+        border-bottom: 1px solid #ffffff;
+        background-color: var(--match-blue);
+    } */
+
+    .champion-box {
+        border: 2px solid #ed8936;
+        background: #fffaf0;
+    }
+
+    /* SVG canvas: cover the entire container */
+    #bracket-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* Lines do not block mouse clicks */
+        z-index: 1;
+    }
+
+    .bracket-path {
+        fill: none;
+        stroke: var(--line-color);
+        stroke-width: 2;
+        stroke-linejoin: round; 
+    }
+</style>
+
+{% extends "layout.html" %}
+{% block content %}
+    <!-- Centered width control using grid -->
+    <div class="d-flex align-items-center bg-white border rounded p-2 px-3 shadow-sm">
+        
+        <span class="fs-3 fw-bold font-monospace text-uppercase me-3">
+            {{'Room Code:'}}
+        </span>
+
+        <div class="vr my-1 text-secondary"></div>
+
+        <span class="fs-3 fw-bold font-monospace text-uppercase me-3" id="roomCode">
+            {{tournament_code}}
+        </span>
+
+        <button onclick="copyCode()" class="btn btn-link text-decoration-none fw-bold ms-2 btn-outline-light ms-auto">
+            Copy Code
+        </button>
+
+    </div>
+
+    <div class="bracket-container" id="main-container">
+        <svg id="bracket-svg"></svg>
+
+        {% for round_matches in bracket %}
+        <div class="round">
+            {% for match in round_matches %}
+            <div class="match">
+                <div class="player">{{ match[0] if match[0] else '_' }}</div>
+                <div class="player">{{ match[1] if match[1] else '_' }}</div>
+            </div>
+            {% endfor %}
+            
+        </div>
+        {% endfor %}
+        
+        <div class="round">
+            <div class="match champion-box">
+                <div class="player">🏆 CHAMPION</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- /*end of Tournament Bracket Section */ -->
+
+    <div class="ms-5">
+        <!-- Add More Matches Button, maxium player 16 -->
+        <button id="addMatchBtn" 
+            {% if match_count < 16 %}
+                class="btn btn-outline-primary p-2"
+            {% else %}
+                class="btn btn-outline-secondary p-2" disabled
+            {% endif %}>
+            <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+            <i class="bi bi-chevron-down">More players</i>
+        </button>
+    </div>
+
+    <div class="mt-5">
+        <!-- Start Tournament Button, active when all players are registered -->
+        <button
+            {% if players_count == match_count*2 %}
+                class="btn btn-primary fw-bold d-block mx-auto"
+            {% else %}
+                class="btn btn-secondary fw-bold d-block mx-auto" disabled
+            {% endif %}
+        >
+            Start Tournament
+        </button>
+    </div>
+
+<script>
+
+// Logic for drawing connecting lines
+    function drawBracketLines() {
+        const svg = document.getElementById('bracket-svg');
+        const container = document.getElementById('main-container').getBoundingClientRect();
+        svg.innerHTML = ''; // Clear before redrawing
+
+        const rounds = document.querySelectorAll('.round');
+        
+        // Iterate through all rounds except the last one
+        for (let r = 0; r < rounds.length - 1; r++) {
+            const currentMatches = rounds[r].querySelectorAll('.match');
+            const nextMatches = rounds[r+1].querySelectorAll('.match');
+
+            currentMatches.forEach((match, index) => {
+                const nextMatchIndex = Math.floor(index / 2);
+                const targetMatch = nextMatches[nextMatchIndex];
+
+                if (targetMatch) {
+                    const startRect = match.getBoundingClientRect();
+                    const endRect = targetMatch.getBoundingClientRect();
+
+                    // 1. Calculate coordinates relative to the container
+                    const x1 = startRect.right - container.left;
+                    const y1 = startRect.top + (startRect.height / 2) - container.top;
+                    
+                    const x2 = endRect.left - container.left;
+                    const y2 = endRect.top + (endRect.height / 2) - container.top;
+
+                    // 2. Calculate the inflection point: turn at the middle position between the two frames
+                    const midX = x1 + (x2 - x1) / 2;
+
+                    /**
+                    * Drawing logic (M = start point, L = line):
+                    * M x1 y1           -> start point (right center of current box)
+                    * L midX y1         -> draw horizontally to the midpoint
+                    * L midX y2         -> draw vertically to the target height
+                    * L x2 y2           -> draw horizontally to the left center of the target box
+                    */
+                    const pathData = `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`;
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', pathData);
+                    path.setAttribute('class', 'bracket-path');
+                    
+                    svg.appendChild(path);
+                }
+            });
+        }
+    }
+
+    // Recalculate coordinates when the page loads and the window resizes
+    window.addEventListener('load', drawBracketLines);
+    window.addEventListener('resize', drawBracketLines);
+
+// Copy tournament code to clipboard
+    function copyCode() {
+        const code = document.getElementById('roomCode').innerText;
+
+        navigator.clipboard.writeText(code);
+
+        alert('Codied!');
+    }
+
+//Add more matches button logic
+    const csrfToken = document.getElementById('csrf_token').value;
+    const tournament_code = "{{ tournament_code }}";
+    
+    document.getElementById('addMatchBtn').addEventListener('click', function() {
+        fetch(`/moreMatches/${tournament_code}`, {
+            method: 'POST',
+            headers: {
+                "X-CSRFToken": csrfToken,  
+                "Content-Type": "application/json"
+            }
+        })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "ok") {
+                        // alert(`成功添加 ${data.added} 场比赛！总比赛数：${data.total_matches}`);
+                        location.reload();
+                    }
+                    else {
+                        alert(`Failed to add more matches: ${data.message}`);
+                    }
+                });
+        });
+</script>
+{% endblock content %}
+
