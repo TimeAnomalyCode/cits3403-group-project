@@ -14,6 +14,14 @@
  * @property {any[]} random_array
  * @property {Object.<string, number>} random_array_index
  * @property {number} timer
+ * @property {Object.<string, string | null>} is_attacked
+ */
+
+/**
+ * @typedef {Object} TypeSounds
+ * @property {string} credit
+ * @property {string} link
+ * @property {Howl} howl
  */
 
 const MATCH_STATUS = {
@@ -531,6 +539,56 @@ const attackMap = {
     k: "rearrangeBoard",
     l: "makeRandomNegativeTile",
 };
+// cSpell:disable
+/** @type {TypeSounds} */
+const sounds = {
+    soundtrack: {
+        credit: "joshuuu - 41 Short, Loopable Background Music Files",
+        link: "https://joshuuu.itch.io/short-loopable-background-music",
+        howl: new Howl({
+            src: ["/static/audio/Temple.wav"],
+            loop: true,
+            volume: 0.3,
+        }),
+    },
+    hurt: {
+        credit: "jsfxr",
+        link: "https://sfxr.me/",
+        howl: new Howl({
+            src: ["/static/audio/explosion.wav"],
+        }),
+    },
+    attack: {
+        credit: "jsfxr",
+        link: "https://sfxr.me/",
+        howl: new Howl({
+            src: ["/static/audio/power_up.wav"],
+        }),
+    },
+    slide_tile: {
+        credit: "AardsReal",
+        link: "https://freesound.org/people/AardsReal/sounds/842183/",
+        howl: new Howl({
+            src: ["/static/audio/page_turn.wav"],
+        }),
+    },
+    trash_point: {
+        credit: "jsfxr",
+        link: "https://sfxr.me/",
+        howl: new Howl({
+            src: ["/static/audio/pickup_coin.wav"],
+        }),
+    },
+    game_over: {
+        credit: "Mountain_Man",
+        link: "https://freesound.org/people/Mountain_Man/sounds/382310/",
+        howl: new Howl({
+            src: ["/static/audio/game_over.wav"],
+        }),
+    },
+};
+let isMuted = true;
+// cSpell:enable
 const match_random = new MatchRandom();
 const match_timer = new MatchTimer(end_game, ["random Test"]);
 const timerEl = document.getElementById("timer1");
@@ -545,14 +603,38 @@ const player_2_trash_point = document.getElementById("player_2_trash_point");
 const badge = document.getElementById("resultBadge");
 const title = document.getElementById("resultTitle");
 const scoreEl = document.getElementById("finalScore");
+const creditArea = document.getElementById("creditArea");
 const username = data.username;
 const match_id = data.match_id;
 let opponent_username = "";
+/** @type {TypeMatch} */
 let client_match = {};
 const N = 4;
 
 document.getElementById("start_game").addEventListener("click", () => {
     socket.emit("start_game", match_id);
+    if (!sounds.soundtrack.howl.playing() && !isMuted) {
+        sounds.soundtrack.howl.play();
+    }
+});
+
+document.getElementById("muteBtn").addEventListener("click", () => {
+    isMuted = !isMuted;
+
+    Howler.mute(isMuted);
+    if (!sounds.soundtrack.howl.playing() && !isMuted) {
+        sounds.soundtrack.howl.play();
+    }
+
+    if (isMuted) {
+        muteBtn.classList.remove("btn-outline-secondary");
+        muteBtn.classList.add("btn-danger");
+        muteBtn.innerHTML = '<i class="bi bi-volume-mute"></i> Muted';
+    } else {
+        muteBtn.classList.remove("btn-danger");
+        muteBtn.classList.add("btn-outline-secondary");
+        muteBtn.innerHTML = '<i class="bi bi-volume-up"></i> Sound On';
+    }
 });
 
 setInterval(() => {
@@ -572,14 +654,19 @@ socket.on("game_state", (match) => {
 
     if (!opponent_username) {
         opponent_username =
-            match.host !== username ? match.host : match.opponent;
+            client_match.host !== username
+                ? client_match.host
+                : client_match.opponent;
         setOpponentName();
     }
 
-    match_random.setup(match.random_array, match.random_array_index[username]);
+    match_random.setup(
+        client_match.random_array,
+        client_match.random_array_index[username],
+    );
 
-    if (match.dead[username]) {
-        match_timer.update(match.timer);
+    if (client_match.dead[username]) {
+        match_timer.update(client_match.timer);
         disableMovement();
         renderPlayer();
         renderOpponent();
@@ -587,19 +674,26 @@ socket.on("game_state", (match) => {
         return;
     }
 
-    if (match.status === MATCH_STATUS.PENDING) {
+    if (client_match.is_attacked[username]) {
+        console.log("I got attacked!");
+    }
+
+    if (client_match.status === MATCH_STATUS.PENDING) {
         disableMovement();
-    } else if (match.status === MATCH_STATUS.START) {
-        match_timer.start(match.timer);
+    } else if (client_match.status === MATCH_STATUS.START) {
+        match_timer.start(client_match.timer);
         renderPlayer();
         renderOpponent();
         enableMovement();
-    } else if (match.status === MATCH_STATUS.ONGOING) {
-        match_timer.update(match.timer);
+    } else if (client_match.status === MATCH_STATUS.ONGOING) {
+        match_timer.update(client_match.timer);
         renderPlayer();
         renderOpponent();
         enableMovement();
-    } else if (match.status === MATCH_STATUS.END) {
+    } else if (client_match.status === MATCH_STATUS.END) {
+        match_timer.update(0);
+        playSFX(sounds.game_over.howl);
+        sounds.soundtrack.howl.pause();
         renderPlayer();
         renderOpponent();
         disableMovement();
@@ -633,6 +727,7 @@ function handleMovement(e) {
             );
         }
 
+        playSFX(sounds.slide_tile.howl);
         BoardAction.spawnTile(client_match["cells"][username], match_random);
 
         client_match["score"][username] += score;
@@ -640,9 +735,11 @@ function handleMovement(e) {
         if (client_match["hidden_score"][username] > 128) {
             client_match["trash_point"][username] += 1;
             client_match["hidden_score"][username] -= 128;
+            playSFX(sounds.trash_point.howl);
         }
         if (!BoardLogic.hasMove(client_match["cells"][username])) {
             client_match["dead"][username] = true;
+            playSFX(sounds.hurt.howl);
         }
 
         renderPlayer();
@@ -654,7 +751,16 @@ function handleMovement(e) {
         });
     }
 
-    if (attack && client_match.trash_point[username] > 0) {
+    if (client_match.dead[opponent_username]) {
+        console.log("Your opponent has died!");
+    }
+
+    // If opponent is dead, you can't attack them
+    if (
+        attack &&
+        client_match.trash_point[username] > 0 &&
+        !client_match.dead[opponent_username]
+    ) {
         if (attack === "destroySpecificTile") {
             [client_match["cells"][opponent_username], cost] =
                 BoardAction.destroySpecificTile(
@@ -686,6 +792,7 @@ function handleMovement(e) {
         }
 
         if (cost > 0) {
+            playSFX(sounds.attack.howl);
             client_match["trash_point"][username] -= cost;
             socket.emit("game_state", {
                 type: "attack",
@@ -712,6 +819,7 @@ function setOpponentName() {
 function end_game(text) {
     console.log("Match Ended: ", text);
     console.log(Date.now());
+    client_match.status = MATCH_STATUS.END;
 
     let isWin = false;
     const score = client_match.score[username];
@@ -801,4 +909,55 @@ function cellGeometry(boardEl, r, c) {
         w: eR.width,
         h: eR.height,
     };
+}
+
+function renderSoundCredits() {
+    const uniqueCredits = new Map();
+
+    for (const sound of Object.values(sounds)) {
+        if (!uniqueCredits.has(sound.link)) {
+            uniqueCredits.set(sound.link, sound.credit);
+        }
+    }
+
+    // console.log(uniqueCredits);
+
+    const list = document.createElement("ul");
+    list.className = "list-group";
+
+    uniqueCredits.forEach((credit, link) => {
+        const item = document.createElement("li");
+        item.className =
+            "list-group-item d-flex justify-content-between align-items-center";
+
+        const text = document.createElement("span");
+        text.textContent = credit;
+
+        const anchor = document.createElement("a");
+        anchor.href = link;
+        anchor.target = "_blank";
+        anchor.className = "btn btn-sm btn-outline-primary";
+        anchor.textContent = "Source";
+
+        item.appendChild(text);
+        item.appendChild(anchor);
+        list.appendChild(item);
+    });
+
+    const title = document.createElement("h5");
+    title.className = "mb-3";
+    title.textContent = "Sound Credits";
+
+    creditArea.innerHTML = "";
+    creditArea.appendChild(title);
+    creditArea.appendChild(list);
+}
+renderSoundCredits();
+
+// To avoid sound fatigue, the pitch of the SFX will vary
+function playSFX(sound, min = 0.9, max = 1.1) {
+    if (isMuted) return;
+    const id = sound.play();
+    const rate = min + Math.random() * (max - min);
+    sound.rate(rate, id);
 }
