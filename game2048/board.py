@@ -37,6 +37,7 @@ class TypeMatch(TypedDict):
     random_array: list
     random_array_index: dict[str, int]
     timer: int
+    is_attacked: dict[str, str]
 
 
 class TypeMove(TypedDict):
@@ -422,7 +423,7 @@ class MatchState:
         random_array = match_random.get_array()
         time_remaining = match_timer.create().remaining()
 
-        match = {
+        match: TypeMatch = {
             "sids": {host_username: ""},
             "host": host_username,
             "opponent": None,
@@ -439,6 +440,7 @@ class MatchState:
             "random_array": random_array,
             "random_array_index": {host_username: 0},
             "timer": time_remaining,
+            "is_attacked": {host_username: None},
         }
 
         self.matches[match_id] = match
@@ -468,6 +470,7 @@ class MatchState:
         match["trash_point"][opponent_username] = 0
         match["dead"][opponent_username] = False
         match["random_array_index"][opponent_username] = 0
+        match["is_attacked"][opponent_username] = None
 
         return match
 
@@ -568,12 +571,14 @@ class MatchState:
     def __handle_player_attack(
         self, match_id, match: TypeMatch, username, data: TypeMove | TypeAttack
     ):
-        if match["trash_point"][username] <= 0:
-            return
-
         opponent_username = (
             match["opponent"] if match["host"] == username else match["host"]
         )
+
+        # If opponent is dead, you can't attack them
+        if match["trash_point"][username] <= 0 or match["dead"][opponent_username]:
+            return
+
         match_random = self.matches_random[match_id][username]
         cost = 0
 
@@ -605,11 +610,22 @@ class MatchState:
             )
 
         if cost > 0:
+            match["is_attacked"][opponent_username] = data["attack_id"]
             match["trash_point"][username] -= cost
 
     def sync_for_reconnection(self, match_id):
         self.__sync_match_timer(match_id)
         self.__sync_random_index(match_id)
+
+    def clear_attacks(self, match_id):
+        match = self.get_match_by_id(match_id)
+        if match is None or match["host"] is None or match["opponent"] is None:
+            return None
+
+        player1 = match["host"]
+        player2 = match["opponent"]
+        match["is_attacked"][player1] = None
+        match["is_attacked"][player2] = None
 
     #  Sync at the end of Board Logic / Board Action
     def __sync_random_index(self, match_id):
@@ -633,12 +649,21 @@ class MatchState:
 
     # Save data to database here
     def __end_game(self, match_id):
-        print("END: ", match_id)
+        print("END:", match_id)
         print(time.time())
         match = self.get_match_by_id(match_id)
+        match["status"] = MatchStatus.END.value
+        player1 = match["host"]
+        player2 = match["opponent"]
+
+        if match["score"][player1] > match["score"][player2]:
+            match["winner"] = player1
+            match["loser"] = player2
+        elif match["score"][player1] < match["score"][player2]:
+            match["winner"] = player2
+            match["loser"] = player1
 
         self.sync_for_reconnection(match_id)
-        match["status"] = MatchStatus.END.value
         socketio.emit("game_state", match, to=match_id)
 
 
@@ -678,13 +703,6 @@ def on_start_game(match_id):
     ):
         match["status"] = MatchStatus.START.value
         match_state.start_match(match_id)
-        # print("1: ", match)
-        # print(match_state.matches_random[match_id][current_user.username].get_index())
-        # data = {"type": "move", "match_id": match_id, "direction": "left"}
-        # match_state.handle_action(match_id, current_user.username, data)
-        # print("2:", match)
-        # print(match_state.matches_random[match_id][current_user.username].get_index())
-
         emit("game_state", match, to=match_id)
         match["status"] = MatchStatus.ONGOING.value
 
@@ -700,3 +718,4 @@ def on_game_state(data):
 
     match_state.handle_action(match_id, username, data)
     emit("game_state", match, to=match_id)
+    match_state.clear_attacks(match_id)
