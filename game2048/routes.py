@@ -14,6 +14,7 @@ from flask import (
 )
 from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
+from flask_migrate import upgrade
 from game2048 import app, db, mail, socketio
 from game2048.forms import (
     RegistrationForm,
@@ -228,9 +229,9 @@ def static(filename):
 # The reason One to One is not present: https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#one-to-one
 @app.route("/create")
 def about():
-    db.drop_all()
-    db.create_all()
-
+    # db.drop_all()
+    # db.create_all()
+    upgrade()
     data = []
 
     # V1
