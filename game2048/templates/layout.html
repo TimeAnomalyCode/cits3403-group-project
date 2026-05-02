@@ -31,6 +31,7 @@ Should only be touched if there is global changes to all pages, otherwise use:
                     <img src="{{ url_for('static', filename='logo.svg') }}"
                          alt="Cool Blue Logo that has 2048"
                          width="50px"
+                         name="homepage"
                          class="me-2 img-fluid">
                     2048 Battle
                 </a>
@@ -46,6 +47,7 @@ Should only be touched if there is global changes to all pages, otherwise use:
                         <img src="{{ current_user.image_file }}"
                              alt="Profile Pic"
                              width="60px"
+                             id="profilePic"
                              class="img-fluid rounded-circle ms-4">
                     </a>
                 {% endif %}
