@@ -1,42 +1,51 @@
 {# Just copy this code, delete all comments and write HTML/Jinja in between the content block #}
 {% extends "layout.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
 {% block content %}
     <!-- Centered width control using grid -->
     <div class="row justify-content-center py-5">
-        <div class="col-lg-8 col-md-10">
 
-            <!-- Top Row -->
-            <div class="row align-items-center text-center mb-3">
-                <div class="col-5">
-                    <a class="btn btn-primary w-100" href="{{ url_for('create_match') }}">
-                        Create a Match
-                    </a>
-                </div>
-
-                <div class="col-2 fw-bold">
-                    OR
-                </div>
-
-                <div class="col-5">
-                    <a href="{{ url_for('create_tournament') }}" class="btn btn-success w-100">
-                         Create a Tournament
-                    </a>
-                </div>
+        <!-- Top Row -->
+        <div class="row align-items-center text-center mb-3">
+            <div class="col-5">
+                <a class="btn btn-primary w-100" href="{{ url_for('create_match') }}">
+                    Create a Match
+                </a>
             </div>
 
-            <!-- Divider -->
-            <hr class="my-3">
-
-            <!-- Bottom Input -->
-            <div class="input-group">
-                <form action="{{url_for('match') }}" method="POST">
-                    <input type="text" name=""  class="form-control" placeholder="Enter match code">
-                    <button class="btn btn-outline-primary px-5">
-                    Join
-                </button>
-                </form>
+            <div class="col-2 fw-bold">
+                OR
             </div>
 
+            {# <div class="col-5">
+                <a href="{{ url_for('create_tournament') }}" class="btn btn-success w-100">
+                    Create a Tournament
+                </a>
+            </div> #}
         </div>
+
+        <!-- Divider -->
+        <hr class="my-3">
+
+        <!-- Bottom Input -->
+        <form method="post" action="">
+            {{ form.hidden_tag() }}
+
+            <div class="input-group">
+                {% if form.match_id.errors %}
+                    {{ form.match_id(class="form-control is-invalid", placeholder="Enter match ID") }}
+                    {{ form.submit(class="btn btn-primary") }}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.match_id.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.match_id(class="form-control", placeholder="Enter match ID") }}
+                    {{ form.submit(class="btn btn-primary") }}
+                {% endif %}
+            </div>
+        </form>
+
     </div>
 {% endblock content %}
