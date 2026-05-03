@@ -1,0 +1,387 @@
+{% extends "layout.html" %}
+{% block stylesheets %}
+    <style>
+        #board1 .col-3 > div,
+        #board2 .col-3 > div {
+            aspect-ratio: 1 / 1;
+        }
+    </style>
+{% endblock stylesheets %}
+{% block content %}
+    <!-- TOP BAR -->
+    <div class="container-fluid py-3 border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <button class="btn btn-primary" id="start_game">
+                Start Game
+            </button>
+            <button id="muteBtn" class="btn btn-danger">
+                <i class="bi bi-volume-mute me-2"></i>Muted
+            </button>
+        </div>
+        <div class="mt-3">
+            {# <button class="btn btn-warning btn-sm" id="btnCreate">
+                Create Tile
+            </button>
+            <button class="btn btn-danger btn-sm" id="btnDestroy">
+                Destroy Tile
+            </button>
+            <button class="btn btn-info btn-sm" id="btnShuffle">
+                Rearrange Board
+            </button>
+            <button class="btn btn-info btn-sm" id="btnCreateNegative">
+                Create Negative Tile
+            </button> #}
+            <h1 class="h4 mb-2">
+                Match Code: <span class="text-primary">{{ data.match_id }}</span>
+            </h1>
+
+            <p class="text-muted mb-3">
+                Controls
+            </p>
+
+            <div class="list-group list-group-flush mb-3">
+
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><kbd>w</kbd> <kbd>a</kbd> <kbd>s</kbd> <kbd>d</kbd></span>
+                    <span class="text-muted">Move</span>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><kbd>i</kbd></span>
+                    <span class="text-muted">Destroy specific tile</span>
+                    <span class="badge bg-secondary rounded-pill">Trash point: 4</span>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><kbd>j</kbd></span>
+                    <span class="text-muted">Create random tile</span>
+                    <span class="badge bg-secondary rounded-pill">Trash point: 1</span>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><kbd>k</kbd></span>
+                    <span class="text-muted">Rearrange board</span>
+                    <span class="badge bg-secondary rounded-pill">Trash point: 4</span>
+                </div>
+
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <span><kbd>l</kbd></span>
+                    <span class="text-muted">Make random negative tile</span>
+                    <span class="badge bg-secondary rounded-pill">Trash point: 2</span>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <!--both game board in a row-->
+    <div class="container my-4">
+        <div class="row align-items-center text-center" id="game_board_row">
+
+            <!--player 1 space-->
+            <div class="col-md-5 mb-4">
+                <div class="card bg-secondary text-light" id="panel_1">
+                    <div class="card-body">
+
+                        <!--display player name-->
+                        <div class="mt-3 d-flex justify-content-between">
+                            <h5 class="fw-bold text-start mb-3">
+                                Player: {{ current_user.username }}
+                            </h5>
+
+                            <div class="d-flex justify-items-center">
+                                <span class="mb-2 me-2">Time remaining: </span>
+                                <span id="timer1">180</span>
+                            </div>
+
+                        </div>
+
+                        <!--display player score-->
+                        <div class="bg-dark rounded p-2 mt-3 d-flex justify-content-between">
+                            <p class="mb-2">
+                                Current Score:
+                            </p>
+                            <h4 id="player_1_score">
+                                0
+                            </h4>
+
+                            <p class="mb-2">
+                                Current Trash Point:
+                            </p>
+                            <h4 id="player_1_trash_point">
+                                0
+                            </h4>
+
+                        </div>
+                        <br>
+
+                        <!--the board grid -->
+                        <div class="position-relative bg-dark p-2 rounded" id="board1">
+                            <div class="row g-1">
+                                <!--the 16 cells board-->
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="position-absolute top-0 start-0 w-100 h-100" id="layer1">
+                            </div>
+
+                            <div class="position-absolute top-50 start-50 translate-middle text-center d-none"
+                                 id="overlay1">
+                                <div id="ovIcon1">
+                                </div>
+                                <div id="ovSub1">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!--the vs in the middle-->
+            <div class="col-md-2 mb-4">
+                <h1 class="fw-bold fs-2">
+                    VS
+                </h1>
+            </div>
+
+            <!--player 2 space-->
+            <div class="col-md-5 mb-4">
+                <div class="card bg-secondary text-light shadow" id="panel2">
+                    <div class="card-body">
+
+                        <!--display player name-->
+                        <div class="mt-3 d-flex justify-content-between">
+                            <h5 class="fw-bold text-start mb-3">
+                                Player: <span id="opponent_username">Waiting for player...</span>
+                            </h5>
+                            <br>
+
+                            <div class="d-flex justify-items-center">
+                                <span class="mb-2">Time remaining: </span>
+                                <span id="timer2">9999</span>
+                            </div>
+
+                        </div>
+
+                        <!--display player score-->
+                        <div class="bg-dark rounded p-2 mt-3 d-flex justify-content-between">
+                            <p class="mb-2">
+                                Current Score:
+                            </p>
+                            <h4 id="player_2_score">
+                                0
+                            </h4>
+
+                            <p class="mb-2">
+                                Current Trash Point:
+                            </p>
+                            <h4 id="player_2_trash_point">
+                                0
+                            </h4>
+                        </div>
+                        <br>
+
+                        <!--the player 2 board grid -->
+                        <div class="position-relative bg-dark p-2 rounded" id="board2">
+                            <div class="row g-1">
+                                <!--16 cells board-->
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="bg-secondary p-4 rounded">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="position-absolute top-0 start-0 w-100 h-100" id="layer2">
+                            </div>
+
+                            <div class="position-absolute top-50 start-50 translate-middle text-center d-none"
+                                 id="overlay2">
+                                <div id="ovIcon2">
+                                </div>
+                                <div id="ovSub2">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <hr>
+    <div id="creditArea">
+    </div>
+    {# djlint:off H021 #}
+    <div id="gameOverOverlay"
+         class="position-fixed top-0 start-0 w-100 h-100 d-none"
+         style="z-index: 1050;
+                background: rgba(0,0,0,0.75);
+                backdrop-filter: blur(6px)">
+
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="card text-center shadow-lg border-0 rounded-4"
+                 style="max-width: 420px;
+                        width: 90%">
+                <div class="card-body p-5">
+
+                    <span id="resultBadge" class="badge mb-3 px-3 py-2">Result</span>
+
+                    <h2 id="resultTitle" class="fw-bold mb-3">
+                        Result
+                    </h2>
+                    <p class="text-muted mb-4">
+                        Final score: <span id="finalScore">0</span>
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-primary btn-lg" href="{{ url_for('create_match') }}">
+                            Play Again
+                        </a>
+                        <a class="btn btn-outline-secondary" href="{{ url_for('home') }}">
+                            Close
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+{% block scripts %}
+    <script>
+        // https://stackoverflow.com/questions/37259740/passing-variables-from-flask-to-javascript
+        const data = {{ data | tojson }}
+    </script>
+    <script src="{{url_for('static', filename='js/board.js')}}"></script>
+{% endblock scripts %}

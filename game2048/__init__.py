@@ -16,7 +16,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 mail = Mail(app)
-socketio = SocketIO(app)
+
+# https://admin.socket.io/#/
+# Server URL: http://127.0.0.1:5000
+socketio = SocketIO(app, cors_allowed_origins="*")
+socketio.server.instrument(auth=False)
 
 login_manager.login_view = "home"
 login_manager.login_message_category = "info"

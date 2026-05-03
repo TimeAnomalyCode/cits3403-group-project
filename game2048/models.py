@@ -30,7 +30,6 @@ class User(UserMixin, db.Model):
     password_hash: Mapped[str] = mapped_column(String(60), nullable=False)
     profile_pic: Mapped[str] = mapped_column(String(225), nullable=False)
     elo: Mapped[int] = mapped_column(Integer, nullable=False, default=700)
-    otp_code = Relationship("OTP", back_populates="user", uselist=False)
 
     # User table relationships
     wins = Relationship(
