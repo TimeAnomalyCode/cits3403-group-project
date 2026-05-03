@@ -23,6 +23,7 @@ from game2048.forms import (
     ChangePassword,
     ResetPasswordRequestForm,
     ResetPasswordForm,
+    JoinMatch,
 )
 from game2048.models import User, Match
 from game2048.email import send_password_reset_email
@@ -38,9 +39,19 @@ from game2048.board import match_state
 @app.route("/home", methods=["GET", "POST"])
 def home():
 
+    join_form = JoinMatch()
     # we need to check if user has logged in already to render a logged in homepage
     if current_user.is_authenticated:
-        return render_template("home_loggedIn.html", title="Home")
+        if join_form.validate_on_submit():
+            match_id = join_form.match_id.data
+
+            if match_state.get_match_by_id(match_id) is None:
+                flash("That match doesn't exist", "danger")
+                return redirect(url_for("home"))
+
+            return redirect(url_for("match", match_id=match_id))
+
+        return render_template("home_loggedIn.html", title="Home", form=join_form)
 
     leaderboard = [
         {"rank": 1, "username": "Jack", "high_score": 1200, "num_of_wins": 10},
@@ -56,7 +67,7 @@ def home():
             return redirect(url_for("home"))
 
         login_user(user, remember=form.remember_me.data)
-        return render_template("home_loggedIn.html", title="Home")
+        return render_template("home_loggedIn.html", title="Home", form=join_form)
 
     return render_template(
         "home.html", title="Home", leaderboard=leaderboard, form=form
@@ -212,7 +223,7 @@ def match(match_id):
     username = current_user.username
     match = match_state.get_match_by_id(match_id)
     if match is None:
-        return redirect(url_for("create_match"))
+        return redirect(url_for("home"))
 
     if match["opponent"] is None and username != match["host"]:
         match_state.join_match(match_id, username)
