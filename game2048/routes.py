@@ -1,19 +1,12 @@
-import math
-
 import sqlalchemy as sa
-
 from flask import (
     render_template,
     flash,
     redirect,
     url_for,
-    request,
     make_response,
     send_from_directory,
-    request,
-    jsonify,
 )
-from flask_mail import Message
 from flask_login import current_user, login_user, logout_user, login_required
 from game2048 import app, db
 from game2048.forms import (
