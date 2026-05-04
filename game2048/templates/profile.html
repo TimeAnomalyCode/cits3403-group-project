@@ -11,7 +11,7 @@
                 </div>
                 <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
 
-                    <img src="{{ user.image_file }}"
+                    <img src="{{ user.profile_pic }}"
                          alt="Profile Pic"
                          width="100px"
                          class="img-fluid rounded-circle mb-3">
@@ -56,7 +56,7 @@
                             <div class="card-body text-center">
 
                                 <a href="{{ url_for('change_username') }}"
-                                   name="change_username" 
+                                   name="change_username"
                                    class="btn btn-outline-primary me-2">
                                     Change Username
                                 </a>
