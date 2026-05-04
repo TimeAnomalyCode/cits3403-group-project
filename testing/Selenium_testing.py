@@ -190,7 +190,9 @@ def testing_reset_pw():
     test1.test_forget_password()
     time.sleep(SLEEP_TIME)
 
-
-testing_reset_pw()
+def main():
+    test_process()
+    testing_reset_pw()
+main()
 # Close browser
 driver.quit()
