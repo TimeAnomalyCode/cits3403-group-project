@@ -58,5 +58,11 @@ flask run
 9. SQLite Viewer: To view SQLite Database
 # Run Tests
 ```
+unit test:
+pytest testing/  --cov=game2048 --cov-report=term
+
+selenium test:
+pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
+
 some python command
 ```

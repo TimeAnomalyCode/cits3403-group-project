@@ -38,7 +38,3 @@ class TestUser(unittest.TestCase):
         # JWT need a id for it to look up the user
         self.assertEqual(self.user, User.verify_reset_password_token(token))
 
-
-if __name__ == "__main__":
-    print("Starting tests...")
-    unittest.main()
