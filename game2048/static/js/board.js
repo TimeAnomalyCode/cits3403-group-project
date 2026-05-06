@@ -961,3 +961,12 @@ function playSFX(sound, min = 0.9, max = 1.1) {
     const rate = min + Math.random() * (max - min);
     sound.rate(rate, id);
 }
+
+// Copy tournament code to clipboard
+function copyCode() {
+    const code = document.getElementById('match_id').innerText;
+
+    navigator.clipboard.writeText(code);
+
+    alert('Codied!');
+}

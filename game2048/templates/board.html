@@ -31,8 +31,11 @@
             <button class="btn btn-info btn-sm" id="btnCreateNegative">
                 Create Negative Tile
             </button> #}
-            <h1 class="h4 mb-2">
-                Match Code: <span class="text-primary">{{ data.match_id }}</span>
+            <h1 class="h4">
+                Match Code: <span class="text-primary" id="match_id">{{ data.match_id }}</span>
+                <button onclick="copyCode()" type="button" class="btn btn-outline-primary mb-2 mx-3">
+                    Copy Code
+                </button>
             </h1>
 
             <p class="text-muted mb-3">
