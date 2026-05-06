@@ -59,10 +59,14 @@ flask run
 # Run Tests
 ```
 unit test:
-pytest testing/  --cov=game2048 --cov-report=term
+    pytest testing/  --cov=game2048 --cov-report=term
 
-selenium test:
-pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
+selenium 
+    account related test:
+        pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
+
+    game test:
+        pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=html
 
 some python command
 ```
