@@ -57,16 +57,16 @@ flask run
 8. Ruff: To format and lint Python
 9. SQLite Viewer: To view SQLite Database
 # Run Tests
+## Unit Tests
 ```
-unit test:
-    pytest testing/  --cov=game2048 --cov-report=term
-
-selenium 
-    account related test:
-        pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
-
-    game test:
-        pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=html
-
-some python command
+pytest testing/  --cov=game2048 --cov-report=term
+```
+## Selenium Testing
+### Account Test
+```
+pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
+```
+### Game Test
+```
+pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=html
 ```
