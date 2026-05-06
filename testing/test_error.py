@@ -26,7 +26,3 @@ class TestError(unittest.TestCase):
     #     server_response = self.client.get("/trigger-error")
     #     self.assertEqual(server_response.status,'404 NOT FOUND')
     #     self.assertIn(b'wrong!', server_response.data)
-
-if __name__ == "__main__":
-    print("Starting tests...")
-    unittest.main()

@@ -78,11 +78,3 @@ class Testemail(unittest.TestCase):
 
         
 
-
-    
-
-
-
-if __name__ == "__main__":
-    print("Starting tests...")
-    unittest.main()
