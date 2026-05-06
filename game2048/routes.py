@@ -1,15 +1,27 @@
-import math
-
 import sqlalchemy as sa
-
-from flask import render_template, flash, redirect, url_for, request, make_response, send_from_directory, jsonify
-from flask_mail import Message
+from flask import (
+    render_template,
+    flash,
+    redirect,
+    url_for,
+    make_response,
+    send_from_directory,
+)
 from flask_login import current_user, login_user, logout_user, login_required
-from game2048 import app, db, mail, socketio
-from game2048.forms import RegistrationForm, LoginForm, ChangeUsername, ChangePassword, ResetPasswordRequestForm, ResetPasswordForm
-from game2048.models import User,Tournament, Match, MatchPlayer
+from flask_migrate import upgrade
+from game2048 import app, db
+from game2048.forms import (
+    RegistrationForm,
+    LoginForm,
+    ChangeUsername,
+    ChangePassword,
+    ResetPasswordRequestForm,
+    ResetPasswordForm,
+    JoinMatch,
+)
+from game2048.models import User, Match
 from game2048.email import send_password_reset_email
-from game2048.tournament import create_Tournament, get_simple_bracket, add_more_matches
+from game2048.board import match_state
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -21,9 +33,19 @@ from game2048.tournament import create_Tournament, get_simple_bracket, add_more_
 @app.route("/home", methods=["GET", "POST"])
 def home():
 
+    join_form = JoinMatch()
     # we need to check if user has logged in already to render a logged in homepage
     if current_user.is_authenticated:
-        return render_template("home_loggedIn.html", title="Home")
+        if join_form.validate_on_submit():
+            match_id = join_form.match_id.data
+
+            if match_state.get_match_by_id(match_id) is None:
+                flash("That match doesn't exist", "danger")
+                return redirect(url_for("home"))
+
+            return redirect(url_for("match", match_id=match_id))
+
+        return render_template("home_loggedIn.html", title="Home", form=join_form)
 
     leaderboard = [
         {"rank": 1, "username": "Jack", "high_score": 1200, "num_of_wins": 10},
@@ -39,7 +61,7 @@ def home():
             return redirect(url_for("home"))
 
         login_user(user, remember=form.remember_me.data)
-        return render_template("home_loggedIn.html", title="Home")
+        return render_template("home_loggedIn.html", title="Home", form=join_form)
 
     return render_template(
         "home.html", title="Home", leaderboard=leaderboard, form=form
@@ -53,7 +75,7 @@ def register():
         user = User(
             username=form.username.data,
             email=form.email.data,
-            image_file=f"https://api.dicebear.com/9.x/croodles/svg?seed={form.username.data}&flip=true&backgroundColor=FFFFFF",
+            profile_pic=f"https://api.dicebear.com/9.x/croodles/svg?seed={form.username.data}&flip=true&backgroundColor=FFFFFF",
         )
         user.set_password(form.password.data)
         db.session.add(user)
@@ -182,6 +204,28 @@ def change_password():
     return render_template("change_password.html", title="Change Password", form=form)
 
 
+@app.route("/match")
+@login_required
+def create_match():
+    match_id, match = match_state.create_match(current_user.username)
+    return redirect(url_for("match", match_id=match_id))
+
+
+@app.route("/match/<match_id>")
+@login_required
+def match(match_id):
+    username = current_user.username
+    match = match_state.get_match_by_id(match_id)
+    if match is None:
+        return redirect(url_for("home"))
+
+    if match["opponent"] is None and username != match["host"]:
+        match_state.join_match(match_id, username)
+
+    data = {"username": username, "match_id": match_id, "match": match}
+    return render_template("board.html", data=data)
+
+
 # ----------------------------------------------------------------
 # Anything Below is just helper functions or testing
 # (Should be removed or made official)
@@ -213,9 +257,9 @@ def static(filename):
 # The reason One to One is not present: https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#one-to-one
 @app.route("/create")
 def about():
-    db.drop_all()
-    db.create_all()
-
+    # db.drop_all()
+    # db.create_all()
+    upgrade()
     data = []
 
     # V1
@@ -248,77 +292,78 @@ def about():
 
         data.append("<hr>")
 
-    return ''.join(data)
+    return "".join(data)
+
 
 # ====================== Tournament Functions ======================
-# Once user clicks "Create Tournament", we will create a tournament,  
-# then redirect to the tournament page where the bracket will be generated 
+# Once user clicks "Create Tournament", we will create a tournament,
+# then redirect to the tournament page where the bracket will be generated
 # based on the tournament code.
 
 # These functions are used to initialize tournament and generate bracket
-@app.route("/create_tournament")
-@app.route("/tournament")
-@login_required
-def create_tournament():
-    tournament_code = create_Tournament(current_user.id)
-    # bracket = get_simple_bracket(tournament_code)
-    
-    return redirect(url_for('tournament', tournament_code=tournament_code))
-        
+# @app.route("/create_tournament")
+# @app.route("/tournament")
+# @login_required
+# def create_tournament():
+#   tournament_code = create_Tournament(current_user.id)
+# bracket = get_simple_bracket(tournament_code)
+#
+# return redirect(url_for('tournament', tournament_code=tournament_code))
+
 # These function will generate tournament_bracket site
-@app.route("/tournament/<tournament_code>", methods=['GET', 'POST'])
-@login_required
-def tournament(tournament_code):
-    # find tournament by code
-    tournament = db.session.scalar(
-        sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
-    )
-    if not tournament:
-        return render_template('404.html'), 404
+# @app.route("/tournament/<tournament_code>", methods=['GET', 'POST'])
+# @login_required
+# def tournament(tournament_code):
+# find tournament by code
+#   tournament = db.session.scalar(
+#      sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
+# )
+# if not tournament:
+#   return render_template('404.html'), 404
 
-    # Count how many players have joined this tournament 
-    players_count = db.session.scalars(
-        sa.select(MatchPlayer)
-        .join(Match)
-        .where(Match.tournament_id == tournament.id)
-    ).all()
+# Count how many players have joined this tournament
+#    players_count = db.session.scalars(
+#       sa.select(MatchPlayer)
+#      .join(Match)
+#     .where(Match.tournament_id == tournament.id)
+# ).all()
 
-    
-    bracket = get_simple_bracket(tournament_code)
 
-    return render_template(
-        'tournament_bracket.html', 
-        bracket=bracket, 
-        tournament_code=tournament_code, 
-        match_count=len(tournament.matches),
-        players_count=len(players_count)
-        )
+#    bracket = get_simple_bracket(tournament_code)
+#
+#   return render_template(
+#       'tournament_bracket.html',
+#      bracket=bracket,
+#     tournament_code=tournament_code,
+#    match_count=len(tournament.matches),
+#   players_count=len(players_count)
+#  )
 
 # This function will add more matches to the tournament when the host clicks "Add More Matches" button
-@app.route("/moreMatches/<tournament_code>", methods=['POST'])
-@login_required
-def more_matches(tournament_code):
-    # find tournament by code
-    tournament = db.session.scalar(
-        sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
-    )
-    if not tournament:
-        return render_template('404.html'), 404
-    
-    add_more_matches(tournament)
+# @app.route("/moreMatches/<tournament_code>", methods=['POST'])
+# @login_required
+# def more_matches(tournament_code):
+# find tournament by code
+#   tournament = db.session.scalar(
+#      sa.select(Tournament).where(Tournament.tournament_code == tournament_code)
+# )
+# if not tournament:
+#        return render_template('404.html'), 404
 
-    return jsonify(
-        status="ok",
-        #added=match_count,
-        total_matches=len(tournament.matches)
-    )
+#   add_more_matches(tournament)
+
+#  return jsonify(
+#     status="ok",
+#    #added=match_count,
+#   total_matches=len(tournament.matches)
+# )
+
 
 # ====================== Match Functions ======================
-@app.route("/match", methods=['GET', 'POST'])
-@login_required
-def match():
-    
-    match_id = '123ABC'
+# @app.route("/match", methods=["GET", "POST"])
+# @login_required
+# def match():
 
-    return render_template('match.html', match_id=match_id)
+#     match_id = "123ABC"
 
+#     return render_template("match.html", match_id=match_id)

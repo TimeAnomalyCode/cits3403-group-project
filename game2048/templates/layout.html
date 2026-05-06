@@ -19,6 +19,8 @@ Should only be touched if there is global changes to all pages, otherwise use:
               crossorigin="anonymous">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+        {% block stylesheets %}
+        {% endblock stylesheets %}
         <title>{{ title + " - 2048 Battle" if title else "2048 Battle" }}</title>
     </head>
     <body class="bg-light">
@@ -44,7 +46,7 @@ Should only be touched if there is global changes to all pages, otherwise use:
                         </a>
                     </div>
                     <a href="{{ url_for('profile', username=current_user.username) }}">
-                        <img src="{{ current_user.image_file }}"
+                        <img src="{{ current_user.profile_pic }}"
                              alt="Profile Pic"
                              width="60px"
                              id="profilePic"
@@ -115,5 +117,11 @@ Should only be touched if there is global changes to all pages, otherwise use:
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
                 crossorigin="anonymous"></script>
+        <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+                integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
+                crossorigin="anonymous"></script>
+        <script src=" https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js "></script>
+        {% block scripts %}
+        {% endblock scripts %}
     </body>
 </html>
