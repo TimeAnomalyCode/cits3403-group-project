@@ -75,8 +75,14 @@
         </div>
     </div>
     <!--both game board in a row-->
+
     <div class="container my-4">
         <div class="row align-items-center text-center" id="game_board_row">
+            <!-- Timer -->
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                <h1 class="fw-bold fs-2">Time remaining:</h1>
+                <h1 class="fw-bold fs-2" id="timer1">180</h1>
+            </div>
 
             <!--player 1 space-->
             <div class="col-md-5 mb-4">
@@ -89,10 +95,10 @@
                                 Player: {{ current_user.username }}
                             </h5>
 
-                            <div class="d-flex justify-items-center">
+                            <!-- <div class="d-flex justify-items-center">
                                 <span class="mb-2 me-2">Time remaining: </span>
                                 <span id="timer1">180</span>
-                            </div>
+                            </div> -->
 
                         </div>
 
@@ -223,10 +229,10 @@
                             </h5>
                             <br>
 
-                            <div class="d-flex justify-items-center">
+                            <!-- <div class="d-flex justify-items-center">
                                 <span class="mb-2">Time remaining: </span>
                                 <span id="timer2">9999</span>
-                            </div>
+                            </div> -->
 
                         </div>
 
