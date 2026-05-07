@@ -12,7 +12,7 @@ from selenium.webdriver.chrome.options import Options
 from game2048.models import User
 
 # from selenium.webdriver.common.credential import Credential
-SLEEP_TIME = 0.5
+SLEEP_TIME = 2
 
 @pytest.fixture
 def driver():
@@ -54,6 +54,15 @@ class test:
         self.user = User(id=1)
 
         pass
+
+    def test_register(self):
+        # remove after each time
+        self.driver.get("http://127.0.0.1:5000/register")
+        self.driver.find_element(By.ID, "username").send_keys(self.username)
+        self.driver.find_element(By.ID, "email").send_keys(self.email)
+        self.driver.find_element(By.ID, "password").send_keys(self.password)
+        self.driver.find_element(By.ID, "confirm_password").send_keys(self.password)
+        self.driver.find_element(By.NAME, "submit").submit()
 
     def test_login(self):
         self.driver.find_element(By.NAME, "email").send_keys(self.email)
@@ -170,6 +179,27 @@ def testing_reset_pw(driver):
     test1.test_forget_password()
     time.sleep(SLEEP_TIME)
 
+def testing_register(driver):
+    #remove ever time
+    test1 = test(driver,"teset12@gmail.com", "123456789", "usernametest", "john", "12345678")
+    test1.test_register()
+    test1.test_login()
+    test1.test_logout()
+
+# addition register for test bot 
+# def testing_register_bot1(driver):
+#     #remove ever time
+#     test1 = test(driver,"test@gmail.com", "123456789", "tester", "empty", "12345678")
+#     test1.test_register()
+#     test1.test_login()
+#     test1.test_logout()
+
+# def testing_register_bot2(driver):
+#     #remove ever time
+#     test1 = test(driver,"tester1@gmail.com", "123456789", "another", "empty", "12345678")
+#     test1.test_register()
+#     test1.test_login()
+#     test1.test_logout()
 
 #tester1@gmail.com
 #123456789

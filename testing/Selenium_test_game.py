@@ -79,7 +79,10 @@ def play(driver, duration=TEST_TIME):
     end_time = time.time() + duration
     while time.time() < end_time:
         direction = random.choice(['w', 'a', 's', 'd'])
+        skill = random.choice(['i', 'j', 'k', 'l'])
         move.send_keys(direction).perform()
+        if random.random() > 0.75:
+            move.send_keys(skill).perform()
         time.sleep(0.1)
 
 
