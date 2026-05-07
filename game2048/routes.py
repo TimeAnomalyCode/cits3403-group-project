@@ -1,6 +1,7 @@
 import math
 
 import sqlalchemy as sa
+from sqlalchemy import or_
 
 from flask import (
     render_template,
@@ -25,6 +26,7 @@ from game2048.forms import (
 )
 from game2048.models import User, Match
 from game2048.email import send_password_reset_email
+from game2048.elo import update_elo
 
 # ----------------------------------------------------------------
 # Our home is also the login page
@@ -40,11 +42,13 @@ def home():
     if current_user.is_authenticated:
         return render_template("home_loggedIn.html", title="Home")
 
-    leaderboard = [
-        {"rank": 1, "username": "Jack", "high_score": 1200, "num_of_wins": 10},
-        {"rank": 2, "username": "Sarah", "high_score": 900, "num_of_wins": 6},
-        {"rank": 3, "username": "John", "high_score": 300, "num_of_wins": 2},
-    ]
+    users = User.query.order_by(User.elo.desc()).all()
+    leaderboard = []
+    for user in users:
+        wins = Match.query.filter_by(winner_id=user.id).count()
+
+        leaderboard.append({"user": user, "wins": wins})
+
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.scalar(sa.select(User).where(User.email == form.email.data))
@@ -141,19 +145,81 @@ def logout():
 @login_required
 def profile(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
-    num_of_wins = 2
-    rank = 100
-    match_history = [
-        {"date": "2026-04-10", "opponent": "Sarah", "result": "Win", "score": 2048},
-        {"date": "2026-04-09", "opponent": "Jason", "result": "Loss", "score": 1024},
-        {"date": "2026-04-08", "opponent": "Alex", "result": "Win", "score": 2048},
-    ]
+    num_of_wins = Match.query.filter_by(winner_id=user.id).count()
+    total_games = Match.query.filter(
+        or_(Match.player1_id == user.id, Match.player2_id == user.id)
+    ).count()
+
+    win_rate = round((num_of_wins / total_games) * 100, 1) if total_games > 0 else 0
+    rank = User.query.filter(User.elo > user.elo).count() + 1
+    matches = (
+        Match.query
+        .filter(or_(Match.player1_id == user.id, Match.player2_id == user.id))
+        .order_by(Match.created_at.asc())  # IMPORTANT: oldest → newest
+        .all()
+    )
+    match_history = []
+
+    for match in matches:
+        user_is_player1 = match.player1_id == user.id
+
+        opponent_id = match.player2_id if user_is_player1 else match.player1_id
+        opponent = User.query.get(opponent_id)
+
+        winner_user = User.query.get(match.winner_id)
+
+        loser_id = (
+            match.player2_id
+            if match.winner_id == match.player1_id
+            else match.player1_id
+        )
+        loser_user = User.query.get(loser_id)
+
+        winner_before = (
+            match.player1_elo
+            if match.winner_id == match.player1_id
+            else match.player2_elo
+        )
+
+        loser_before = (
+            match.player2_elo
+            if match.winner_id == match.player1_id
+            else match.player1_elo
+        )
+
+        winner_original_elo = winner_user.elo
+        loser_original_elo = loser_user.elo
+
+        winner_user.elo = winner_before
+        loser_user.elo = loser_before
+
+        new_winner_elo, new_loser_elo = update_elo(winner_user, loser_user)
+
+        winner_user.elo = winner_original_elo
+        loser_user.elo = loser_original_elo
+
+        if user.id == winner_user.id:
+            elo_before = winner_before
+            elo_change = new_winner_elo - winner_before
+        else:
+            elo_before = loser_before
+            elo_change = new_loser_elo - loser_before
+
+        match_history.append({
+            "date": match.created_at.strftime("%d/%m/%Y"),
+            "opponent": opponent.username,
+            "winner": winner_user.username,
+            "elo_before": elo_before,
+            "elo_change": elo_change,
+        })
+
     return render_template(
         "profile.html",
         title="Profile",
         user=user,
         num_of_wins=num_of_wins,
         rank=rank,
+        win_rate=win_rate,
         match_history=match_history,
     )
 
