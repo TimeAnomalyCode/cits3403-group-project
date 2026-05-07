@@ -18,6 +18,12 @@ depends_on = None
 
 
 def upgrade():
+    op.drop_table("users")
+    op.drop_table("matches")
+    op.drop_table("leaderboard")
+    op.drop_table("match_players")
+    op.drop_table("tournaments")
+    op.drop_table("otp")
     op.create_table(
         "users",
         sa.Column("id", sa.Integer(), primary_key=True),
