@@ -86,6 +86,26 @@
                 <h1 class="fw-bold fs-2">Time remaining:</h1>
                 <h1 class="fw-bold fs-2" id="timer1">180</h1>
             </div>
+            <!-- Score meter -->
+            <div class="container mb-3 ">        
+                <div class="progress battle-bar-container" style="height: 30px;">
+                    <!-- player 1 (blue) -->
+                    <div id="player1-bar" 
+                        class="progress-bar bg-primary" 
+                        role="progressbar" 
+                        style="width: 50%; border-radius: 15px 0 0 15px;">
+                        <span id="player_1_score" class="fs-4">0</span>
+                    </div>
+                    
+                    <!-- player 2 (red) -->
+                    <div id="player2-bar" 
+                        class="progress-bar bg-danger" 
+                        role="progressbar" 
+                        style="width: 50%; border-radius: 0 15px 15px 0;">
+                        <span id="player_2_score" class="fs-4">0</span>
+                    </div>
+                </div>
+            </div>
 
             <!--player 1 space-->
             <div class="col-md-5 mb-4">
@@ -107,12 +127,12 @@
 
                         <!--display player score-->
                         <div class="bg-dark rounded p-2 mt-3 d-flex justify-content-between">
-                            <p class="mb-2">
+                            <!-- <p class="mb-2">
                                 Current Score:
                             </p>
                             <h4 id="player_1_score">
                                 0
-                            </h4>
+                            </h4> -->
 
                             <p class="mb-2">
                                 Current Trash Point:
@@ -241,12 +261,12 @@
 
                         <!--display player score-->
                         <div class="bg-dark rounded p-2 mt-3 d-flex justify-content-between">
-                            <p class="mb-2">
+                            <!-- <p class="mb-2">
                                 Current Score:
                             </p>
                             <h4 id="player_2_score">
                                 0
-                            </h4>
+                            </h4> -->
 
                             <p class="mb-2">
                                 Current Trash Point:

@@ -858,6 +858,7 @@ function renderPlayer() {
     // console.log("SCORE: ", client_match.score[username]);
     player_1_trash_point.textContent = client_match.trash_point[username];
     render(layer1, board1, client_match.cells[username]);
+    updateScores(client_match.score[username], client_match.score[opponent_username]);
 }
 
 function renderOpponent() {
@@ -969,4 +970,24 @@ function copyCode() {
     navigator.clipboard.writeText(code);
 
     alert('Codied!');
+}
+
+// Update the score bars based on the current scores
+function updateScores(player_1_score, player_2_score) {
+    const p1Bar = document.getElementById('player1-bar');
+    const p2Bar = document.getElementById('player2-bar');
+
+    // Initialize widths to 50% each if both scores are zero to avoid division by zero
+    let p1Width = 50;
+    let p2Width = 50;
+
+    if (player_1_score + player_2_score > 0) {
+        p1Width = (player_1_score / (player_1_score + player_2_score)) * 100;
+        p2Width = 100 - p1Width;
+    }
+    // console.log(`Player 1 Score: ${p1Width}, Player 2 Score: ${p2Width}`);
+
+    // Update the widths of the bars
+    p1Bar.style.width = p1Width + "%";
+    p2Bar.style.width = p2Width + "%";
 }
