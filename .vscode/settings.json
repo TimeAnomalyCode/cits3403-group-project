@@ -14,6 +14,8 @@
         "editor.defaultFormatter": "monosans.djlint",
         "editor.foldingStrategy": "indentation"
     },
+    // https://stackoverflow.com/questions/37259740/passing-variables-from-flask-to-javascript#comment129128290_60548743
+    "html.validate.scripts": false,
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
@@ -26,6 +28,7 @@
     "[javascript][css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "prettier.tabWidth": 4,
     "css.styleSheets": [
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css",
         "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css",

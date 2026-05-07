@@ -168,3 +168,10 @@ class ResetPasswordForm(FlaskForm):
     def validate_password(self, password):
         if self.user.check_password(password.data):
             raise ValidationError("Old password cannot be the same as new password")
+
+
+class JoinMatch(FlaskForm):
+    match_id = StringField(
+        "Enter Match Code", validators=[DataRequired(), Length(min=5)]
+    )
+    submit = SubmitField("Join Match")
