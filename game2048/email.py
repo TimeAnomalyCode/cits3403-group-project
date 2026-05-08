@@ -17,9 +17,11 @@ def send_email(
         recipients: list[str], 
         text_body: str, 
         html_body: str, 
-        sender: str = current_app.config["MAIL_DEFAULT_SENDER"]
+        sender: str = None
     ):
-
+    
+    if sender is None:
+        sender = current_app.config["MAIL_DEFAULT_SENDER"]
     msg = Message(
         subject, sender=sender, recipients=recipients, body=text_body, html=html_body
     )
