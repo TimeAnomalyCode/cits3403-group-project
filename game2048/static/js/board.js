@@ -966,8 +966,14 @@ function playSFX(sound, min = 0.9, max = 1.1) {
 // Copy tournament code to clipboard
 function copyCode() {
     const code = document.getElementById('match_id').innerText;
+    const button = document.getElementById('copyCodeBtn');
 
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(code).then(() => {
+        button.innerText = "Copied!";
+        setTimeout(() => {
+            button.innerText = "Copy Code";
+        }, 1500);
+    });
 
     alert('Codied!');
 }
