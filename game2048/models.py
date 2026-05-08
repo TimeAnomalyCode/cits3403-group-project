@@ -31,9 +31,12 @@ class User(UserMixin, db.Model):
     profile_pic: Mapped[str] = mapped_column(String(225), nullable=False)
     elo: Mapped[int] = mapped_column(Integer, nullable=False, default=700)
 <<<<<<< HEAD
+<<<<<<< HEAD
     # otp_code = Relationship("OTP", back_populates="user", uselist=False)
 =======
 >>>>>>> 2d8111ce2461f925e07ffa06b17be71f22348d07
+=======
+>>>>>>> 3006365f5eaf75a887b7531bc01453bd0dc9ab36
 
     # User table relationships
     wins = Relationship(
