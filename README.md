@@ -24,7 +24,24 @@ python -m venv .venv
 ```
 pip install -r requirements.txt
 ```
-5. Run the web app
+5. Setup Database
+```
+flask db upgrade
+```
+6. Add .env to the base directory with the following variables
+```
+MAIL_SERVER = 
+MAIL_PORT = 
+MAIL_USERNAME = 
+MAIL_PASSWORD = 
+MAIL_USE_TLS = 
+MAIL_USE_SSL = 
+SECRET_KEY = 
+SQLALCHEMY_DATABASE_URI = 
+MAIL_DEFAULT_SENDER_NAME = 
+MAIL_DEFAULT_SENDER_ADDRESS = 
+```
+7. Run the web app
 ```
 flask run
 ```
@@ -40,6 +57,16 @@ flask run
 8. Ruff: To format and lint Python
 9. SQLite Viewer: To view SQLite Database
 # Run Tests
+## Unit Tests
 ```
-some python command
+pytest testing/  --cov=game2048 --cov-report=term
+```
+## Selenium Testing
+### Account Test
+```
+pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
+```
+### Game Test
+```
+pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=html
 ```
