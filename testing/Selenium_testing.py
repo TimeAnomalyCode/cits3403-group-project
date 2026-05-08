@@ -121,6 +121,21 @@ class test:
         self.driver.find_element(By.NAME, "submit").click()
 
 
+# addition register for test bot 
+def test_register_bot1(driver):
+    #remove every time
+    test1 = test(driver,"test@gmail.com", "123456789", "tester", "empty", "12345678")
+    test1.test_register()
+    test1.test_login()
+    test1.test_logout()
+
+def test_register_bot2(driver):
+    #remove every time
+    test1 = test(driver,"tester1@gmail.com", "123456789", "another", "empty", "12345678")
+    test1.test_register()
+    test1.test_login()
+    test1.test_logout()
+
 
 def test_process(driver):
     test1 = test(driver, "test@gmail.com", "123456789", "tester", "john", "12345678")
@@ -179,6 +194,7 @@ def testing_reset_pw(driver):
     test1.test_forget_password()
     time.sleep(SLEEP_TIME)
 
+# individual test for registration
 def testing_register(driver):
     #remove ever time
     test1 = test(driver,"teset12@gmail.com", "123456789", "usernametest", "john", "12345678")
@@ -186,20 +202,7 @@ def testing_register(driver):
     test1.test_login()
     test1.test_logout()
 
-# addition register for test bot 
-# def testing_register_bot1(driver):
-#     #remove ever time
-#     test1 = test(driver,"test@gmail.com", "123456789", "tester", "empty", "12345678")
-#     test1.test_register()
-#     test1.test_login()
-#     test1.test_logout()
 
-# def testing_register_bot2(driver):
-#     #remove ever time
-#     test1 = test(driver,"tester1@gmail.com", "123456789", "another", "empty", "12345678")
-#     test1.test_register()
-#     test1.test_login()
-#     test1.test_logout()
 
 #tester1@gmail.com
 #123456789
