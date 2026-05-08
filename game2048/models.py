@@ -33,11 +33,17 @@ class User(UserMixin, db.Model):
     elo: Mapped[int] = mapped_column(Integer, nullable=False, default=700)
 
     # User table relationships
-    wins = Relationship("Match", foreign_keys="Match.winner_id", back_populates="winner")
+    wins = Relationship(
+        "Match", foreign_keys="Match.winner_id", back_populates="winner"
+    )
 
-    player1_in_matches = Relationship("Match", foreign_keys="Match.player1_id", back_populates="player1")
+    player1_in_matches = Relationship(
+        "Match", foreign_keys="Match.player1_id", back_populates="player1"
+    )
 
-    player2_in_matches = Relationship("Match", foreign_keys="Match.player2_id", back_populates="player2")
+    player2_in_matches = Relationship(
+        "Match", foreign_keys="Match.player2_id", back_populates="player2"
+    )
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
@@ -49,7 +55,7 @@ class User(UserMixin, db.Model):
         return jwt.encode(
             {"reset_password": self.id, "exp": time() + expires_in},
             current_app.config["SECRET_KEY"],
-            algorithm="HS256"
+            algorithm="HS256",
         )
 
     # Let the Class verify the token by using static
@@ -57,10 +63,9 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            id = jwt.decode(token,
-                current_app.config["SECRET_KEY"],
-                algorithms=["HS256"]
-            )["reset_password"]
+            id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])[
+                "reset_password"
+            ]
 
         except:
             return
@@ -84,36 +89,23 @@ class Match(db.Model):
     
     player1_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     player2_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    winner_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"),
-        nullable=True,
-    )
-    
+    winner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+
     player1_elo: Mapped[int] = mapped_column(Integer, nullable=False)
     player2_elo: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=lambda: datetime.now(UTC),
-        nullable=False,
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     # Matches relationships
     player1 = Relationship(
-        "User",
-        foreign_keys=[player1_id],
-        back_populates="player1_in_matches",
+        "User", foreign_keys=[player1_id], back_populates="player1_in_matches"
     )
 
     player2 = Relationship(
-        "User",
-        foreign_keys=[player2_id],
-        back_populates="player2_in_matches",
+        "User", foreign_keys=[player2_id], back_populates="player2_in_matches"
     )
 
     winner = Relationship(
-        "User",
-        foreign_keys=[winner_id],
-        back_populates="wins",
+        "User", foreign_keys=[winner_id], back_populates="wins"
     )
 
 
