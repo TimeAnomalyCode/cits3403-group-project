@@ -45,6 +45,20 @@ MAIL_DEFAULT_SENDER_ADDRESS =
 ```
 flask run
 ```
+# Run Tests
+## Unit Tests
+```
+pytest testing/  --cov=game2048 --cov-report=term
+```
+## Selenium Tests
+### Account Test
+```
+pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
+```
+### Game Test
+```
+pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=html
+```
 # Formatting and Linting and QOL
 ## VS Code Extensions
 1. Code Spell Checker: To prevent typos

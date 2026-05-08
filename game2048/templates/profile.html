@@ -24,13 +24,21 @@
                     </p>
 
                     <div class="row w-100 mt-3 text-center">
-                        <div class="col-6">
+                        <div class="col-4">
                             <h6 class="mb-0 fw-bold">
                                 {{ num_of_wins }}
                             </h6>
                             <small class="text-muted">Wins</small>
                         </div>
-                        <div class="col-6">
+
+                        <div class="col-4">
+                            <h6 class="mb-0 fw-bold text-{{ 'success' if win_rate >= 50 else 'danger' }}">
+                                {{ win_rate }}%
+                            </h6>
+                            <small class="text-muted">Win Rate</small>
+                        </div>
+
+                        <div class="col-4">
                             <h6 class="mb-0 fw-bold">
                                 #{{ rank }}
                             </h6>
@@ -92,10 +100,10 @@
                                                 Opponent
                                             </th>
                                             <th>
-                                                Result
+                                                Winner
                                             </th>
                                             <th>
-                                                Score
+                                                Elo Gain/Loss
                                             </th>
                                         </tr>
                                     </thead>
@@ -109,11 +117,16 @@
                                                 <td>
                                                     {{ match.opponent }}
                                                 </td>
-                                                <td class="text-{{ 'success' if match.result=='Win' else 'danger' }}">
-                                                    {{ match.result }}
-                                                </td>
                                                 <td>
-                                                    {{ match.score }}
+                                                    {{ match.winner }}
+                                                </td>
+
+                                                <td>
+                                                    {{ match.elo_before }}
+                                                    <span class="text-{{ 'success' if match.elo_change > 0 else 'danger' }}">
+                                                        {{ '↑' if match.elo_change > 0 else '↓' }}
+                                                        {{ match.elo_change | abs }}
+                                                    </span>
                                                 </td>
                                             </tr>
                                         {% endfor %}

@@ -196,7 +196,7 @@ def test_bot1_can_login_and_create_game(app):
 
 def test_bot2_can_login_and_join_game(app):
     queue = Queue()
-    p1 = Process(target=bot1_worker, args=(queue))
+    p1 = Process(target=bot1_worker, args=(queue,))
     p1.start()
     # time for creating the game, avoid can not find element
     time.sleep(SLEEP_TIME)
