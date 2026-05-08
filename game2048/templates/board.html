@@ -9,15 +9,15 @@
 {% endblock stylesheets %}
 {% block content %}
     <!-- TOP BAR -->
-    <div class="container-fluid py-3 border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="container-fluid py-3 mt-3 border-bottom">
+        <!-- <div class="d-flex justify-content-between align-items-center">
             <button class="btn btn-primary" id="start_game">
                 Start Game
             </button>
             <button id="muteBtn" class="btn btn-danger">
                 <i class="bi bi-volume-mute me-2"></i>Muted
             </button>
-        </div>
+        </div> -->
         <div class="mt-3">
             {# <button class="btn btn-warning btn-sm" id="btnCreate">
                 Create Tile
@@ -31,12 +31,18 @@
             <button class="btn btn-info btn-sm" id="btnCreateNegative">
                 Create Negative Tile
             </button> #}
-            <h1 class="h4">
-                Match Code: <span class="text-primary" id="match_id">{{ data.match_id }}</span>
-                <button onclick="copyCode()" type="button" class="btn btn-outline-primary mb-2 mx-3">
+            <div class="h4 d-flex align-items-center">
+                Match Code:<span class="text-primary" id="match_id">{{ data.match_id }}</span>
+                <button onclick="copyCode()"
+                            id="copyCodeBtn" 
+                            type="button" 
+                            class="btn btn-outline-primary mx-3">
                     Copy Code
                 </button>
-            </h1>
+                <button id="muteBtn" class="btn btn-danger ms-auto">
+                    <i class="bi bi-volume-mute me-2"></i>Muted
+                </button>
+            </div>
 
             <p class="text-muted mb-3">
                 Controls
@@ -87,8 +93,8 @@
                 <h1 class="fw-bold fs-2" id="timer1">180</h1>
             </div>
             <!-- Score meter -->
-            <div class="container mb-3 ">        
-                <div class="progress battle-bar-container" style="height: 30px;">
+            <div class="container mb-4">        
+                <div class="progress battle-bar-container" style="height: 25px;">
                     <!-- player 1 (blue) -->
                     <div id="player1-bar" 
                         class="progress-bar bg-primary" 
@@ -365,7 +371,11 @@
                     </div>
                 </div>
             </div>
-
+            <div class="mt-3">
+                <button class="btn btn-lg btn-success" id="start_game" style="width: 30%;">
+                    Start Game
+                </button>
+            </div>
         </div>
     </div>
     <hr>

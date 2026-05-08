@@ -974,8 +974,8 @@ function copyCode() {
 
 // Update the score bars based on the current scores
 function updateScores(player_1_score, player_2_score) {
-    const p1Bar = document.getElementById('player1-bar');
-    const p2Bar = document.getElementById('player2-bar');
+    const p1Bar = document.getElementById("player1-bar");
+    const p2Bar = document.getElementById("player2-bar");
 
     // Initialize widths to 50% each if both scores are zero to avoid division by zero
     let p1Width = 50;
