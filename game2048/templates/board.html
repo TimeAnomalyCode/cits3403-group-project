@@ -5,6 +5,38 @@
         #board2 .col-3 > div {
             aspect-ratio: 1 / 1;
         }
+        #countdown-overlay {
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #countdown-overlay.d-none {
+            display: none !important;
+        }
+
+        #countdown-text {
+            font-size: 8rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .countdown-pop {
+            animation: countdown-pop 0.35s ease-out;
+        }
+
+        @keyframes countdown-pop {
+            from {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
     </style>
 {% endblock stylesheets %}
 {% block content %}
@@ -380,6 +412,10 @@
     </div>
     <hr>
     <div id="creditArea">
+    </div>
+    <!-- Countdown Overlay -->
+    <div id="countdown-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-none">
+        <div id="countdown-text">3</div>
     </div>
     {# djlint:off H021 #}
     <div id="gameOverOverlay"

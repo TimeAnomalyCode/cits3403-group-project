@@ -701,10 +701,25 @@ def on_start_game(match_id):
         and match["status"] == MatchStatus.PENDING.value
         and len(match["sids"]) == 2
     ):
-        match["status"] = MatchStatus.START.value
-        match_state.start_match(match_id)
-        emit("game_state", match, to=match_id)
-        match["status"] = MatchStatus.ONGOING.value
+        emit("countdown_start", {"seconds": 3}, to=match_id)
+        socketio.start_background_task(start_match_after_countdown, match_id)
+
+
+def start_match_after_countdown(match_id):
+    socketio.sleep(3)
+
+    match = match_state.get_match_by_id(match_id)
+
+    if match is None:
+        return
+
+    if match["status"] != MatchStatus.PENDING.value:
+        return
+
+    match["status"] = MatchStatus.START.value
+    match_state.start_match(match_id)
+    socketio.emit("game_state", match, to=match_id)
+    match["status"] = MatchStatus.ONGOING.value
 
 
 @socketio.on("game_state")

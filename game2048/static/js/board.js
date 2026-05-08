@@ -609,6 +609,7 @@ const match_id = data.match_id;
 let opponent_username = "";
 /** @type {TypeMatch} */
 let client_match = {};
+let isCountingDown = false;
 const N = 4;
 
 document.getElementById("start_game").addEventListener("click", () => {
@@ -645,6 +646,10 @@ const socket = io({
     auth: {
         match_id: match_id,
     },
+});
+
+socket.on("countdown_start", (payload = {}) => {
+    runCountdownAnimation(() => {}, payload.seconds || 3);
 });
 
 socket.on("game_state", (match) => {
@@ -975,7 +980,6 @@ function copyCode() {
         }, 1500);
     });
 
-    alert('Codied!');
 }
 
 // Update the score bars based on the current scores
@@ -996,4 +1000,53 @@ function updateScores(player_1_score, player_2_score) {
     // Update the widths of the bars
     p1Bar.style.width = p1Width + "%";
     p2Bar.style.width = p2Width + "%";
+}
+
+function runCountdownAnimation(onComplete, seconds = 3) {
+    const startButton = document.getElementById("start_game");
+    const overlay = document.getElementById("countdown-overlay");
+    const text = document.getElementById("countdown-text");
+    let count = seconds;
+
+    if (!startButton || !overlay || !text) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    // Disable the start button to prevent multiple clicks during countdown
+    startButton.disabled = true;
+    startButton.style.visibility = "hidden";
+
+    // Show the overlay and start the countdown
+    overlay.classList.remove("d-none");
+    text.style.color = "";
+    text.innerText = count;
+    triggerPop();
+
+    const timer = setInterval(() => {
+        count--;
+
+        if (count > 0) {
+            text.innerText = count;
+            triggerPop();
+            return;
+        }
+
+        text.innerText = "GO!";
+        text.style.color = "#28a745";
+        triggerPop();
+        clearInterval(timer);
+
+        setTimeout(() => {
+            overlay.classList.add("d-none");
+
+            if (onComplete) onComplete();
+        }, 350);
+    }, 1000);
+
+    function triggerPop() {
+        text.classList.remove("countdown-pop");
+        void text.offsetWidth;
+        text.classList.add("countdown-pop");
+    }
 }
