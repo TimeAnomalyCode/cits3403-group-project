@@ -15,39 +15,85 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from game2048.models import User
+from game2048 import create_app, db
+from config import SeleniumTestConfig
 
 
-# --- Config ---
+SLEEP_TIME = 2
 TEST_TIME = 180
 BASE_URL = "http://127.0.0.1:5000"
 BOT1_EMAIL = "test@gmail.com"
 BOT2_EMAIL = "tester1@gmail.com"
 PASSWORD = "123456789"
 
+@pytest.fixture(scope="session")
+def app():
 
-# --- Driver Factory ---
+    app = create_app(SeleniumTestConfig)
+
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
+        bot1 = User(username="tester", email="test@gmail.com", profile_pic="default.jpg", elo=1000)
+        bot1.set_password("123456789")
+
+        bot2 = User(username="another", email="tester1@gmail.com", profile_pic="default.jpg", elo=100)
+        bot2.set_password("123456789")
+
+        db.session.add(bot1)
+        db.session.add(bot2)
+        db.session.commit()
+
+        yield app
+
+        db.session.remove()
+        db.drop_all()
+
+# driver
 def create_driver(incognito=False):
     options = Options()
+    # options.add_argument("--headless")
     options.add_argument("--no-sandbox")
+
+    prefs = {
+        "profile.password_manager_leak_detection": False,
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False
+    }
+
+    options.add_experimental_option("prefs", prefs)
+
     if incognito:
         options.add_argument("--incognito")
-    return webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 
-# --- Bot Actions ---
+# test actions 
+# addition register for test bot
+def register_bot(driver, email, username):
+    driver.get(f"{BASE_URL}/register")
+
+    driver.find_element(By.ID, "username").send_keys(username)
+    driver.find_element(By.ID, "email").send_keys(email)
+    driver.find_element(By.ID, "password").send_keys(PASSWORD)
+    driver.find_element(By.ID, "confirm_password").send_keys(PASSWORD)
+
+    driver.find_element(By.NAME, "submit").submit()
+
+    time.sleep(SLEEP_TIME)
+
 def login(driver, email, password):
     driver.find_element(By.NAME, "email").send_keys(email)
     driver.find_element(By.NAME, "password").send_keys(password)
-    time.sleep(0.5)
+    time.sleep(SLEEP_TIME)
     driver.find_element(By.NAME, "submit").submit()
 
 
 def create_game_and_get_code(driver):
     driver.find_element(By.ID, "createMatch").click()
-    time.sleep(1)
+    time.sleep(SLEEP_TIME)
     code = driver.find_element(By.ID, "matchID").text
     print(f"[Bot1] Game code: {code}")
     return code
@@ -55,14 +101,11 @@ def create_game_and_get_code(driver):
 
 def join_game_with_code(driver, code):
     print("[Bot2] Waiting for match input field...")
-    input_box = WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.ID, "match_id"))
-    )
+    input_box = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "match_id")))
+
     input_box.clear()
     input_box.send_keys(code)
-    WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, "submit"))
-    ).click()
+    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "submit"))).click()
     print("[Bot2] Submitted join request")
 
 
@@ -87,23 +130,21 @@ def play(driver, duration=TEST_TIME):
 
 
 def wait_for_home_ready(driver):
-    WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.ID, "createMatch"))
-    )
+    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "createMatch")))
 
 
-# --- Worker Processes ---
+# make bot and login 
 def bot1_worker(queue):
     driver = create_driver(incognito=False)
     try:
         driver.get(BASE_URL)
         login(driver, BOT1_EMAIL, PASSWORD)
         print("[Bot1] Current URL:", driver.current_url)
-        time.sleep(10)
+        time.sleep(SLEEP_TIME)
 
         code = create_game_and_get_code(driver)
         queue.put(code)
-        time.sleep(2)
+        time.sleep(SLEEP_TIME)
 
         start_game(driver)
         play(driver)
@@ -124,7 +165,7 @@ def bot2_worker(queue):
         print(f"[Bot2] Received code: {code}")
 
         join_game_with_code(driver, code)
-        time.sleep(2)
+        time.sleep(SLEEP_TIME)
 
         start_game(driver)
         play(driver)
@@ -132,11 +173,11 @@ def bot2_worker(queue):
         driver.quit()
 
 
-# --- Pytest Tests ---
-def test_bot1_can_login_and_create_game():
-    """Bot1 logs in, creates a game, and retrieves a game code."""
+# testing the bot can login and enter the game
+def test_bot1_can_login_and_create_game(app):
     queue = Queue()
     driver = create_driver(incognito=False)
+    
     try:
         driver.get(BASE_URL)
         login(driver, BOT1_EMAIL, PASSWORD)
@@ -147,19 +188,18 @@ def test_bot1_can_login_and_create_game():
 
         assert code, "Game code should not be empty"
         print(f"[test_bot1] Game code: {code}")
+    
+    # finally is used for clean up no matter the result of the try statement
     finally:
         driver.quit()
 
 
-def test_bot2_can_login_and_join_game():
-    """Bot2 logs in and joins a game created by Bot1 (via shared queue)."""
+def test_bot2_can_login_and_join_game(app):
     queue = Queue()
-
-    p1 = Process(target=bot1_worker, args=(queue,))
+    p1 = Process(target=bot1_worker, args=(queue))
     p1.start()
-
-    # Give Bot1 time to create the game
-    time.sleep(12)
+    # time for creating the game, avoid can not find element
+    time.sleep(SLEEP_TIME)
 
     driver = create_driver(incognito=True)
     try:
@@ -172,20 +212,15 @@ def test_bot2_can_login_and_join_game():
 
         join_game_with_code(driver, code)
         print(f"[test_bot2] Successfully joined game: {code}")
+    
+    # finally is used for clean up no matter the result of the try statement
     finally:
         driver.quit()
         p1.terminate()
         p1.join()
 
-
-def test_multiplayer_game_full_session():
-    """
-    Full integration test: Bot1 creates a game, Bot2 joins,
-    both bots play for the configured TEST_TIME duration.
-
-    Run with:
-        pytest test_game2048.py::test_multiplayer_game_full_session -v -s
-    """
+# bot create and start the game test 
+def test_multiplayer_game_full_session(app):
     queue = Queue()
 
     p1 = Process(target=bot1_worker, args=(queue,))

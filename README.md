@@ -58,6 +58,9 @@ flask run
 9. SQLite Viewer: To view SQLite Database
 # Run Tests
 ```
+start the test server:
+    python3 selenium_run.py
+
 unit test:
     pytest testing/  --cov=game2048 --cov-report=term
 
