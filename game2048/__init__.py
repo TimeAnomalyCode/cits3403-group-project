@@ -29,9 +29,8 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     csrf.init_app(app)
     mail.init_app(app)
-    socketio.init_app(app, cors_allowed_origins="*")
     login_manager.init_app(app)
-
+    socketio.init_app(app, cors_allowed_origins="*")
     socketio.server.instrument(auth=False)
 
     from game2048.routes import main
