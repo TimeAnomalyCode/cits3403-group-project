@@ -12,11 +12,12 @@ db = SQLAlchemy()
 migrate = Migrate()
 csrf = CSRFProtect()
 mail = Mail()
-socketio = SocketIO(cors_allowed_origins="*")
+socketio = SocketIO()
 login_manager = LoginManager()
 
 login_manager.login_view = "home"
 login_manager.login_message_category = "info"
+
 
 # making a function for better application creation for both production and testing environment
 def create_app(config_class=Config):
@@ -28,16 +29,15 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     csrf.init_app(app)
     mail.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
     login_manager.init_app(app)
 
     socketio.server.instrument(auth=False)
 
-    from game2048.routes import init_routes
-    from game2048.errors import init_errors
-    from game2048 import models
+    from game2048.routes import main
+    from game2048.errors import error
 
-    init_routes(app)
-    init_errors(app)
+    app.register_blueprint(main)
+    app.register_blueprint(error)
 
     return app
