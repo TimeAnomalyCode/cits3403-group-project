@@ -6,10 +6,11 @@ from flask import (
     url_for,
     make_response,
     send_from_directory,
+    Blueprint,
 )
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_migrate import upgrade
-from game2048 import app, db
+from game2048 import db
 from game2048.forms import (
     RegistrationForm,
     LoginForm,
@@ -21,6 +22,7 @@ from game2048.forms import (
 )
 from game2048.models import User, Match
 from game2048.email import send_password_reset_email
+from game2048.elo import update_elo
 from game2048.board import match_state
 
 # ----------------------------------------------------------------
@@ -28,9 +30,11 @@ from game2048.board import match_state
 # No @login_required
 # ----------------------------------------------------------------
 
+main = Blueprint("main", __name__)
 
-@app.route("/", methods=["GET", "POST"])
-@app.route("/home", methods=["GET", "POST"])
+
+@main.route("/", methods=["GET", "POST"])
+@main.route("/home", methods=["GET", "POST"])
 def home():
 
     join_form = JoinMatch()
@@ -41,24 +45,26 @@ def home():
 
             if match_state.get_match_by_id(match_id) is None:
                 flash("That match doesn't exist", "danger")
-                return redirect(url_for("home"))
+                return redirect(url_for("main.home"))
 
-            return redirect(url_for("match", match_id=match_id))
+            return redirect(url_for("main.match", match_id=match_id))
 
         return render_template("home_loggedIn.html", title="Home", form=join_form)
 
-    leaderboard = [
-        {"rank": 1, "username": "Jack", "high_score": 1200, "num_of_wins": 10},
-        {"rank": 2, "username": "Sarah", "high_score": 900, "num_of_wins": 6},
-        {"rank": 3, "username": "John", "high_score": 300, "num_of_wins": 2},
-    ]
+    users = User.query.order_by(User.elo.desc()).all()
+    leaderboard = []
+    for user in users:
+        wins = Match.query.filter_by(winner_id=user.id).count()
+
+        leaderboard.append({"user": user, "wins": wins})
+
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.scalar(sa.select(User).where(User.email == form.email.data))
 
         if user is None or not user.check_password(form.password.data):
             flash("Invalid username or password", "danger")
-            return redirect(url_for("home"))
+            return redirect(url_for("main.home"))
 
         login_user(user, remember=form.remember_me.data)
         return render_template("home_loggedIn.html", title="Home", form=join_form)
@@ -68,7 +74,7 @@ def home():
     )
 
 
-@app.route("/register", methods=["GET", "POST"])
+@main.route("/register", methods=["GET", "POST"])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -83,15 +89,15 @@ def register():
 
         # One time display of status
         flash("You have created an account! Please Log In", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     return render_template("register.html", title="Register", form=form)
 
 
-@app.route("/reset_password_request", methods=["GET", "POST"])
+@main.route("/reset_password_request", methods=["GET", "POST"])
 def reset_password_request():
     if current_user.is_authenticated:
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
@@ -102,22 +108,22 @@ def reset_password_request():
 
         # We flash the message regardless if the user exists or not so that hackers can't probe if user exists or not
         flash("Check your email for the instructions to reset your password", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     return render_template(
         "reset_password_request.html", title="Reset Password", form=form
     )
 
 
-@app.route("/reset_password/<token>", methods=["GET", "POST"])
+@main.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     if current_user.is_authenticated:
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     user = User.verify_reset_password_token(token)
 
     if not user:
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     form = ResetPasswordForm(user)
 
@@ -125,7 +131,7 @@ def reset_password(token):
         user.set_password(form.password.data)
         db.session.commit()
         flash("Your password has been reset", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     return render_template(
         "reset_password.html", title="Reset Password Form", form=form
@@ -137,35 +143,97 @@ def reset_password(token):
 # ----------------------------------------------------------------
 
 
-@app.route("/logout")
+@main.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("home"))
+    return redirect(url_for("main.home"))
 
 
-@app.route("/profile/<username>")
+@main.route("/profile/<username>")
 @login_required
 def profile(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
-    num_of_wins = 2
-    rank = 100
-    match_history = [
-        {"date": "2026-04-10", "opponent": "Sarah", "result": "Win", "score": 2048},
-        {"date": "2026-04-09", "opponent": "Jason", "result": "Loss", "score": 1024},
-        {"date": "2026-04-08", "opponent": "Alex", "result": "Win", "score": 2048},
-    ]
+    num_of_wins = Match.query.filter_by(winner_id=user.id).count()
+    total_games = Match.query.filter(
+        sa.or_(Match.player1_id == user.id, Match.player2_id == user.id)
+    ).count()
+
+    win_rate = round((num_of_wins / total_games) * 100, 1) if total_games > 0 else 0
+    rank = User.query.filter(User.elo > user.elo).count() + 1
+    matches = (
+        Match.query
+        .filter(sa.or_(Match.player1_id == user.id, Match.player2_id == user.id))
+        .order_by(Match.created_at.asc())  # IMPORTANT: oldest → newest
+        .all()
+    )
+    match_history = []
+
+    for match in matches:
+        user_is_player1 = match.player1_id == user.id
+
+        opponent_id = match.player2_id if user_is_player1 else match.player1_id
+        opponent = User.query.get(opponent_id)
+
+        winner_user = User.query.get(match.winner_id)
+
+        loser_id = (
+            match.player2_id
+            if match.winner_id == match.player1_id
+            else match.player1_id
+        )
+        loser_user = User.query.get(loser_id)
+
+        winner_before = (
+            match.player1_elo
+            if match.winner_id == match.player1_id
+            else match.player2_elo
+        )
+
+        loser_before = (
+            match.player2_elo
+            if match.winner_id == match.player1_id
+            else match.player1_elo
+        )
+
+        winner_original_elo = winner_user.elo
+        loser_original_elo = loser_user.elo
+
+        winner_user.elo = winner_before
+        loser_user.elo = loser_before
+
+        new_winner_elo, new_loser_elo = update_elo(winner_user, loser_user)
+
+        winner_user.elo = winner_original_elo
+        loser_user.elo = loser_original_elo
+
+        if user.id == winner_user.id:
+            elo_before = winner_before
+            elo_change = new_winner_elo - winner_before
+        else:
+            elo_before = loser_before
+            elo_change = new_loser_elo - loser_before
+
+        match_history.append({
+            "date": match.created_at.strftime("%d/%m/%Y"),
+            "opponent": opponent.username,
+            "winner": winner_user.username,
+            "elo_before": elo_before,
+            "elo_change": elo_change,
+        })
+
     return render_template(
         "profile.html",
         title="Profile",
         user=user,
         num_of_wins=num_of_wins,
         rank=rank,
+        win_rate=win_rate,
         match_history=match_history,
     )
 
 
-@app.route("/change_username", methods=["GET", "POST"])
+@main.route("/change_username", methods=["GET", "POST"])
 @login_required
 def change_username():
     form = ChangeUsername(current_user.username)
@@ -173,18 +241,18 @@ def change_username():
     if form.validate_on_submit():
         if not current_user.check_password(form.password.data):
             flash("Incorrect Password", "danger")
-            return redirect(url_for("change_username"))
+            return redirect(url_for("main.change_username"))
 
         current_user.username = form.new_username.data
         db.session.commit()
         flash("Your username has been updated!", "success")
 
-        return redirect(url_for("profile", username=current_user.username))
+        return redirect(url_for("main.profile", username=current_user.username))
 
     return render_template("change_username.html", title="Change Username", form=form)
 
 
-@app.route("/change_password", methods=["GET", "POST"])
+@main.route("/change_password", methods=["GET", "POST"])
 @login_required
 def change_password():
     form = ChangePassword()
@@ -192,32 +260,32 @@ def change_password():
     if form.validate_on_submit():
         if not current_user.check_password(form.current_password.data):
             flash("Incorrect Password", "danger")
-            return redirect(url_for("change_password"))
+            return redirect(url_for("main.change_password"))
 
         current_user.set_password(form.new_password.data)
         db.session.commit()
 
         logout_user()
         flash("Your Password has been updated! Please login", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     return render_template("change_password.html", title="Change Password", form=form)
 
 
-@app.route("/match")
+@main.route("/match")
 @login_required
 def create_match():
     match_id, match = match_state.create_match(current_user.username)
-    return redirect(url_for("match", match_id=match_id))
+    return redirect(url_for("main.match", match_id=match_id))
 
 
-@app.route("/match/<match_id>")
+@main.route("/match/<match_id>")
 @login_required
 def match(match_id):
     username = current_user.username
     match = match_state.get_match_by_id(match_id)
     if match is None:
-        return redirect(url_for("home"))
+        return redirect(url_for("main.home"))
 
     if match["opponent"] is None and username != match["host"]:
         match_state.join_match(match_id, username)
@@ -235,7 +303,7 @@ def match(match_id):
 # Cache static files on client
 # Source: https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
 # Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control
-@app.route("/static/<path:filename>")
+@main.route("/static/<path:filename>")
 def static(filename):
     resp = make_response(send_from_directory("static/", filename))
     resp.headers["Cache-Control"] = "max-age=604800"
@@ -243,7 +311,7 @@ def static(filename):
 
 
 # Just to test login required
-# @app.route("/send")
+# @main.route("/send")
 # def index():
 #     msg = Message(
 #         subject="2048 Battle!", sender="test@gmail.com", recipients=["nerd@gmail.com"]
@@ -255,7 +323,7 @@ def static(filename):
 
 # Helper to refresh/create and display db
 # The reason One to One is not present: https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#one-to-one
-@app.route("/create")
+@main.route("/create")
 def about():
     # db.drop_all()
     # db.create_all()
