@@ -688,6 +688,12 @@ def on_connect(auth):
     emit("game_state", match, to=match_id)
 
 
+# In case in the future
+# @socketio.on("disconnect")
+# def on_disconnect(auth):
+#     print("Disconnect:", auth, "Request SID: ", request.sid)
+
+
 @socketio.on("start_game")
 def on_start_game(match_id):
     username = current_user.username
@@ -696,10 +702,13 @@ def on_start_game(match_id):
     if match is None:
         return
 
+    # More robust than just checking sids since disconnects can occur
+    num_of_players = len(list(socketio.server.manager.get_participants("/", match_id)))
+
     if (
         match["host"] == username
         and match["status"] == MatchStatus.PENDING.value
-        and len(match["sids"]) == 2
+        and num_of_players == 2
     ):
         match["status"] = MatchStatus.START.value
         match_state.start_match(match_id)
