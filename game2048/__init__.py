@@ -15,7 +15,7 @@ mail = Mail()
 socketio = SocketIO()
 login_manager = LoginManager()
 
-login_manager.login_view = "home"
+login_manager.login_view = "main.home"
 login_manager.login_message_category = "info"
 
 
