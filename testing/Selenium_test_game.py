@@ -27,6 +27,7 @@ BOT1_EMAIL = "test@gmail.com"
 BOT2_EMAIL = "tester1@gmail.com"
 PASSWORD = "123456789"
 
+
 @pytest.fixture(scope="session")
 def app():
 
@@ -36,10 +37,20 @@ def app():
         db.drop_all()
         db.create_all()
 
-        bot1 = User(username="tester", email="test@gmail.com", profile_pic="default.jpg", elo=1000)
+        bot1 = User(
+            username="tester",
+            email="test@gmail.com",
+            profile_pic="https://api.dicebear.com/9.x/croodles/svg?seed=tester&flip=true&backgroundColor=FFFFFF",
+            elo=1000,
+        )
         bot1.set_password("123456789")
 
-        bot2 = User(username="another", email="tester1@gmail.com", profile_pic="default.jpg", elo=100)
+        bot2 = User(
+            username="another",
+            email="tester1@gmail.com",
+            profile_pic="https://api.dicebear.com/9.x/croodles/svg?seed=another&flip=true&backgroundColor=FFFFFF",
+            elo=100,
+        )
         bot2.set_password("123456789")
 
         db.session.add(bot1)
@@ -51,6 +62,7 @@ def app():
         db.session.remove()
         db.drop_all()
 
+
 # driver
 def create_driver(incognito=False):
     options = Options()
@@ -60,17 +72,19 @@ def create_driver(incognito=False):
     prefs = {
         "profile.password_manager_leak_detection": False,
         "credentials_enable_service": False,
-        "profile.password_manager_enabled": False
+        "profile.password_manager_enabled": False,
     }
 
     options.add_experimental_option("prefs", prefs)
 
     if incognito:
         options.add_argument("--incognito")
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    return webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
 
 
-# test actions 
+# test actions
 # addition register for test bot
 def register_bot(driver, email, username):
     driver.get(f"{BASE_URL}/register")
@@ -83,6 +97,7 @@ def register_bot(driver, email, username):
     driver.find_element(By.NAME, "submit").submit()
 
     time.sleep(SLEEP_TIME)
+
 
 def login(driver, email, password):
     driver.find_element(By.NAME, "email").send_keys(email)
@@ -101,11 +116,15 @@ def create_game_and_get_code(driver):
 
 def join_game_with_code(driver, code):
     print("[Bot2] Waiting for match input field...")
-    input_box = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "match_id")))
+    input_box = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.ID, "match_id"))
+    )
 
     input_box.clear()
     input_box.send_keys(code)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "submit"))).click()
+    WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "submit"))
+    ).click()
     print("[Bot2] Submitted join request")
 
 
@@ -121,8 +140,8 @@ def play(driver, duration=TEST_TIME):
     move = ActionChains(driver)
     end_time = time.time() + duration
     while time.time() < end_time:
-        direction = random.choice(['w', 'a', 's', 'd'])
-        skill = random.choice(['i', 'j', 'k', 'l'])
+        direction = random.choice(["w", "a", "s", "d"])
+        skill = random.choice(["i", "j", "k", "l"])
         move.send_keys(direction).perform()
         if random.random() > 0.75:
             move.send_keys(skill).perform()
@@ -130,10 +149,12 @@ def play(driver, duration=TEST_TIME):
 
 
 def wait_for_home_ready(driver):
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "createMatch")))
+    WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.ID, "createMatch"))
+    )
 
 
-# make bot and login 
+# make bot and login
 def bot1_worker(queue):
     driver = create_driver(incognito=False)
     try:
@@ -177,7 +198,7 @@ def bot2_worker(queue):
 def test_bot1_can_login_and_create_game(app):
     queue = Queue()
     driver = create_driver(incognito=False)
-    
+
     try:
         driver.get(BASE_URL)
         login(driver, BOT1_EMAIL, PASSWORD)
@@ -188,7 +209,7 @@ def test_bot1_can_login_and_create_game(app):
 
         assert code, "Game code should not be empty"
         print(f"[test_bot1] Game code: {code}")
-    
+
     # finally is used for clean up no matter the result of the try statement
     finally:
         driver.quit()
@@ -212,14 +233,15 @@ def test_bot2_can_login_and_join_game(app):
 
         join_game_with_code(driver, code)
         print(f"[test_bot2] Successfully joined game: {code}")
-    
+
     # finally is used for clean up no matter the result of the try statement
     finally:
         driver.quit()
         p1.terminate()
         p1.join()
 
-# bot create and start the game test 
+
+# bot create and start the game test
 def test_multiplayer_game_full_session(app):
     queue = Queue()
 
