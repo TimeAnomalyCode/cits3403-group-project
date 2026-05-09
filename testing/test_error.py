@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import unittest
 
@@ -9,7 +10,6 @@ from config import TestConfig
 
 
 class TestErrorPages(unittest.TestCase):
-
     # set up the application for test
     def setUp(self):
         self.app = create_app(TestConfig)
@@ -19,16 +19,14 @@ class TestErrorPages(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
 
-    # tear the application 
+    # tear the application
     def tearDown(self):
         self.app_context.pop()
 
-
     def test_404_error(self):
-        response = self.client.get( "/this-page-does-not-exist")
+        response = self.client.get("/this-page-does-not-exist")
 
         self.assertEqual(response.status_code, 404)
-
 
     def test_404_contains_message(self):
         response = self.client.get("/this-page-does-not-exist")

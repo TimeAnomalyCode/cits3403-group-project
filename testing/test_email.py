@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import unittest
 from unittest.mock import patch, MagicMock, ANY
@@ -8,7 +9,7 @@ from unittest.mock import patch, MagicMock, ANY
 from game2048 import create_app
 from config import TestConfig
 
-from game2048.email import (send_email, send_password_reset_email)
+from game2048.email import send_email, send_password_reset_email
 
 
 class TestEmail(unittest.TestCase):
@@ -18,20 +19,29 @@ class TestEmail(unittest.TestCase):
         self.app_context = self.app.app_context()
         self.app_context.push()
 
-
     def tearDown(self):
         self.app_context.pop()
-
 
     @patch("game2048.email.Message")
     @patch("game2048.email.Thread")
     def test_send_email(self, mock_thread, mock_message):
-        send_email(subject="test", recipients=["tester@test.com"], text_body="text", html_body="html", sender="test@gmail.com")
+        send_email(
+            subject="test",
+            recipients=["tester@test.com"],
+            text_body="text",
+            html_body="html",
+            sender="test@gmail.com",
+        )
 
-        mock_message.assert_called_once_with("test", sender="test@gmail.com", recipients=["tester@test.com"], body="text", html="html")
-        mock_thread.assert_called_once_with(target=ANY,args=ANY)
+        mock_message.assert_called_once_with(
+            "test",
+            sender="test@gmail.com",
+            recipients=["tester@test.com"],
+            body="text",
+            html="html",
+        )
+        mock_thread.assert_called_once_with(target=ANY, args=ANY)
         mock_thread.return_value.start.assert_called_once()
-
 
     @patch("game2048.email.send_email")
     @patch("game2048.email.render_template")
@@ -43,7 +53,9 @@ class TestEmail(unittest.TestCase):
 
         mock_render.side_effect = ["text", "html"]
         send_password_reset_email(fake_user)
-        mock_send.assert_called_once_with("[2048 Battle] Reset your Password", ["test@test.com"], "text", "html")
+        mock_send.assert_called_once_with(
+            "[2048 Battle] Reset your Password", ["test@test.com"], "text", "html"
+        )
 
 
 if __name__ == "__main__":
