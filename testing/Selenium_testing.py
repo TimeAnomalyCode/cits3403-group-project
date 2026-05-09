@@ -10,29 +10,67 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from game2048.models import User
+from game2048 import create_app, db
+from config import SeleniumTestConfig
 
 # from selenium.webdriver.common.credential import Credential
-SLEEP_TIME = 0.5
+SLEEP_TIME = 2
 
+# fake application
+app_test_instance = create_app(SeleniumTestConfig)
+
+# refresh the database for following testing
+with app_test_instance.app_context():
+    db.drop_all()
+    db.create_all()
+
+    if not User.query.filter_by(email="test@gmail.com").first():
+        # add a user into the database
+        user = User(
+            username="tester",
+            email="test@gmail.com",
+            profile_pic="https://api.dicebear.com/9.x/croodles/svg?seed=tester&flip=true&backgroundColor=FFFFFF",
+            elo=1000,
+        )
+
+        user.set_password("123456789")
+
+        db.session.add(user)
+        db.session.commit()
+
+
+# create the driver for testing
 @pytest.fixture
 def driver():
     options = Options()
     # options.add_argument("--headless")  # uncomment for CI/no-display
     options.add_argument("--no-sandbox")
 
+    prefs = {
+        "profile.password_manager_leak_detection": False,
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+    }
+
+    options.add_experimental_option("prefs", prefs)
+
     # Setup driver
     # ChromeDriverManager().install() => it find the matching/correct version of Chrome
     # Service(path_to_webdriver) => making the driver into an object
     # webdriver.Chrome() => call the chrome browser
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()), options=options
+    )
+
+    driver.implicitly_wait(10)
 
     # Open website
     # driver.get("https://www.google.com")
     driver.get("http://127.0.0.1:5000")
-    
+
     yield driver  # test runs
-    
-    driver.quit() # Close browser
+
+    driver.quit()  # Close browser
 
 
 # driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -51,11 +89,20 @@ class test:
         self.username = username
         self.new_username = new_username
         self.new_password = new_password
-        self.user = User(id=1)
 
         pass
 
+    def test_register(self):
+        # remove after each time
+        self.driver.get("http://127.0.0.1:5000/register")
+        self.driver.find_element(By.ID, "username").send_keys(self.username)
+        self.driver.find_element(By.ID, "email").send_keys(self.email)
+        self.driver.find_element(By.ID, "password").send_keys(self.password)
+        self.driver.find_element(By.ID, "confirm_password").send_keys(self.password)
+        self.driver.find_element(By.NAME, "submit").submit()
+
     def test_login(self):
+        self.driver.get("http://127.0.0.1:5000")
         self.driver.find_element(By.NAME, "email").send_keys(self.email)
         self.driver.find_element(By.NAME, "password").send_keys(self.password)
         time.sleep(SLEEP_TIME)
@@ -81,10 +128,12 @@ class test:
         time.sleep(SLEEP_TIME)
         self.driver.find_elements(By.CLASS_NAME, "btn")[2].click()
         self.driver.find_element(By.NAME, "current_password").send_keys(self.password)
+
         self.driver.find_element(By.NAME, "new_password").send_keys(self.new_password)
         self.driver.find_element(By.NAME, "confirm_password").send_keys(
             self.new_password
         )
+
         time.sleep(SLEEP_TIME)
         self.driver.find_element(By.NAME, "submit").submit()
         self.password, self.new_password = self.new_password, self.password
@@ -96,10 +145,14 @@ class test:
         time.sleep(SLEEP_TIME)
         self.driver.get("http://127.0.0.1:5000/reset_password_request")
         time.sleep(SLEEP_TIME)
-        self.driver.find_element(By.ID, "email").send_keys("example@example.com")
+        self.driver.find_element(By.ID, "email").send_keys(self.email)
         time.sleep(SLEEP_TIME)
 
-        token = self.user.get_reset_password_token()
+        with app_test_instance.app_context():
+            user = User.query.filter_by(email=self.email).first()
+
+            token = user.get_reset_password_token()
+
         self.driver.get(f"http://127.0.0.1:5000/reset_password/{token}")
         time.sleep(SLEEP_TIME)
 
@@ -107,17 +160,20 @@ class test:
         self.driver.find_element(By.NAME, "confirm_password").send_keys(
             self.new_password
         )
+
         time.sleep(SLEEP_TIME)
         self.password, self.new_password = self.new_password, self.password
         self.driver.find_element(By.NAME, "submit").click()
-
 
 
 def test_process(driver):
     test1 = test(driver, "test@gmail.com", "123456789", "tester", "john", "12345678")
 
     # ensure correct testing environment
-    test1.test_logout()
+    try:
+        test1.test_logout()
+    except:
+        pass
 
     test1.test_login()
     time.sleep(SLEEP_TIME)
@@ -160,16 +216,31 @@ def test_process(driver):
 
 # test_process()
 def testing_reset_pw(driver):
-    test1 = test(driver,"test@gmail.com", "123456789", "tester", "john", "12345678")
+    test1 = test(driver, "test@gmail.com", "123456789", "tester", "john", "12345678")
+
     test1.test_forget_password()
     time.sleep(SLEEP_TIME)
+
     test1.test_login()
     time.sleep(SLEEP_TIME)
+
     test1.test_logout()
     time.sleep(SLEEP_TIME)
-    test1.test_forget_password()
-    time.sleep(SLEEP_TIME)
 
 
-#tester1@gmail.com
-#123456789
+# individual test for registration
+def testing_register(driver):
+    # remove ever time
+    test1 = test(
+        driver, "teset12@gmail.com", "123456789", "usernametest", "john", "12345678"
+    )
+    test1.test_register()
+
+    driver.get("http://127.0.0.1:5000")
+
+    test1.test_login()
+    test1.test_logout()
+
+
+# tester1@gmail.com
+# 123456789

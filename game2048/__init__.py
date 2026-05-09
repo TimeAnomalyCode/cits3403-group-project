@@ -5,24 +5,38 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from flask_socketio import SocketIO
 from flask_login import LoginManager
+
 from config import Config
 
-# Required for caching (static_folder)
-app = Flask(__name__, static_folder=None)
-app.config.from_object(Config)
-
-csrf = CSRFProtect(app)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-login_manager = LoginManager(app)
-mail = Mail(app)
-
-# https://admin.socket.io/#/
-# Server URL: http://127.0.0.1:5000
-socketio = SocketIO(app, cors_allowed_origins="*")
-socketio.server.instrument(auth=False)
+db = SQLAlchemy()
+migrate = Migrate()
+csrf = CSRFProtect()
+mail = Mail()
+socketio = SocketIO()
+login_manager = LoginManager()
 
 login_manager.login_view = "home"
 login_manager.login_message_category = "info"
 
-from game2048 import routes, models, errors  # noqa
+
+# making a function for better application creation for both production and testing environment
+def create_app(config_class=Config):
+    app = Flask(__name__, static_folder=None)
+
+    app.config.from_object(config_class)
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    csrf.init_app(app)
+    mail.init_app(app)
+    login_manager.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
+    socketio.server.instrument(auth=False)
+
+    from game2048.routes import main
+    from game2048.errors import error
+
+    app.register_blueprint(main)
+    app.register_blueprint(error)
+
+    return app

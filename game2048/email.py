@@ -1,7 +1,7 @@
 from threading import Thread
-from flask import render_template
+from flask import render_template, current_app
 from flask_mail import Message
-from game2048 import app, mail
+from game2048 import mail
 
 
 # This makes sending emails a background thread
@@ -17,13 +17,18 @@ def send_email(
     recipients: list[str],
     text_body: str,
     html_body: str,
-    sender: str = app.config["MAIL_DEFAULT_SENDER"],
+    sender: str = None,
 ):
 
+    if sender is None:
+        sender = current_app.config["MAIL_DEFAULT_SENDER"]
     msg = Message(
         subject, sender=sender, recipients=recipients, body=text_body, html=html_body
     )
-    Thread(target=_send_async_email, args=(app, msg)).start()
+
+    Thread(
+        target=_send_async_email, args=(current_app._get_current_object(), msg)
+    ).start()
 
 
 def send_password_reset_email(user):
