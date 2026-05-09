@@ -365,10 +365,11 @@
                     </p>
 
                     <div class="d-grid gap-2">
-                        <a class="btn btn-primary btn-lg" href="{{ url_for('create_match') }}">
+                        <a class="btn btn-primary btn-lg"
+                           href="{{ url_for('main.create_match') }}">
                             Play Again
                         </a>
-                        <a class="btn btn-outline-secondary" href="{{ url_for('home') }}">
+                        <a class="btn btn-outline-secondary" href="{{ url_for('main.home') }}">
                             Close
                         </a>
                     </div>
@@ -383,5 +384,5 @@
         // https://stackoverflow.com/questions/37259740/passing-variables-from-flask-to-javascript
         const data = {{ data | tojson }}
     </script>
-    <script src="{{url_for('static', filename='js/board.js')}}"></script>
+    <script src="{{url_for('main.static', filename='js/board.js')}}"></script>
 {% endblock scripts %}
