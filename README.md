@@ -46,6 +46,10 @@ MAIL_DEFAULT_SENDER_ADDRESS =
 flask run
 ```
 # Run Tests
+## Setup before test
+```
+python3 selenium_run.py
+```
 ## Unit Tests
 ```
 pytest testing/  --cov=game2048 --cov-report=term
@@ -70,20 +74,3 @@ pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=ht
 7. Python: To have Python language support
 8. Ruff: To format and lint Python
 9. SQLite Viewer: To view SQLite Database
-# Run Tests
-```
-start the test server:
-    python3 selenium_run.py
-
-unit test:
-    pytest testing/  --cov=game2048 --cov-report=term
-
-selenium 
-    account related test:
-        pytest testing/Selenium_testing.py  --cov=game2048 --cov-append --cov-report=html
-
-    game test:
-        pytest testing/Selenium_test_game.py --cov=game2048 --cov-append --cov-report=html
-
-some python command
-```
