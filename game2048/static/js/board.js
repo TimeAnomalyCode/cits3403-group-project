@@ -592,6 +592,7 @@ let isMuted = true;
 const match_random = new MatchRandom();
 const match_timer = new MatchTimer(end_game, ["random Test"]);
 const timerEl = document.getElementById("timer1");
+const timerBox = document.getElementById("timerBox");
 const layer1 = document.getElementById("layer1");
 const layer2 = document.getElementById("layer2");
 const board1 = document.getElementById("board1");
@@ -611,6 +612,12 @@ let opponent_username = "";
 let client_match = {};
 let isCountingDown = false;
 const N = 4;
+
+function updateTimerDisplay() {
+    const remaining = match_timer.remaining();
+    timerEl.innerText = remaining;
+    timerBox.classList.toggle("text-danger", remaining < 31);
+}
 
 document.getElementById("start_game").addEventListener("click", () => {
     socket.emit("start_game", match_id);
@@ -637,9 +644,10 @@ document.getElementById("muteBtn").addEventListener("click", () => {
         muteBtn.innerHTML = '<i class="bi bi-volume-up"></i> Sound On';
     }
 });
+ updateTimerDisplay();
 
 setInterval(() => {
-    timerEl.innerText = match_timer.remaining();
+    updateTimerDisplay();
 }, 250);
 
 const socket = io({
