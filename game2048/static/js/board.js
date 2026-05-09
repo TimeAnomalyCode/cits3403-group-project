@@ -873,6 +873,29 @@ function renderOpponent() {
     render(layer2, board2, client_match.cells[opponent_username]);
 }
 
+function getTileStyle(value) {
+    const tileStyles = {
+        2: { background: "#eee4da", color: "#776e65" },
+        4: { background: "#ded0b6", color: "#776e65" },
+        8: { background: "#f2b179", color: "#f9f6f2" },
+        16: { background: "#f59563", color: "#f9f6f2" },
+        32: { background: "#f67c5f", color: "#f9f6f2" },
+        64: { background: "#f65e3b", color: "#f9f6f2" },
+        128: { background: "#edcf72", color: "#f9f6f2" },
+        256: { background: "#edcc61", color: "#f9f6f2" },
+        512: { background: "#edc850", color: "#f9f6f2" },
+        1024: { background: "#edc53f", color: "#f9f6f2" },
+        2048: { background: "#edc22e", color: "#f9f6f2" },
+        4096: { background: "#3c3a32", color: "#f9f6f2" },
+    };
+
+    if (value < 0) {
+        return { background: "#6c757d", color: "#ffffff" };
+    }
+
+    return tileStyles[value] || { background: "#8f7a66", color: "#f9f6f2" };
+}
+
 function render(layerEl, boardEl, cell) {
     layerEl.innerHTML = "";
 
@@ -889,14 +912,17 @@ function render(layerEl, boardEl, cell) {
 
             //making new block in web page
             const el = document.createElement("div");
+            const tileStyle = getTileStyle(v);
             el.className =
-                "position-absolute bg-warning text-dark fw-bold d-flex justify-content-center align-items-center rounded";
+                "position-absolute fw-bold fs-3 d-flex justify-content-center align-items-center rounded";
             el.textContent = v;
 
             el.style.width = g.w + "px";
             el.style.height = g.h + "px";
             el.style.top = g.top + "px";
             el.style.left = g.left + "px";
+            el.style.backgroundColor = tileStyle.background;
+            el.style.color = tileStyle.color;
 
             layerEl.appendChild(el);
         }

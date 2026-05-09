@@ -5,6 +5,7 @@
         #board2 .col-3 > div {
             aspect-ratio: 1 / 1;
         }
+
         #countdown-overlay {
             z-index: 2000;
             background: rgba(0, 0, 0, 0.65);
@@ -404,14 +405,18 @@
                 </div>
             </div>
             <div class="mt-3">
-                {% if data.username != data.match.host %}
-                    <button class="btn btn-lg btn-secondary" disabled id="start_game" style="width: 40%;">
-                        Waiting for host to start...
-                    </button> 
+                {% if data.match.status == "pending" %}
+                    {% if data.username != data.match.host %}
+                        <button class="btn btn-lg btn-secondary" disabled id="start_game" style="width: 40%;">
+                            Waiting for host to start...
+                        </button> 
+                    {% else %}
+                        <button class="btn btn-lg btn-success" id="start_game" style="width: 30%;">
+                            Start Game
+                        </button>
+                    {% endif %}
                 {% else %}
-                    <button class="btn btn-lg btn-success" id="start_game" style="width: 30%;">
-                        Start Game
-                    </button>
+                        <button class="btn" invisiable id="start_game"></button>
                 {% endif %}
             </div>
         </div>
@@ -450,9 +455,11 @@
                            href="{{ url_for('main.create_match') }}">
                             Play Again
                         </a>
-                        <a class="btn btn-outline-secondary" href="{{ url_for('main.home') }}">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                onclick="document.getElementById('gameOverOverlay').classList.add('d-none')">
                             Close
-                        </a>
+                        </button>
                     </div>
 
                 </div>
