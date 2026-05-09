@@ -1,6 +1,5 @@
-from game2048 import create_app, db, socketio
+from game2048 import create_app, socketio
 from config import SeleniumTestConfig
-from game2048.models import User, Match
 
 app = create_app(SeleniumTestConfig)
 
