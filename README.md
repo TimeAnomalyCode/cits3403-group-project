@@ -52,7 +52,7 @@ python3 selenium_run.py
 ```
 ## Unit Tests
 ```
-pytest testing/  --cov=game2048 --cov-report=term
+pytest testing/  --cov=game2048 --cov-report=term --cov-report=html
 ```
 ## Selenium Tests
 ### Account Test
