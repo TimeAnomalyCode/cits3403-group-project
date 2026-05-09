@@ -539,6 +539,12 @@ const attackMap = {
     k: "rearrangeBoard",
     l: "makeRandomNegativeTile",
 };
+const attackLabels = {
+    destroySpecificTile: "Destroy Specific Tile",
+    createRandomTile: "Create Random Tile",
+    rearrangeBoard: "Rearrange Board",
+    makeRandomNegativeTile: "Make Random Negative Tile",
+};
 // cSpell:disable
 /** @type {TypeSounds} */
 const sounds = {
@@ -601,6 +607,8 @@ const player_1_score = document.getElementById("player_1_score");
 const player_1_trash_point = document.getElementById("player_1_trash_point");
 const player_2_score = document.getElementById("player_2_score");
 const player_2_trash_point = document.getElementById("player_2_trash_point");
+const attack_info1 = document.getElementById("attack_info1");
+const attack_info2 = document.getElementById("attack_info2");
 const badge = document.getElementById("resultBadge");
 const title = document.getElementById("resultTitle");
 const scoreEl = document.getElementById("finalScore");
@@ -608,6 +616,7 @@ const creditArea = document.getElementById("creditArea");
 const username = data.username;
 const match_id = data.match_id;
 let opponent_username = "";
+let lastAttackId = null;
 /** @type {TypeMatch} */
 let client_match = {};
 let isCountingDown = false;
@@ -617,6 +626,33 @@ function updateTimerDisplay() {
     const remaining = match_timer.remaining();
     timerEl.innerText = remaining;
     timerBox.classList.toggle("text-danger", remaining < 31);
+}
+
+function formatAttackLabel(attackId) {
+    if (!attackId) {
+        return "";
+    }
+
+    return attackLabels[attackId] || attackId;
+}
+
+function flashAttackInfo1() {
+    attack_info1.classList.remove("attack-flash");
+    void attack_info1.offsetWidth;
+    attack_info1.classList.add("attack-flash");
+
+    setTimeout(() => {
+        attack_info1.classList.remove("attack-flash");
+    }, 2000);
+}
+function flashAttackInfo2() {
+    attack_info2.classList.remove("attack-flash");
+    void attack_info2.offsetWidth;
+    attack_info2.classList.add("attack-flash");
+
+    setTimeout(() => {
+        attack_info2.classList.remove("attack-flash");
+    }, 2000);
 }
 
 document.getElementById("start_game").addEventListener("click", () => {
@@ -688,7 +724,7 @@ socket.on("game_state", (match) => {
     }
 
     if (client_match.is_attacked[username]) {
-        console.log("I got attacked!");
+        console.log(`You were attacked with ${client_match.is_attacked[username]}!`);
     }
 
     if (client_match.status === MATCH_STATUS.PENDING) {
@@ -870,6 +906,11 @@ function renderPlayer() {
     player_1_score.textContent = client_match.score[username];
     // console.log("SCORE: ", client_match.score[username]);
     player_1_trash_point.textContent = client_match.trash_point[username];
+    if (client_match.is_attacked[username]) {
+        const attackId = client_match.is_attacked[username];
+        attack_info1.textContent = `You were attacked with ${formatAttackLabel(attackId)}`;
+        flashAttackInfo1();
+    }
     render(layer1, board1, client_match.cells[username]);
     updateScores(client_match.score[username], client_match.score[opponent_username]);
 }
@@ -878,6 +919,11 @@ function renderOpponent() {
     player_2_score.textContent = client_match.score[opponent_username];
     player_2_trash_point.textContent =
         client_match.trash_point[opponent_username];
+    if (client_match.is_attacked[opponent_username]) {
+        const attackId = client_match.is_attacked[opponent_username];
+        attack_info2.textContent = `You are attacking opponent with ${formatAttackLabel(attackId)}`;
+        flashAttackInfo2();
+    }
     render(layer2, board2, client_match.cells[opponent_username]);
 }
 

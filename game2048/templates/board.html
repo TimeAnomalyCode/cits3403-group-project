@@ -28,6 +28,11 @@
             animation: countdown-pop 0.35s ease-out;
         }
 
+        #attack_info1.attack-flash,
+        #attack_info2.attack-flash {
+            animation: attack-flash 2s ease-out;
+        }
+
         @keyframes countdown-pop {
             from {
                 transform: scale(0.6);
@@ -36,6 +41,19 @@
             to {
                 transform: scale(1);
                 opacity: 1;
+            }
+        }
+
+        @keyframes attack-flash {
+            0% {
+                background-color: rgba(255, 193, 7, 0.85);
+                color: #212529;
+                transform: scale(1.02);
+            }
+            100% {
+                background-color: transparent;
+                color: inherit;
+                transform: scale(1);
             }
         }
     </style>
@@ -267,7 +285,18 @@
                                 </div>
                             </div>
                         </div>
-
+                        <!-- the attack info -->
+                         <div class="mt-3">
+                            <h5 class="fw-bold text-start mb-3">
+                                Attack Info
+                            </h5>
+                            <div class="bg-dark rounded p-2 text-start">
+                                <p class="mb-1" id="attack_info1">
+                                    &nbsp;
+                                </p>
+                            </div>
+                         </div>
+                         
                     </div>
                 </div>
             </div>
@@ -398,6 +427,17 @@
                                 </div>
                                 <div id="ovSub2">
                                 </div>
+                            </div>
+                        </div>
+                        <!-- Attack info -->
+                        <div class="mt-3">
+                            <h5 class="fw-bold text-start mb-3">
+                                Attack Info
+                            </h5>
+                            <div class="bg-dark rounded p-2 text-start">
+                                <p class="mb-1" id="attack_info2">
+                                    &nbsp;
+                                </p>
                             </div>
                         </div>
 
