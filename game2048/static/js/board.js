@@ -680,8 +680,9 @@ document.getElementById("muteBtn").addEventListener("click", () => {
         muteBtn.innerHTML = '<i class="bi bi-volume-up"></i> Sound On';
     }
 });
- updateTimerDisplay();
 
+// Update timer display every 250ms to ensure it's responsive
+updateTimerDisplay();
 setInterval(() => {
     updateTimerDisplay();
 }, 250);
