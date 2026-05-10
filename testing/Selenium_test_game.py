@@ -109,7 +109,7 @@ def login(driver, email, password):
 def create_game_and_get_code(driver):
     driver.find_element(By.ID, "createMatch").click()
     time.sleep(SLEEP_TIME)
-    code = driver.find_element(By.ID, "matchID").text
+    code = driver.find_element(By.ID, "match_id").text
     print(f"[Bot1] Game code: {code}")
     return code
 
