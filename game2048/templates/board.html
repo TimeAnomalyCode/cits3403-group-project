@@ -5,19 +5,70 @@
         #board2 .col-3 > div {
             aspect-ratio: 1 / 1;
         }
+
+        #countdown-overlay {
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #countdown-overlay.d-none {
+            display: none !important;
+        }
+
+        #countdown-text {
+            font-size: 8rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .countdown-pop {
+            animation: countdown-pop 0.35s ease-out;
+        }
+
+        #attack_info1.attack-flash,
+        #attack_info2.attack-flash {
+            animation: attack-flash 2s ease-out;
+        }
+
+        @keyframes countdown-pop {
+            from {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes attack-flash {
+            0% {
+                background-color: rgba(255, 193, 7, 0.85);
+                color: #212529;
+                transform: scale(1.02);
+            }
+            100% {
+                background-color: transparent;
+                color: inherit;
+                transform: scale(1);
+            }
+        }
     </style>
 {% endblock stylesheets %}
 {% block content %}
     <!-- TOP BAR -->
-    <div class="container-fluid py-3 border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
+    <div class="container-fluid py-3 mt-3 border-bottom">
+        <!-- <div class="d-flex justify-content-between align-items-center">
             <button class="btn btn-primary" id="start_game">
                 Start Game
             </button>
             <button id="muteBtn" class="btn btn-danger">
                 <i class="bi bi-volume-mute me-2"></i>Muted
             </button>
-        </div>
+        </div> -->
         <div class="mt-3">
             {# <button class="btn btn-warning btn-sm" id="btnCreate">
                 Create Tile
@@ -31,9 +82,18 @@
             <button class="btn btn-info btn-sm" id="btnCreateNegative">
                 Create Negative Tile
             </button> #}
-            <h1 class="h4 mb-2">
-                Match Code: <span id="matchID" class="text-primary">{{ data.match_id }}</span>
-            </h1>
+            <div class="h4 d-flex align-items-center">
+                Match Code:<span class="text-primary" id="match_id">{{ data.match_id }}</span>
+                <button onclick="copyCode()"
+                            id="copyCodeBtn" 
+                            type="button" 
+                            class="btn btn-outline-primary mx-3">
+                    Copy Code
+                </button>
+                <button id="muteBtn" class="btn btn-danger ms-auto">
+                    <i class="bi bi-volume-mute me-2"></i>Muted
+                </button>
+            </div>
 
             <p class="text-muted mb-3">
                 Controls
@@ -75,8 +135,34 @@
         </div>
     </div>
     <!--both game board in a row-->
+
     <div class="container my-4">
         <div class="row align-items-center text-center" id="game_board_row">
+            <!-- Timer -->
+            <div class="d-flex justify-content-center align-items-center mb-3" id="timerBox">
+                <h1 class="fw-bold fs-2">Time remaining:&nbsp;</h1>
+                <h1 class="fw-bold fs-2" id="timer1">180</h1>
+            </div>
+            <!-- Score meter -->
+            <div class="container mb-4">        
+                <div class="progress battle-bar-container" style="height: 25px;">
+                    <!-- player 1 (blue) -->
+                    <div id="player1-bar" 
+                        class="progress-bar bg-primary" 
+                        role="progressbar" 
+                        style="width: 50%; border-radius: 15px 0 0 15px;">
+                        <span id="player_1_score" class="fs-4">0</span>
+                    </div>
+                    
+                    <!-- player 2 (red) -->
+                    <div id="player2-bar" 
+                        class="progress-bar bg-danger" 
+                        role="progressbar" 
+                        style="width: 50%; border-radius: 0 15px 15px 0;">
+                        <span id="player_2_score" class="fs-4">0</span>
+                    </div>
+                </div>
+            </div>
 
             <!--player 1 space-->
             <div class="col-md-5 mb-4">
@@ -89,21 +175,21 @@
                                 Player: {{ current_user.username }}
                             </h5>
 
-                            <div class="d-flex justify-items-center">
+                            <!-- <div class="d-flex justify-items-center">
                                 <span class="mb-2 me-2">Time remaining: </span>
                                 <span id="timer1">180</span>
-                            </div>
+                            </div> -->
 
                         </div>
 
                         <!--display player score-->
                         <div class="bg-dark rounded p-2 mt-3 d-flex justify-content-between">
-                            <p class="mb-2">
+                            <!-- <p class="mb-2">
                                 Current Score:
                             </p>
                             <h4 id="player_1_score">
                                 0
-                            </h4>
+                            </h4> -->
 
                             <p class="mb-2">
                                 Current Trash Point:
@@ -199,7 +285,18 @@
                                 </div>
                             </div>
                         </div>
-
+                        <!-- the attack info -->
+                         <div class="mt-3">
+                            <h5 class="fw-bold text-start mb-3">
+                                Attack Info
+                            </h5>
+                            <div class="bg-dark rounded p-2 text-start">
+                                <p class="mb-1" id="attack_info1">
+                                    &nbsp;
+                                </p>
+                            </div>
+                         </div>
+                         
                     </div>
                 </div>
             </div>
@@ -223,21 +320,21 @@
                             </h5>
                             <br>
 
-                            <div class="d-flex justify-items-center">
+                            <!-- <div class="d-flex justify-items-center">
                                 <span class="mb-2">Time remaining: </span>
                                 <span id="timer2">9999</span>
-                            </div>
+                            </div> -->
 
                         </div>
 
                         <!--display player score-->
                         <div class="bg-dark rounded p-2 mt-3 d-flex justify-content-between">
-                            <p class="mb-2">
+                            <!-- <p class="mb-2">
                                 Current Score:
                             </p>
                             <h4 id="player_2_score">
                                 0
-                            </h4>
+                            </h4> -->
 
                             <p class="mb-2">
                                 Current Trash Point:
@@ -332,15 +429,44 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Attack info -->
+                        <div class="mt-3">
+                            <h5 class="fw-bold text-start mb-3">
+                                Attack Info
+                            </h5>
+                            <div class="bg-dark rounded p-2 text-start">
+                                <p class="mb-1" id="attack_info2">
+                                    &nbsp;
+                                </p>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
             </div>
-
+            <div class="mt-3">
+                {% if data.match.status == "pending" %}
+                    {% if data.username != data.match.host %}
+                        <button class="btn btn-lg btn-secondary" disabled id="start_game" style="width: 40%;">
+                            Waiting for host to start...
+                        </button> 
+                    {% else %}
+                        <button class="btn btn-lg btn-success" id="start_game" style="width: 30%;">
+                            Start Game
+                        </button>
+                    {% endif %}
+                {% else %}
+                        <button class="btn" invisiable id="start_game"></button>
+                {% endif %}
+            </div>
         </div>
     </div>
     <hr>
     <div id="creditArea">
+    </div>
+    <!-- Countdown Overlay -->
+    <div id="countdown-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-none">
+        <div id="countdown-text">3</div>
     </div>
     {# djlint:off H021 #}
     <div id="gameOverOverlay"
@@ -369,9 +495,11 @@
                            href="{{ url_for('main.create_match') }}">
                             Play Again
                         </a>
-                        <a class="btn btn-outline-secondary" href="{{ url_for('main.home') }}">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                onclick="document.getElementById('gameOverOverlay').classList.add('d-none')">
                             Close
-                        </a>
+                        </button>
                     </div>
 
                 </div>

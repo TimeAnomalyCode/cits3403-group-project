@@ -712,6 +712,8 @@ def on_start_game(match_id):
     ):
         match["status"] = MatchStatus.START.value
         match_state.start_match(match_id)
+        emit("countdown_start", {"seconds": 3}, to=match_id)
+        socketio.sleep(3)
         emit("game_state", match, to=match_id)
         match["status"] = MatchStatus.ONGOING.value
 

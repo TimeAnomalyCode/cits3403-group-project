@@ -539,6 +539,12 @@ const attackMap = {
     k: "rearrangeBoard",
     l: "makeRandomNegativeTile",
 };
+const attackLabels = {
+    destroySpecificTile: "Destroy Specific Tile",
+    createRandomTile: "Create Random Tile",
+    rearrangeBoard: "Rearrange Board",
+    makeRandomNegativeTile: "Make Random Negative Tile",
+};
 // cSpell:disable
 /** @type {TypeSounds} */
 const sounds = {
@@ -592,6 +598,7 @@ let isMuted = true;
 const match_random = new MatchRandom();
 const match_timer = new MatchTimer(end_game, ["random Test"]);
 const timerEl = document.getElementById("timer1");
+const timerBox = document.getElementById("timerBox");
 const layer1 = document.getElementById("layer1");
 const layer2 = document.getElementById("layer2");
 const board1 = document.getElementById("board1");
@@ -600,6 +607,8 @@ const player_1_score = document.getElementById("player_1_score");
 const player_1_trash_point = document.getElementById("player_1_trash_point");
 const player_2_score = document.getElementById("player_2_score");
 const player_2_trash_point = document.getElementById("player_2_trash_point");
+const attack_info1 = document.getElementById("attack_info1");
+const attack_info2 = document.getElementById("attack_info2");
 const badge = document.getElementById("resultBadge");
 const title = document.getElementById("resultTitle");
 const scoreEl = document.getElementById("finalScore");
@@ -607,9 +616,44 @@ const creditArea = document.getElementById("creditArea");
 const username = data.username;
 const match_id = data.match_id;
 let opponent_username = "";
+let lastAttackId = null;
 /** @type {TypeMatch} */
 let client_match = {};
+let isCountingDown = false;
 const N = 4;
+
+function updateTimerDisplay() {
+    const remaining = match_timer.remaining();
+    timerEl.innerText = remaining;
+    timerBox.classList.toggle("text-danger", remaining < 31);
+}
+
+function formatAttackLabel(attackId) {
+    if (!attackId) {
+        return "";
+    }
+
+    return attackLabels[attackId] || attackId;
+}
+
+function flashAttackInfo1() {
+    attack_info1.classList.remove("attack-flash");
+    void attack_info1.offsetWidth;
+    attack_info1.classList.add("attack-flash");
+
+    setTimeout(() => {
+        attack_info1.classList.remove("attack-flash");
+    }, 2000);
+}
+function flashAttackInfo2() {
+    attack_info2.classList.remove("attack-flash");
+    void attack_info2.offsetWidth;
+    attack_info2.classList.add("attack-flash");
+
+    setTimeout(() => {
+        attack_info2.classList.remove("attack-flash");
+    }, 2000);
+}
 
 document.getElementById("start_game").addEventListener("click", () => {
     socket.emit("start_game", match_id);
@@ -637,14 +681,20 @@ document.getElementById("muteBtn").addEventListener("click", () => {
     }
 });
 
+// Update timer display every 250ms to ensure it's responsive
+updateTimerDisplay();
 setInterval(() => {
-    timerEl.innerText = match_timer.remaining();
+    updateTimerDisplay();
 }, 250);
 
 const socket = io({
     auth: {
         match_id: match_id,
     },
+});
+
+socket.on("countdown_start", (payload = {}) => {
+    runCountdownAnimation(() => {}, payload.seconds || 3);
 });
 
 socket.on("game_state", (match) => {
@@ -675,7 +725,7 @@ socket.on("game_state", (match) => {
     }
 
     if (client_match.is_attacked[username]) {
-        console.log("I got attacked!");
+        console.log(`You were attacked with ${client_match.is_attacked[username]}!`);
     }
 
     if (client_match.status === MATCH_STATUS.PENDING) {
@@ -857,14 +907,48 @@ function renderPlayer() {
     player_1_score.textContent = client_match.score[username];
     // console.log("SCORE: ", client_match.score[username]);
     player_1_trash_point.textContent = client_match.trash_point[username];
+    if (client_match.is_attacked[username]) {
+        const attackId = client_match.is_attacked[username];
+        attack_info1.textContent = `You were attacked with ${formatAttackLabel(attackId)}`;
+        flashAttackInfo1();
+    }
     render(layer1, board1, client_match.cells[username]);
+    updateScores(client_match.score[username], client_match.score[opponent_username]);
 }
 
 function renderOpponent() {
     player_2_score.textContent = client_match.score[opponent_username];
     player_2_trash_point.textContent =
         client_match.trash_point[opponent_username];
+    if (client_match.is_attacked[opponent_username]) {
+        const attackId = client_match.is_attacked[opponent_username];
+        attack_info2.textContent = `You are attacking opponent with ${formatAttackLabel(attackId)}`;
+        flashAttackInfo2();
+    }
     render(layer2, board2, client_match.cells[opponent_username]);
+}
+
+function getTileStyle(value) {
+    const tileStyles = {
+        2: { background: "#eee4da", color: "#776e65" },
+        4: { background: "#ded0b6", color: "#776e65" },
+        8: { background: "#f2b179", color: "#f9f6f2" },
+        16: { background: "#f59563", color: "#f9f6f2" },
+        32: { background: "#f67c5f", color: "#f9f6f2" },
+        64: { background: "#f65e3b", color: "#f9f6f2" },
+        128: { background: "#edcf72", color: "#f9f6f2" },
+        256: { background: "#edcc61", color: "#f9f6f2" },
+        512: { background: "#edc850", color: "#f9f6f2" },
+        1024: { background: "#edc53f", color: "#f9f6f2" },
+        2048: { background: "#edc22e", color: "#f9f6f2" },
+        4096: { background: "#3c3a32", color: "#f9f6f2" },
+    };
+
+    if (value < 0) {
+        return { background: "#6c757d", color: "#ffffff" };
+    }
+
+    return tileStyles[value] || { background: "#8f7a66", color: "#f9f6f2" };
 }
 
 function render(layerEl, boardEl, cell) {
@@ -883,14 +967,17 @@ function render(layerEl, boardEl, cell) {
 
             //making new block in web page
             const el = document.createElement("div");
+            const tileStyle = getTileStyle(v);
             el.className =
-                "position-absolute bg-warning text-dark fw-bold d-flex justify-content-center align-items-center rounded";
+                "position-absolute fw-bold fs-3 d-flex justify-content-center align-items-center rounded";
             el.textContent = v;
 
             el.style.width = g.w + "px";
             el.style.height = g.h + "px";
             el.style.top = g.top + "px";
             el.style.left = g.left + "px";
+            el.style.backgroundColor = tileStyle.background;
+            el.style.color = tileStyle.color;
 
             layerEl.appendChild(el);
         }
@@ -960,4 +1047,87 @@ function playSFX(sound, min = 0.9, max = 1.1) {
     const id = sound.play();
     const rate = min + Math.random() * (max - min);
     sound.rate(rate, id);
+}
+
+// Copy tournament code to clipboard
+function copyCode() {
+    const code = document.getElementById('match_id').innerText;
+    const button = document.getElementById('copyCodeBtn');
+
+    navigator.clipboard.writeText(code).then(() => {
+        button.innerText = "Copied!";
+        setTimeout(() => {
+            button.innerText = "Copy Code";
+        }, 1500);
+    });
+
+}
+
+// Update the score bars based on the current scores
+function updateScores(player_1_score, player_2_score) {
+    const p1Bar = document.getElementById("player1-bar");
+    const p2Bar = document.getElementById("player2-bar");
+
+    // Initialize widths to 50% each if both scores are zero to avoid division by zero
+    let p1Width = 50;
+    let p2Width = 50;
+
+    if (player_1_score + player_2_score > 0) {
+        p1Width = (player_1_score / (player_1_score + player_2_score)) * 100;
+        p2Width = 100 - p1Width;
+    }
+    // console.log(`Player 1 Score: ${p1Width}, Player 2 Score: ${p2Width}`);
+
+    // Update the widths of the bars
+    p1Bar.style.width = p1Width + "%";
+    p2Bar.style.width = p2Width + "%";
+}
+
+function runCountdownAnimation(onComplete, seconds = 3) {
+    const startButton = document.getElementById("start_game");
+    const overlay = document.getElementById("countdown-overlay");
+    const text = document.getElementById("countdown-text");
+    let count = seconds;
+
+    if (!startButton || !overlay || !text) {
+        if (onComplete) onComplete();
+        return;
+    }
+
+    // Disable the start button to prevent multiple clicks during countdown
+    startButton.disabled = true;
+    startButton.style.visibility = "hidden";
+
+    // Show the overlay and start the countdown
+    overlay.classList.remove("d-none");
+    text.style.color = "";
+    text.innerText = count;
+    triggerPop();
+
+    const timer = setInterval(() => {
+        count--;
+
+        if (count > 0) {
+            text.innerText = count;
+            triggerPop();
+            return;
+        }
+
+        text.innerText = "GO!";
+        text.style.color = "#28a745";
+        triggerPop();
+        clearInterval(timer);
+
+        setTimeout(() => {
+            overlay.classList.add("d-none");
+
+            if (onComplete) onComplete();
+        }, 350);
+    }, 1000);
+
+    function triggerPop() {
+        text.classList.remove("countdown-pop");
+        void text.offsetWidth;
+        text.classList.add("countdown-pop");
+    }
 }
