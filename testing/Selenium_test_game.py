@@ -6,7 +6,7 @@ import pytest
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Event
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -129,14 +129,31 @@ def join_game_with_code(driver, code):
 
 
 def start_game(driver):
+
+    print("trying to find button")
+
     try:
-        driver.find_element(By.ID, "start_game").click()
-    except Exception:
-        pass
-    driver.find_element(By.TAG_NAME, "body").click()
+        start_btn = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.ID, "start_game"))
+        )
+
+        print("button exists")
+
+        # move the view to focus and show find button
+        driver.execute_script("arguments[0].scrollIntoView();", start_btn)
+
+        time.sleep(1)
+
+        driver.execute_script("arguments[0].click();", start_btn)
+
+        print("clicked start")
+
+    except Exception as e:
+        print("START GAME ERROR:", e)
 
 
 def play(driver, duration=TEST_TIME):
+    print("playing", flush=True)
     move = ActionChains(driver)
     end_time = time.time() + duration
     while time.time() < end_time:
@@ -155,7 +172,7 @@ def wait_for_home_ready(driver):
 
 
 # make bot and login
-def bot1_worker(queue):
+def bot1_worker(queue, ready):
     driver = create_driver(incognito=False)
     try:
         driver.get(BASE_URL)
@@ -166,6 +183,7 @@ def bot1_worker(queue):
         code = create_game_and_get_code(driver)
         queue.put(code)
         time.sleep(SLEEP_TIME)
+        print("i am bot 1, ready to go")
 
         start_game(driver)
         play(driver)
@@ -173,7 +191,7 @@ def bot1_worker(queue):
         driver.quit()
 
 
-def bot2_worker(queue):
+def bot2_worker(queue, ready):
     driver = create_driver(incognito=True)
     try:
         driver.get(BASE_URL)
@@ -187,6 +205,7 @@ def bot2_worker(queue):
 
         join_game_with_code(driver, code)
         time.sleep(SLEEP_TIME)
+        print("i am bot 2, ready to go")
 
         start_game(driver)
         play(driver)
@@ -217,7 +236,8 @@ def test_bot1_can_login_and_create_game(app):
 
 def test_bot2_can_login_and_join_game(app):
     queue = Queue()
-    p1 = Process(target=bot1_worker, args=(queue,))
+    ready = Event()
+    p1 = Process(target=bot1_worker, args=(queue, ready))
     p1.start()
     # time for creating the game, avoid can not find element
     time.sleep(SLEEP_TIME)
@@ -244,9 +264,21 @@ def test_bot2_can_login_and_join_game(app):
 # bot create and start the game test
 def test_multiplayer_game_full_session(app):
     queue = Queue()
-
-    p1 = Process(target=bot1_worker, args=(queue,))
-    p2 = Process(target=bot2_worker, args=(queue,))
+    ready = Event()
+    p1 = Process(
+        target=bot1_worker,
+        args=(
+            queue,
+            ready,
+        ),
+    )
+    p2 = Process(
+        target=bot2_worker,
+        args=(
+            queue,
+            ready,
+        ),
+    )
 
     p1.start()
     p2.start()
