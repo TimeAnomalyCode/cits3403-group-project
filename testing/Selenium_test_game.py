@@ -172,7 +172,7 @@ def wait_for_home_ready(driver):
 
 
 # make bot and login
-def bot1_worker(queue, ready):
+def bot1_worker(queue, ready, play_test=True):
     driver = create_driver(incognito=False)
     try:
         driver.get(BASE_URL)
@@ -184,9 +184,10 @@ def bot1_worker(queue, ready):
         queue.put(code)
         time.sleep(SLEEP_TIME)
         print("i am bot 1, ready to go")
-
-        start_game(driver)
-        play(driver)
+        
+        if play_test:
+            start_game(driver)
+            play(driver)
     finally:
         driver.quit()
 
@@ -237,7 +238,7 @@ def test_bot1_can_login_and_create_game(app):
 def test_bot2_can_login_and_join_game(app):
     queue = Queue()
     ready = Event()
-    p1 = Process(target=bot1_worker, args=(queue, ready))
+    p1 = Process(target=bot1_worker, args=(queue, ready, False))
     p1.start()
     # time for creating the game, avoid can not find element
     time.sleep(SLEEP_TIME)
@@ -257,8 +258,9 @@ def test_bot2_can_login_and_join_game(app):
     # finally is used for clean up no matter the result of the try statement
     finally:
         driver.quit()
+        p1.join(timeout=15)
+        assert p1.exitcode == 0
         p1.terminate()
-        p1.join()
 
 
 # bot create and start the game test
@@ -286,5 +288,5 @@ def test_multiplayer_game_full_session(app):
     p1.join(timeout=TEST_TIME + 30)
     p2.join(timeout=TEST_TIME + 30)
 
-    assert not p1.is_alive(), "Bot1 process did not finish in time"
-    assert not p2.is_alive(), "Bot2 process did not finish in time"
+    assert p1.exitcode == 0, f"Bot1 process fail with {p1.exitcode}"
+    assert p2.exitcode == 0, f"Bot2 process fail with{p2.exitcode}"
