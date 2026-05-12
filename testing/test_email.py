@@ -13,12 +13,14 @@ from game2048.email import send_email, send_password_reset_email
 
 
 class TestEmail(unittest.TestCase):
+    # set up the application for test
     def setUp(self):
         self.app = create_app(TestConfig)
 
         self.app_context = self.app.app_context()
         self.app_context.push()
-
+    
+    # tear the application 
     def tearDown(self):
         self.app_context.pop()
 
@@ -32,7 +34,7 @@ class TestEmail(unittest.TestCase):
             html_body="html",
             sender="test@gmail.com",
         )
-
+        # ensure the fake message is call successfully
         mock_message.assert_called_once_with(
             "test",
             sender="test@gmail.com",
@@ -40,6 +42,7 @@ class TestEmail(unittest.TestCase):
             body="text",
             html="html",
         )
+        # ensure the fake thread is created and started successfully
         mock_thread.assert_called_once_with(target=ANY, args=ANY)
         mock_thread.return_value.start.assert_called_once()
 

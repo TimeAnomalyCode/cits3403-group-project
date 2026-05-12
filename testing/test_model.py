@@ -37,6 +37,7 @@ class TestUserModel(unittest.TestCase):
         db.engine.dispose()
         self.app_context.pop()
 
+    #focus on password
     def test_set_password(self):
         self.user.set_password("password")
 
