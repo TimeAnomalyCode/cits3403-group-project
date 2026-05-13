@@ -46,10 +46,7 @@ MAIL_DEFAULT_SENDER_ADDRESS =
 flask run
 ```
 # Run Tests
-## Setup before test
-```
-python3 selenium_run.py
-```
+
 ## Unit Tests
 ```
 pytest testing/  --cov=game2048 --cov-report=term --cov-report=html

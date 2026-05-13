@@ -10,11 +10,13 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from game2048.models import User
-from game2048 import create_app, db
+from game2048 import create_app, db, socketio
 from config import SeleniumTestConfig
+import threading
+import requests
 
 # from selenium.webdriver.common.credential import Credential
-SLEEP_TIME = 2
+SLEEP_TIME = 0.5
 
 # fake application
 app_test_instance = create_app(SeleniumTestConfig)
@@ -38,13 +40,30 @@ with app_test_instance.app_context():
         db.session.add(user)
         db.session.commit()
 
+def wait_for_server(url="http://127.0.0.1:5000", timeout=10):
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            response = requests.get(url, timeout=0.5)
+            if response.status_code == 200:
+                return
+        except requests.ConnectionError:
+            time.sleep(0.05)
+    raise RuntimeError(f"Flask server did not start within {timeout}s")
+
+
+def run_flask():
+    socketio.run(app_test_instance, use_reloader=False, allow_unsafe_werkzeug=True)
+
 
 # create the driver for testing
 @pytest.fixture
 def driver():
     options = Options()
-    # options.add_argument("--headless")  # uncomment for CI/no-display
-    options.add_argument("--no-sandbox")
+
+    options.add_argument("--headless=new")  # uncomment for CI/no-display
+    options.add_argument("--window-size=1920,1080")
+    # options.add_argument("--no-sandbox")
 
     prefs = {
         "profile.password_manager_leak_detection": False,
@@ -117,7 +136,7 @@ class test:
 
     def test_change_username(self):
         time.sleep(SLEEP_TIME)
-        self.driver.find_elements(By.CLASS_NAME, "btn")[1].click()
+        self.driver.find_elements(By.NAME, "change_username")[0].click() # bug
         self.driver.find_element(By.NAME, "new_username").send_keys(self.new_username)
         self.driver.find_element(By.NAME, "password").send_keys(self.password)
         time.sleep(SLEEP_TIME)
@@ -240,6 +259,11 @@ def testing_register(driver):
 
     test1.test_login()
     test1.test_logout()
+
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.daemon = True
+flask_thread.start()
+wait_for_server()
 
 
 # tester1@gmail.com
