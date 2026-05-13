@@ -945,7 +945,7 @@ function getTileStyle(value) {
     };
 
     if (value < 0) {
-        return { background: "#6c757d", color: "#ffffff" };
+        return { background: "#8fd4dc", color: "#ffffff" };
     }
 
     return tileStyles[value] || { background: "#8f7a66", color: "#f9f6f2" };
