@@ -88,7 +88,7 @@ def run_flask(app):
 # driver
 def create_driver(incognito=False):
     options = Options()
-    options.add_argument("--headless")
+    # options.add_argument("--headless")
     # options.add_argument("--no-sandbox")
 
     prefs = {
