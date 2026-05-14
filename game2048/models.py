@@ -82,9 +82,6 @@ class Match(db.Model):
     __tablename__ = "matches"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    match_code: Mapped[String | None] = mapped_column(
-        String(4), unique=True, nullable=True
-    )
     player1_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     player2_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     winner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
