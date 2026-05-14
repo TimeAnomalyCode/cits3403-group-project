@@ -28,7 +28,7 @@
 
                         {{ wtf.form_field(form.new_username) }}
                         {{ wtf.form_field(form.password) }}
-                        {{ wtf.submit_cancel(form.submit, url_for('profile', username=current_user.username) ) }}
+                        {{ wtf.submit_cancel(form.submit, url_for('main.profile', username=current_user.username) ) }}
 
                     </form>
                 </div>

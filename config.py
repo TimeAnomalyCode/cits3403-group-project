@@ -31,3 +31,14 @@ class Config:
         os.getenv("MAIL_DEFAULT_SENDER_NAME"),
         os.getenv("MAIL_DEFAULT_SENDER_ADDRESS"),
     )
+
+# making two testing config 
+class TestConfig(Config):
+    TESTING = True
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+
+class SeleniumTestConfig(Config):
+    TESTING = True
+    WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = "sqlite:///selenium_test.db"

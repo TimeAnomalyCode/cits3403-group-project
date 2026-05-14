@@ -1,6 +1,7 @@
 from datetime import datetime, UTC
 from time import time
-from game2048 import app, db, login_manager
+from flask import current_app
+from game2048 import db, login_manager
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from sqlalchemy import Integer, String, DateTime, ForeignKey, UniqueConstraint
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -53,7 +54,7 @@ class User(UserMixin, db.Model):
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
             {"reset_password": self.id, "exp": time() + expires_in},
-            app.config["SECRET_KEY"],
+            current_app.config["SECRET_KEY"],
             algorithm="HS256",
         )
 
@@ -62,7 +63,7 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            id = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])[
+            id = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])[
                 "reset_password"
             ]
 
@@ -85,20 +86,23 @@ class Match(db.Model):
     player1_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     player2_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     winner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+
     player1_elo: Mapped[int] = mapped_column(Integer, nullable=False)
     player2_elo: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     # Matches relationships
     player1 = Relationship(
         "User", foreign_keys=[player1_id], back_populates="player1_in_matches"
     )
+
     player2 = Relationship(
         "User", foreign_keys=[player2_id], back_populates="player2_in_matches"
     )
-    winner = Relationship("User", foreign_keys=[winner_id], back_populates="wins")
+
+    winner = Relationship(
+        "User", foreign_keys=[winner_id], back_populates="wins"
+    )
 
 
 # User Loader Function
