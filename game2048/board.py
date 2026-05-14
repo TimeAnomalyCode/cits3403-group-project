@@ -9,6 +9,11 @@ from flask import request
 from game2048 import socketio
 from flask_socketio import join_room, emit
 from flask_login import current_user
+from game2048 import db
+from game2048.models import Match, User
+from game2048.elo import update_elo
+from game2048 import app
+from datetime import datetime
 
 # ----------------------------------------------------------------
 # Enums and Type Annotations
@@ -418,7 +423,7 @@ class MatchState:
     def create_match(self, host_username):
         match_id = self.__generate_match_id()
         match_random = MatchRandom(match_id)
-        match_timer = MatchTimer(self.__end_game, [match_id])
+        match_timer = MatchTimer(self.end_game, [match_id])
 
         random_array = match_random.get_array()
         time_remaining = match_timer.create().remaining()
@@ -648,7 +653,7 @@ class MatchState:
                 return code
 
     # Save data to database here
-    def __end_game(self, match_id):
+    def end_game(self, match_id):
         print("END:", match_id)
         print(time.time())
         match = self.get_match_by_id(match_id)
@@ -665,6 +670,36 @@ class MatchState:
 
         self.sync_for_reconnection(match_id)
         socketio.emit("game_state", match, to=match_id)
+
+        with app.app_context():
+            p1 = User.query.filter_by(username=match["host"]).first()
+            p2 = User.query.filter_by(username=match["opponent"]).first()
+            winner = User.query.filter_by(username=match["winner"]).first()
+            loser = User.query.filter_by(username=match["loser"]).first()
+
+            p1Elo = p1.elo
+            p2Elo = p2.elo
+
+            newEloWin, newEloLose = update_elo(winner, loser)
+
+            match_db = Match(
+                player1_id=p1.id,
+                player2_id=p2.id,
+                winner_id=winner.id,
+                player1_elo=p1Elo,
+                player2_elo=p2Elo,
+                created_at=datetime.utcnow(),
+            )
+
+            db.session.add(match_db)
+
+            winner.elo = newEloWin
+            loser.elo = newEloLose
+
+            db.session.commit()
+
+            match["saved_to_db"] = True
+            print("MATCH SAVED:", match_db.id)
 
 
 match_state = MatchState()
