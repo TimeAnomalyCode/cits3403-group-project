@@ -153,14 +153,14 @@ def profile(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
     num_of_wins = Match.query.filter_by(winner_id=user.id).count()
     total_games = Match.query.filter(
-        or_(Match.player1_id == user.id, Match.player2_id == user.id)
+        sa.or_(Match.player1_id == user.id, Match.player2_id == user.id)
     ).count()
 
     win_rate = round((num_of_wins / total_games) * 100, 1) if total_games > 0 else 0
     rank = User.query.filter(User.elo > user.elo).count() + 1
     matches = (
         Match.query
-        .filter(or_(Match.player1_id == user.id, Match.player2_id == user.id))
+        .filter(sa.or_(Match.player1_id == user.id, Match.player2_id == user.id))
         .order_by(Match.created_at.asc())  # IMPORTANT: oldest → newest
         .all()
     )
@@ -193,16 +193,16 @@ def profile(username):
             else match.player1_elo
         )
 
-        winner_original_elo = winner_user.elo
-        loser_original_elo = loser_user.elo
+        winner_og = winner_user.elo
+        loser_og = loser_user.elo
 
         winner_user.elo = winner_before
         loser_user.elo = loser_before
 
         new_winner_elo, new_loser_elo = update_elo(winner_user, loser_user)
 
-        winner_user.elo = winner_original_elo
-        loser_user.elo = loser_original_elo
+        winner_user.elo = winner_og
+        loser_user.elo = loser_og
 
         if user.id == winner_user.id:
             elo_before = winner_before
@@ -215,7 +215,7 @@ def profile(username):
             "date": match.created_at.strftime("%d/%m/%Y"),
             "opponent": opponent.username,
             "winner": winner_user.username,
-            "elo_before": elo_before,
+            "elo_before": elo_before + elo_change,
             "elo_change": elo_change,
         })
 
