@@ -805,10 +805,6 @@ function handleMovement(e) {
 
     if (client_match.dead[opponent_username]) {
         console.log("Your opponent has died!");
-
-        flashAttackInfo1();
-        attack_info1.textContent = "Opponent was dead, you can't attack now";
-
     }
 
     // If opponent is dead, you can't attack them
@@ -929,8 +925,6 @@ function renderOpponent() {
         client_match.trash_point[opponent_username];
     if (client_match.is_attacked[opponent_username]) {
         const attackId = client_match.is_attacked[opponent_username];
-        attack_info2.textContent = `You are attacking opponent with ${formatAttackLabel(attackId)}`;
-        flashAttackInfo2();
     }
     render(layer2, board2, client_match.cells[opponent_username]);
     renderDeadIndicators();
