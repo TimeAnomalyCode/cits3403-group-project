@@ -12,8 +12,8 @@ from flask_login import current_user
 from game2048 import db
 from game2048.models import Match, User
 from game2048.elo import update_elo
-from game2048 import app
 from datetime import datetime
+from flask import current_app
 
 # ----------------------------------------------------------------
 # Enums and Type Annotations
@@ -423,7 +423,9 @@ class MatchState:
     def create_match(self, host_username):
         match_id = self.__generate_match_id()
         match_random = MatchRandom(match_id)
-        match_timer = MatchTimer(self.end_game, [match_id])
+        match_timer = MatchTimer(
+            self.__end_game, [match_id, current_app._get_current_object()], 10
+        )
 
         random_array = match_random.get_array()
         time_remaining = match_timer.create().remaining()
@@ -653,7 +655,7 @@ class MatchState:
                 return code
 
     # Save data to database here
-    def end_game(self, match_id):
+    def __end_game(self, match_id, app):
         print("END:", match_id)
         print(time.time())
         match = self.get_match_by_id(match_id)
