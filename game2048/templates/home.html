@@ -30,7 +30,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entry in leaderboard %}
+                            {% for entry in leaderboard[:5] %}
                                 <tr class="{% if entry.user.id == current_user.id %}table-primary fw-bold{% endif %}">
                                     <td>
                                         {{ loop.index }}
