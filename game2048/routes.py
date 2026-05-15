@@ -196,16 +196,16 @@ def profile(username):
             else match.player1_elo
         )
 
-        winner_original_elo = winner_user.elo
-        loser_original_elo = loser_user.elo
+        winner_og = winner_user.elo
+        loser_og = loser_user.elo
 
         winner_user.elo = winner_before
         loser_user.elo = loser_before
 
         new_winner_elo, new_loser_elo = update_elo(winner_user, loser_user)
 
-        winner_user.elo = winner_original_elo
-        loser_user.elo = loser_original_elo
+        winner_user.elo = winner_og
+        loser_user.elo = loser_og
 
         if user.id == winner_user.id:
             elo_before = winner_before
@@ -218,7 +218,7 @@ def profile(username):
             "date": match.created_at.strftime("%d/%m/%Y"),
             "opponent": opponent.username,
             "winner": winner_user.username,
-            "elo_before": elo_before,
+            "elo_before": elo_before + elo_change,
             "elo_change": elo_change,
         })
 

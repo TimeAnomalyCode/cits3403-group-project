@@ -16,11 +16,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from game2048.models import User
-from game2048 import create_app, db
+from game2048 import create_app, db, socketio
 from config import SeleniumTestConfig
+import threading
+import requests
 
-
-SLEEP_TIME = 2
+SLEEP_TIME = 1
 TEST_TIME = 180
 BASE_URL = "http://127.0.0.1:5000"
 BOT1_EMAIL = "test@gmail.com"
@@ -32,6 +33,7 @@ PASSWORD = "123456789"
 def app():
 
     app = create_app(SeleniumTestConfig)
+    
 
     with app.app_context():
         db.drop_all()
@@ -56,18 +58,38 @@ def app():
         db.session.add(bot1)
         db.session.add(bot2)
         db.session.commit()
+        
+        flask_thread = threading.Thread(target=run_flask,args=(app,))
+        flask_thread.daemon = True
+        flask_thread.start()
+        wait_for_server()
 
         yield app
 
         db.session.remove()
         db.drop_all()
 
+def wait_for_server(url="http://127.0.0.1:5000", timeout=10):
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            response = requests.get(url, timeout=0.5)
+            if response.status_code == 200:
+                return
+        except requests.ConnectionError:
+            time.sleep(0.05)
+    raise RuntimeError(f"Flask server did not start within {timeout}s")
+
+
+def run_flask(app):
+    socketio.run(app, use_reloader=False, allow_unsafe_werkzeug=True)
+
 
 # driver
 def create_driver(incognito=False):
     options = Options()
     # options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
+    # options.add_argument("--no-sandbox")
 
     prefs = {
         "profile.password_manager_leak_detection": False,
@@ -290,3 +312,5 @@ def test_multiplayer_game_full_session(app):
 
     assert p1.exitcode == 0, f"Bot1 process fail with {p1.exitcode}"
     assert p2.exitcode == 0, f"Bot2 process fail with{p2.exitcode}"
+
+
