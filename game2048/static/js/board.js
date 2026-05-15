@@ -931,9 +931,6 @@ function renderOpponent() {
 }
 
 function renderDeadIndicators() {
-    if (!client_match.dead) {
-        return;
-    }
 
     playerDeadIndicator.textContent = client_match.dead[username] ? "💀" : "";
     opponentDeadIndicator.textContent =
