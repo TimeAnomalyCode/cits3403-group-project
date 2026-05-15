@@ -805,6 +805,10 @@ function handleMovement(e) {
 
     if (client_match.dead[opponent_username]) {
         console.log("Your opponent has died!");
+
+        flashAttackInfo1();
+        attack_info1.textContent = "Opponent was dead, you can't attack now";
+
     }
 
     // If opponent is dead, you can't attack them
@@ -940,6 +944,12 @@ function renderDeadIndicators() {
     playerDeadIndicator.textContent = client_match.dead[username] ? "💀" : "";
     opponentDeadIndicator.textContent =
         opponent_username && client_match.dead[opponent_username] ? "💀" : "";
+    
+    if ( client_match.dead[opponent_username]) {
+        attack_info1.textContent = "Opponent was dead, you can't attack now";
+    } else if (client_match.dead[username]) {
+        attack_info1.textContent = "You are dead, you can't attack now";
+    }
 }
 
 function getTileStyle(value) {
