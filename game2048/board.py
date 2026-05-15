@@ -12,7 +12,7 @@ from flask_login import current_user
 from game2048 import db
 from game2048.models import Match, User
 from game2048.elo import update_elo
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import current_app
 
 # ----------------------------------------------------------------
@@ -690,7 +690,7 @@ class MatchState:
                 winner_id=winner.id,
                 player1_elo=p1Elo,
                 player2_elo=p2Elo,
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(UTC),
             )
 
             db.session.add(match_db)
