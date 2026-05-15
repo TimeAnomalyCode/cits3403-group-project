@@ -21,6 +21,7 @@ class MatchStatus(Enum):
     ONGOING = "ongoing"
     END = "end"
 
+FINAL_COUNTDOWN_SECONDS = 10
 
 class TypeMatch(TypedDict):
     sids: dict[str, str]
@@ -160,9 +161,24 @@ class MatchTimer:
         if self.has_start:
             return self
 
+        if self.timer is None:
+            self.create()
+
         self.end_time = time.time() + self.duration
         self.timer.start()
         self.has_start = True
+        return self
+
+    def restart(self, duration):
+        if self.timer:
+            self.timer.cancel()
+
+        self.duration = duration
+        self.end_time = time.time() + duration
+        self.timer = threading.Timer(duration, self.callback, args=self.args)
+        self.timer.start()
+        self.has_start = True
+        return self
 
     def remaining(self):
         if self.end_time is None:
@@ -567,6 +583,17 @@ class MatchState:
             match["hidden_score"][username] -= 128
         if not BoardLogic.hasMove(match["cells"][username]):
             match["dead"][username] = True
+
+            player1 = match["host"]
+            player2 = match["opponent"]
+            if (
+                player2 is not None
+                and match["dead"][player1]
+                and match["dead"][player2]
+                and not match.get("final_countdown_started")
+            ):
+                match["final_countdown_started"] = True
+                self.matches_timer[match_id].restart(FINAL_COUNTDOWN_SECONDS)
 
     def __handle_player_attack(
         self, match_id, match: TypeMatch, username, data: TypeMove | TypeAttack
