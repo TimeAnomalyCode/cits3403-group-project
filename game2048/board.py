@@ -424,7 +424,7 @@ class MatchState:
         match_id = self.__generate_match_id()
         match_random = MatchRandom(match_id)
         match_timer = MatchTimer(
-            self.__end_game, [match_id, current_app._get_current_object()], 10
+            self.__end_game, [match_id, current_app._get_current_object()]
         )
 
         random_array = match_random.get_array()
