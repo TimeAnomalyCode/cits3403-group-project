@@ -13,6 +13,7 @@ from game2048.board import (
     MatchStatus,
 )
 from game2048 import create_app
+from config import TestConfig
 
 # test move
 class TestBoardLogic(unittest.TestCase):
@@ -1046,7 +1047,7 @@ class TestBoardAction(unittest.TestCase):
 class TestMatchState(unittest.TestCase):
 
     def setUp(self):
-        self.app = create_app()
+        self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.match_state = MatchState()
