@@ -11,7 +11,7 @@
                     Leaderboard
                 </div>
                 <div class="card-body">
-                    <table class="table table-striped table-hover mb-0">
+                    <table class="table table-striped align-middle text-center table-hover mb-0">
                         <!-- Jinja for loop and pull from db -->
                         <thead>
                             <tr>
@@ -30,7 +30,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entry in leaderboard %}
+                            {% for entry in leaderboard[:5] %}
                                 <tr class="{% if entry.user.id == current_user.id %}table-primary fw-bold{% endif %}">
                                     <td>
                                         {{ loop.index }}

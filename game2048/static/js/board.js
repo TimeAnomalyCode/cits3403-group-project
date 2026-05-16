@@ -609,6 +609,8 @@ const player_2_score = document.getElementById("player_2_score");
 const player_2_trash_point = document.getElementById("player_2_trash_point");
 const attack_info1 = document.getElementById("attack_info1");
 const attack_info2 = document.getElementById("attack_info2");
+const playerDeadIndicator = document.getElementById("is_player_dead");
+const opponentDeadIndicator = document.getElementById("is_opponent_dead");
 const badge = document.getElementById("resultBadge");
 const title = document.getElementById("resultTitle");
 const scoreEl = document.getElementById("finalScore");
@@ -715,15 +717,6 @@ socket.on("game_state", (match) => {
         client_match.random_array_index[username],
     );
 
-    if (client_match.dead[username]) {
-        match_timer.update(client_match.timer);
-        disableMovement();
-        renderPlayer();
-        renderOpponent();
-        console.log(`${username} is Dead`);
-        return;
-    }
-
     if (client_match.is_attacked[username]) {
         console.log(`You were attacked with ${client_match.is_attacked[username]}!`);
     }
@@ -734,12 +727,21 @@ socket.on("game_state", (match) => {
         match_timer.start(client_match.timer);
         renderPlayer();
         renderOpponent();
-        enableMovement();
+        if (client_match.dead[username]) {
+            disableMovement();
+        } else {
+            enableMovement();
+        }
     } else if (client_match.status === MATCH_STATUS.ONGOING) {
         match_timer.update(client_match.timer);
         renderPlayer();
         renderOpponent();
-        enableMovement();
+        if (client_match.dead[username]) {
+            disableMovement();
+            console.log(`${username} is Dead`);
+        } else {
+            enableMovement();
+        }
     } else if (client_match.status === MATCH_STATUS.END) {
         match_timer.update(0);
         playSFX(sounds.game_over.howl);
@@ -914,6 +916,7 @@ function renderPlayer() {
     }
     render(layer1, board1, client_match.cells[username]);
     updateScores(client_match.score[username], client_match.score[opponent_username]);
+    renderDeadIndicators();
 }
 
 function renderOpponent() {
@@ -922,10 +925,22 @@ function renderOpponent() {
         client_match.trash_point[opponent_username];
     if (client_match.is_attacked[opponent_username]) {
         const attackId = client_match.is_attacked[opponent_username];
-        attack_info2.textContent = `You are attacking opponent with ${formatAttackLabel(attackId)}`;
-        flashAttackInfo2();
     }
     render(layer2, board2, client_match.cells[opponent_username]);
+    renderDeadIndicators();
+}
+
+function renderDeadIndicators() {
+
+    playerDeadIndicator.textContent = client_match.dead[username] ? "💀" : "";
+    opponentDeadIndicator.textContent =
+        opponent_username && client_match.dead[opponent_username] ? "💀" : "";
+    
+    if ( client_match.dead[opponent_username]) {
+        attack_info1.textContent = "Opponent was dead, you can't attack now";
+    } else if (client_match.dead[username]) {
+        attack_info1.textContent = "You are dead, you can't attack now";
+    }
 }
 
 function getTileStyle(value) {
@@ -945,7 +960,7 @@ function getTileStyle(value) {
     };
 
     if (value < 0) {
-        return { background: "#6c757d", color: "#ffffff" };
+        return { background: "#8fd4dc", color: "#ffffff" };
     }
 
     return tileStyles[value] || { background: "#8f7a66", color: "#f9f6f2" };

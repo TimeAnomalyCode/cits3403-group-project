@@ -32,6 +32,76 @@ from game2048.board import match_state
 
 main = Blueprint("main", __name__)
 
+def get_leaderboard(limit=5):
+    users = User.query.order_by(User.elo.desc()).limit(limit).all()
+    leaderboard = []
+    for user in users:
+        wins = Match.query.filter_by(winner_id=user.id).count()
+        leaderboard.append({"user": user, "wins": wins})
+    return leaderboard
+
+def get_history(user, limit=5):
+    matches = (
+        Match.query
+        .filter(sa.or_(Match.player1_id == user.id, Match.player2_id == user.id))
+        .order_by(Match.created_at.asc())  # IMPORTANT: oldest → newest
+        .all()
+    )
+    match_history = []
+
+    for match in matches:
+        user_is_player1 = match.player1_id == user.id
+
+        opponent_id = match.player2_id if user_is_player1 else match.player1_id
+        opponent = User.query.get(opponent_id)
+
+        winner_user = User.query.get(match.winner_id)
+
+        loser_id = (
+            match.player2_id
+            if match.winner_id == match.player1_id
+            else match.player1_id
+        )
+        loser_user = User.query.get(loser_id)
+
+        winner_before = (
+            match.player1_elo
+            if match.winner_id == match.player1_id
+            else match.player2_elo
+        )
+
+        loser_before = (
+            match.player2_elo
+            if match.winner_id == match.player1_id
+            else match.player1_elo
+        )
+
+        winner_og = winner_user.elo
+        loser_og = loser_user.elo
+
+        winner_user.elo = winner_before
+        loser_user.elo = loser_before
+
+        new_winner_elo, new_loser_elo = update_elo(winner_user, loser_user)
+
+        winner_user.elo = winner_og
+        loser_user.elo = loser_og
+
+        if user.id == winner_user.id:
+            elo_before = winner_before
+            elo_change = new_winner_elo - winner_before
+        else:
+            elo_before = loser_before
+            elo_change = new_loser_elo - loser_before
+
+        match_history.append({
+            "date": match.created_at.strftime("%d/%m/%Y"),
+            "opponent": opponent.username,
+            "winner": winner_user.username,
+            "elo_before": elo_before + elo_change,
+            "elo_change": elo_change,
+        })
+    return match_history
 
 @main.route("/", methods=["GET", "POST"])
 @main.route("/home", methods=["GET", "POST"])
@@ -49,14 +119,13 @@ def home():
 
             return redirect(url_for("main.match", match_id=match_id))
 
-        return render_template("home_loggedIn.html", title="Home", form=join_form)
-
-    users = User.query.order_by(User.elo.desc()).all()
-    leaderboard = []
-    for user in users:
-        wins = Match.query.filter_by(winner_id=user.id).count()
-
-        leaderboard.append({"user": user, "wins": wins})
+        return render_template(
+            "home_loggedIn.html", 
+            title="Home", 
+            form=join_form, 
+            leaderboard=get_leaderboard(),
+            match_history=get_history(current_user)
+        )
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -67,10 +136,19 @@ def home():
             return redirect(url_for("main.home"))
 
         login_user(user, remember=form.remember_me.data)
-        return render_template("home_loggedIn.html", title="Home", form=join_form)
+        return render_template(
+            "home_loggedIn.html",
+            title="Home", 
+            form=join_form, 
+            leaderboard=get_leaderboard(),
+            match_history=get_history(user)
+        )
 
     return render_template(
-        "home.html", title="Home", leaderboard=leaderboard, form=form
+        "home.html", 
+        title="Home", 
+        leaderboard=get_leaderboard(), 
+        form=form
     )
 
 
@@ -161,66 +239,6 @@ def profile(username):
 
     win_rate = round((num_of_wins / total_games) * 100, 1) if total_games > 0 else 0
     rank = User.query.filter(User.elo > user.elo).count() + 1
-    matches = (
-        Match.query
-        .filter(sa.or_(Match.player1_id == user.id, Match.player2_id == user.id))
-        .order_by(Match.created_at.asc())  # IMPORTANT: oldest → newest
-        .all()
-    )
-    match_history = []
-
-    for match in matches:
-        user_is_player1 = match.player1_id == user.id
-
-        opponent_id = match.player2_id if user_is_player1 else match.player1_id
-        opponent = User.query.get(opponent_id)
-
-        winner_user = User.query.get(match.winner_id)
-
-        loser_id = (
-            match.player2_id
-            if match.winner_id == match.player1_id
-            else match.player1_id
-        )
-        loser_user = User.query.get(loser_id)
-
-        winner_before = (
-            match.player1_elo
-            if match.winner_id == match.player1_id
-            else match.player2_elo
-        )
-
-        loser_before = (
-            match.player2_elo
-            if match.winner_id == match.player1_id
-            else match.player1_elo
-        )
-
-        winner_og = winner_user.elo
-        loser_og = loser_user.elo
-
-        winner_user.elo = winner_before
-        loser_user.elo = loser_before
-
-        new_winner_elo, new_loser_elo = update_elo(winner_user, loser_user)
-
-        winner_user.elo = winner_og
-        loser_user.elo = loser_og
-
-        if user.id == winner_user.id:
-            elo_before = winner_before
-            elo_change = new_winner_elo - winner_before
-        else:
-            elo_before = loser_before
-            elo_change = new_loser_elo - loser_before
-
-        match_history.append({
-            "date": match.created_at.strftime("%d/%m/%Y"),
-            "opponent": opponent.username,
-            "winner": winner_user.username,
-            "elo_before": elo_before + elo_change,
-            "elo_change": elo_change,
-        })
 
     return render_template(
         "profile.html",
@@ -229,7 +247,7 @@ def profile(username):
         num_of_wins=num_of_wins,
         rank=rank,
         win_rate=win_rate,
-        match_history=match_history,
+        match_history=get_history(user),
     )
 
 
