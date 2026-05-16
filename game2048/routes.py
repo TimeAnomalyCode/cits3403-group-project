@@ -32,6 +32,7 @@ from game2048.board import match_state
 
 main = Blueprint("main", __name__)
 
+
 def get_leaderboard(limit=5):
     users = User.query.order_by(User.elo.desc()).limit(limit).all()
     leaderboard = []
@@ -39,6 +40,7 @@ def get_leaderboard(limit=5):
         wins = Match.query.filter_by(winner_id=user.id).count()
         leaderboard.append({"user": user, "wins": wins})
     return leaderboard
+
 
 def get_history(user, limit=5):
     matches = (
@@ -103,6 +105,17 @@ def get_history(user, limit=5):
         })
     return match_history
 
+
+# Cache static files on client
+# Source: https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
+# Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control
+@main.route("/static/<path:filename>")
+def static(filename):
+    resp = make_response(send_from_directory("static/", filename))
+    resp.headers["Cache-Control"] = "max-age=604800"
+    return resp
+
+
 @main.route("/", methods=["GET", "POST"])
 @main.route("/home", methods=["GET", "POST"])
 def home():
@@ -120,11 +133,11 @@ def home():
             return redirect(url_for("main.match", match_id=match_id))
 
         return render_template(
-            "home_loggedIn.html", 
-            title="Home", 
-            form=join_form, 
+            "home_loggedIn.html",
+            title="Home",
+            form=join_form,
             leaderboard=get_leaderboard(),
-            match_history=get_history(current_user)
+            match_history=get_history(current_user),
         )
 
     form = LoginForm()
@@ -138,17 +151,14 @@ def home():
         login_user(user, remember=form.remember_me.data)
         return render_template(
             "home_loggedIn.html",
-            title="Home", 
-            form=join_form, 
+            title="Home",
+            form=join_form,
             leaderboard=get_leaderboard(),
-            match_history=get_history(user)
+            match_history=get_history(user),
         )
 
     return render_template(
-        "home.html", 
-        title="Home", 
-        leaderboard=get_leaderboard(), 
-        form=form
+        "home.html", title="Home", leaderboard=get_leaderboard(), form=form
     )
 
 
@@ -318,16 +328,6 @@ def match(match_id):
 # ----------------------------------------------------------------
 
 
-# Cache static files on client
-# Source: https://stackoverflow.com/questions/77569410/flask-possible-to-cache-images
-# Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control
-@main.route("/static/<path:filename>")
-def static(filename):
-    resp = make_response(send_from_directory("static/", filename))
-    resp.headers["Cache-Control"] = "max-age=604800"
-    return resp
-
-
 # Just to test login required
 # @main.route("/send")
 # def index():
@@ -341,44 +341,44 @@ def static(filename):
 
 # Helper to refresh/create and display db
 # The reason One to One is not present: https://docs.sqlalchemy.org/en/21/orm/basic_relationships.html#one-to-one
-@main.route("/create")
-def about():
-    # db.drop_all()
-    # db.create_all()
-    upgrade()
-    data = []
+# @main.route("/create")
+# def create_db():
+#     # db.drop_all()
+#     # db.create_all()
+#     upgrade()
+#     data = []
 
-    # V1
-    # for key, obj in db.metadata.tables.items():
-    #     data.append(f'<h1>{key}</h1>')
-    #     for col in obj.columns:
-    #         data.append(f'<p>{col.name} {col.type}</p>')
-    #     data.append('<hr>')
+#     # V1
+#     # for key, obj in db.metadata.tables.items():
+#     #     data.append(f'<h1>{key}</h1>')
+#     #     for col in obj.columns:
+#     #         data.append(f'<p>{col.name} {col.type}</p>')
+#     #     data.append('<hr>')
 
-    for mapper in db.Model.registry.mappers:
-        table = mapper.local_table
+#     for mapper in db.Model.registry.mappers:
+#         table = mapper.local_table
 
-        data.append(f"<h1>{table.name}</h1>")
+#         data.append(f"<h1>{table.name}</h1>")
 
-        # Columns
-        for col in table.columns:
-            data.append(f"<p><b>{col.name}</b> ({col.type})</p>")
+#         # Columns
+#         for col in table.columns:
+#             data.append(f"<p><b>{col.name}</b> ({col.type})</p>")
 
-        # Relationships
-        data.append("<h3>Relationships</h3>")
-        for rel in mapper.relationships:
-            target = rel.mapper.class_.__name__
-            direction = rel.direction.name  # MANYTOONE, ONETOMANY, MANYTOMANY
+#         # Relationships
+#         data.append("<h3>Relationships</h3>")
+#         for rel in mapper.relationships:
+#             target = rel.mapper.class_.__name__
+#             direction = rel.direction.name  # MANYTOONE, ONETOMANY, MANYTOMANY
 
-            data.append(
-                f"<p>{rel.key} → {target} "
-                f"({direction}) "
-                f"back_populates={rel.back_populates}</p>"
-            )
+#             data.append(
+#                 f"<p>{rel.key} → {target} "
+#                 f"({direction}) "
+#                 f"back_populates={rel.back_populates}</p>"
+#             )
 
-        data.append("<hr>")
+#         data.append("<hr>")
 
-    return "".join(data)
+#     return "".join(data)
 
 
 # ====================== Tournament Functions ======================
