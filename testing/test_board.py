@@ -12,6 +12,7 @@ from game2048.board import (
     MatchState,
     MatchStatus,
 )
+from game2048 import create_app
 
 # test move
 class TestBoardLogic(unittest.TestCase):
@@ -1045,12 +1046,16 @@ class TestBoardAction(unittest.TestCase):
 class TestMatchState(unittest.TestCase):
 
     def setUp(self):
+        self.app = create_app()
+        self.app_context = self.app.app_context()
+        self.app_context.push()
         self.match_state = MatchState()
     
     def tearDown(self):
         for timer in self.match_state.matches_timer.values():
             if timer.timer is not None:
                 timer.timer.cancel()
+        self.app_context.pop()
 
     # test create match and its status 
     def test_create_match_creates_match(self):
